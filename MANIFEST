@@ -1,0 +1,178 @@
+MANIFEST for mawk, version v1_3_3
+--------------------------------------------------------------------------------
+MANIFEST                        this file
+ACKNOWLEDGMENT                  acknowledgements
+CHANGES                         change-log for mawk
+COPYING                         GNU General Public License, version 2
+INSTALL                         installation instructions
+Makefile.in                     template for makefile
+README                          description of mawk
+array.c                         array functions (C source)
+array.h                         array functions (C header)
+array.w                         array functions (noweb)
+bi_funct.c                      mawk built-in functions
+bi_funct.h                      mawk built-in functions header
+bi_vars.c                       mawk predefined variables
+bi_vars.h                       mawk predefined variables header
+cast.c                          mawk type-conversions
+code.c                          machine opcode functions
+code.h                          machine opcodes header
+config.user                     mawk 1.3.3 (with Debian package)
+configure                       Configuration script for UNIX
+configure.in                    template for autoconf script
+da.c                            disassemble mawk-code
+error.c                         error-reporting functions
+execute.c                       command-interpreter
+fcall.c                         utilities for function-calls
+field.c                         field- and cell-utilities
+field.h                         field- and cell utilities headers
+files.c                         file- and pipe-functions
+files.h                         file- and pipe-functions header
+fin.c                           file-input functions
+fin.h                           file-input functions header
+fpe_check.c                     configure-utility for floating-point checks
+hash.c                          symbol table hashing/lookup
+init.c                          interpreter initialization functions
+init.h                          interpreter initialization functions header
+jmp.c                           byte-code jumps/branches
+jmp.h                           byte-code jumps/branches header
+kw.c                            keyword table and lookup functions
+main.c                          main program
+makescan.c                      utility which builds scancode.c
+matherr.c                       catch/report math-errors
+mawk.ac.m4                      mawk 1.3.3 (with Debian package)
+mawk.h                          main header file for mawk
+memory.c                        string-allocation functions
+memory.h                        string-allocation functions header
+missing.c                       replacements for missing system functions
+nstd.h                          header for missing.c
+packing.list                    mawk 1.3.3 (with Debian package)
+parse.c                         generated C parser
+parse.h                         generated C parser header
+parse.y                         mawk grammar
+patchlev.h                      patch-level (see version.c)
+print.c                         printf- and sprintf-functions for interpreter
+re_cmpl.c                       compile regular expressions
+regexp.h                        interface to main regular expressions
+repl.h                          header for re_cmpl.c
+rexp.c                          regular expressions
+rexp.h                          regular expression details header
+rexp0.c                         built-in regular expression parsing
+rexp1.c                         built-in regular expression operations
+rexp2.c                         built-in regular expressions matching functions
+rexp3.c                         built-in regular expressions matching - main
+rexpdb.c                        debugging utilities for regular expressions
+scan.c                          program file-management
+scan.h                          program file-management header
+scancode.c                      mawk 1.3.3 (with Debian package)
+sizes.h                         data-type sizes header
+split.c                         functions for splitting field, strings, etc.
+symtype.h                       types related to symbols are defined here
+types.h                         mawk datatypes header
+vargs.h                         mawk 1.3.3 (with Debian package)
+version.c                       print mawk's version string
+zmalloc.c                       memory allocation functions
+zmalloc.h                       memory allocation functions header
+atarist                         subdirectory
+atarist/README.ST               mawk 1.3.3 (with Debian package)
+config-user                     subdirectory
+config-user/.config.user        mawk 1.3.3 (with Debian package)
+config-user/apollo              mawk 1.3.3 (with Debian package)
+config-user/convex              mawk 1.3.3 (with Debian package)
+config-user/cray                mawk 1.3.3 (with Debian package)
+config-user/mips                mawk 1.3.3 (with Debian package)
+config-user/sgi                 mawk 1.3.3 (with Debian package)
+config-user/ultrix-mips         mawk 1.3.3 (with Debian package)
+debian                          subdirectory
+debian/changelog                mawk 1.3.3 (with Debian package)
+debian/control                  mawk 1.3.3 (with Debian package)
+debian/copyright                mawk 1.3.3 (with Debian package)
+debian/patches                  subdirectory
+debian/patches/00list           mawk 1.3.3 (with Debian package)
+debian/patches/01_error-on-full-fs.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/02_fix-examples.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/03_read-and-close-redefinition.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/04_mawk.1-fix-pi.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/05_-Wall-fixes.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/06_parse.y-semicolons.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/07_mawktest-check-devfull.dpatch  mawk 1.3.3 (with Debian package)
+debian/patches/08_fix-for-gcc3.3.dpatch  mawk 1.3.3 (with Debian package)
+debian                          subdirectory
+debian/postinst                 mawk 1.3.3 (with Debian package)
+debian/prerm                    mawk 1.3.3 (with Debian package)
+debian/rules                    mawk 1.3.3 (with Debian package)
+examples                        subdirectory
+examples/ct_length.awk          change length to length()
+examples/decl.awk               parse a C declaration by recursive descent
+examples/deps.awk               find include dependencies in C source
+examples/eatc.awk               another program to remove comments
+examples/gdecl.awk              parse a C declaration by recursive descent
+examples/hcal                   Bob's latest
+examples/hical                  calendar program by Bob Stockler
+examples/nocomment.awk          remove C comments  from a list of files
+examples/primes.awk             find all primes between 2 and STOP (parameter)
+examples/qsort.awk              qsort text files
+man                             subdirectory
+man/mawk.1                      troff source for unix style man pages
+man/mawk.doc                    ascii man pages
+msdos                           subdirectory
+msdos/INSTALL                   installation instructions for DOS
+msdos/NOTES                     notes for building/running with MS-DOS
+msdos/argvmks.c                 for MKS Korn Shell
+msdos/argvpoly.c                for polyshell
+msdos/dosexec.c                 system() and pipes() for DOS
+msdos/examples                  subdirectory
+msdos/examples/add_cr.awk       convert files from Unix to Dos line-endings
+msdos/examples/doslist.awk      print truncated DOS file names
+msdos/examples/objstat.awk      Sum up sizes of OBJ files in current directory
+msdos/examples/shell.awk        Test pipes under DOS
+msdos/examples/srcstat.awk      show sizes (line, char) of files
+msdos/examples/srcstat2.awk     show sizes (line, char) of files
+msdos/examples/texttest.awk     print contents of quoted #include's
+msdos/examples/winexe.awk       sum segment-sizes of exe's in current directory
+msdos/examples/winobj.awk       sum sizes of obj's in current directory
+msdos                           subdirectory
+msdos/makefile.msc              nmake and MSC 6.0A
+msdos/makefile.tcc              for [TB]CC and Borland make
+msdos/makefile.ztc              makefile for ZTC
+msdos/mawk.def                  linker file
+msdos/msc.h                     definitions for MSC
+msdos/tcc.h                     definitions for TCC
+msdos/ztc.h                     definitions for ZTC
+rexp                            subdirectory
+rexp/Makefile                   mawk 1.3.3 (with Debian package)
+rexp/rexp.c                     mawk 1.3.3 (with Debian package)
+rexp/rexp.h                     mawk 1.3.3 (with Debian package)
+rexp/rexp0.c                    mawk 1.3.3 (with Debian package)
+rexp/rexp1.c                    mawk 1.3.3 (with Debian package)
+rexp/rexp2.c                    mawk 1.3.3 (with Debian package)
+rexp/rexp3.c                    mawk 1.3.3 (with Debian package)
+rexp/rexpdb.c                   mawk 1.3.3 (with Debian package)
+test                            subdirectory
+test/decl-awk.out               reference for test using decl.awk
+test/fpe_test                   scripts to test if fpe handling compiled OK
+test/fpe_test.bat               scripts to test if fpe handling compiled OK
+test/fpe_test.g                 mawk 1.3.3 (with Debian package)
+test/fpe_test.v7                mawk 1.3.3 (with Debian package)
+test/fpetest1.awk               test exception for divide-by-zero
+test/fpetest2.awk               test exception for floating point overflow
+test/fpetest3.awk               test exception for domain error
+test/mawktest                   scripts to test mawk compiled OK
+test/mawktest.bat               scripts to test mawk compiled OK
+test/mawktest.dat               input data for the test
+test/mawktest.g                 mawk 1.3.3 (with Debian package)
+test/mawktest.v7                mawk 1.3.3 (with Debian package)
+test/reg-awk.out                reference for testing regular expressions
+test/reg0.awk                   test simple pattern matching
+test/reg1.awk                   test pattern with "|" OR
+test/reg2.awk                   test pattern with ranges
+test/wc-awk.out                 reference for wc.awk
+test/wc.awk                     test-script which counts words
+test/wfrq-awk.out               reference for wfrq0.awk
+test/wfrq0.awk                  test-script which counts word-frequencies
+v7                              subdirectory
+v7/Makefile.v7                  mawk 1.3.3 (with Debian package)
+v7/README                       mawk 1.3.3 (with Debian package)
+v7/V7.h                         mawk 1.3.3 (with Debian package)
+v7/V7_notes                     mawk 1.3.3 (with Debian package)
+v7/config.h                     mawk 1.3.3 (with Debian package)
