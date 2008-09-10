@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20080909-base
+MANIFEST for mawk, version t20080909
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -7,6 +7,7 @@ COPYING                         GNU General Public License, version 2
 INSTALL                         installation instructions
 Makefile.in                     template for makefile
 README                          description of mawk
+aclocal.m4                      mawk-specific macros for autoconf
 array.c                         array functions (C source)
 array.h                         array functions (C header)
 array.w                         array functions (noweb)
@@ -40,7 +41,6 @@ kw.c                            keyword table and lookup functions
 main.c                          main program
 makescan.c                      utility which builds scancode.c
 matherr.c                       catch/report math-errors
-mawk.ac.m4                      mawk 1.3.3 (with Debian package)
 mawk.h                          main header file for mawk
 memory.c                        string-allocation functions
 memory.h                        string-allocation functions header
