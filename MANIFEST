@@ -1,4 +1,4 @@
-MANIFEST for mawk, version v1_3_3
+MANIFEST for mawk, version v1_3_3-01
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -157,6 +157,7 @@ test/fpe_test.v7                mawk 1.3.3 (with Debian package)
 test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
+test/full-awk.dat               test-data for /dev/full
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
