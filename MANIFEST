@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20090705
+MANIFEST for mawk, version t20090709
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -53,7 +53,9 @@ parse.y                         mawk grammar
 patchlev.h                      patch-level (see version.c)
 print.c                         printf- and sprintf-functions for interpreter
 re_cmpl.c                       compile regular expressions
+regexp.c                        regular expressions (main)
 regexp.h                        interface to main regular expressions
+regexp_system.c                 wrapper for system's regular expressions
 repl.h                          header for re_cmpl.c
 rexp.c                          regular expressions
 rexp.h                          regular expression details header
@@ -61,6 +63,7 @@ rexp0.c                         built-in regular expression parsing
 rexp1.c                         built-in regular expression operations
 rexp2.c                         built-in regular expressions matching functions
 rexp3.c                         built-in regular expressions matching - main
+rexp4.c                         regular expressions utility functions
 rexpdb.c                        debugging utilities for regular expressions
 scan.c                          program file-management
 scan.h                          program file-management header
@@ -141,12 +144,15 @@ msdos/tcc.h                     definitions for TCC
 msdos/ztc.h                     definitions for ZTC
 rexp                            subdirectory
 rexp/Makefile                   mawk 1.3.3 (with Debian package)
+rexp/regexp.c                   =============================================================================
+rexp/regexp_system.c            Newsgroups: comp.lang.awk
 rexp/rexp.c                     mawk 1.3.3 (with Debian package)
 rexp/rexp.h                     mawk 1.3.3 (with Debian package)
 rexp/rexp0.c                    mawk 1.3.3 (with Debian package)
 rexp/rexp1.c                    mawk 1.3.3 (with Debian package)
 rexp/rexp2.c                    mawk 1.3.3 (with Debian package)
 rexp/rexp3.c                    mawk 1.3.3 (with Debian package)
+rexp/rexp4.c                    Newsgroups: comp.lang.awk
 rexp/rexpdb.c                   mawk 1.3.3 (with Debian package)
 test                            subdirectory
 test/decl-awk.out               reference for test using decl.awk
