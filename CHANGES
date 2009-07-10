@@ -1,4 +1,14 @@
+-- $Id: CHANGES,v 1.13 2009/07/10 00:06:28 tom Exp $
+
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20090710
+	fix Debian #303825 (printf %x clamps numbers to signed range rather
+	than unsigned range).
+
+	apply fix from Debian #355966 (null-pointer check in is_string_split())
+
+	apply fix from Debian #391051 (limit-check in scan.c)
 
 20090709
 	add patch from Aleksey Cheusov for external regexp libraries
@@ -23,7 +33,8 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 	ifdef'd prototypes in nstd.h which belong to stdlib.h, string.h to
 	use standard C by default.
 
-	source-in Debian patches 01-08 (see below).
+	source-in Debian patches 01-08 (see below).  Changes for 20080909 fix
+	Debian #496980 as well.
 
 -------------------------------------------------------------------------------
 Debian patches:
