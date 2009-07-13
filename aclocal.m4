@@ -1,9 +1,111 @@
+dnl $MawkId: aclocal.m4,v 1.15 2009/07/12 14:26:06 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
 dnl renamed for consistency by Thomas E Dickey.
 dnl 
 dnl ---------------------------------------------------------------------------
+dnl ---------------------------------------------------------------------------
+dnl CF_ARG_DISABLE version: 3 updated: 1999/03/30 17:24:31
+dnl --------------
+dnl Allow user to disable a normally-on option.
+AC_DEFUN([CF_ARG_DISABLE],
+[CF_ARG_OPTION($1,[$2],[$3],[$4],yes)])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ARG_OPTION version: 3 updated: 1997/10/18 14:42:41
+dnl -------------
+dnl Restricted form of AC_ARG_ENABLE that ensures user doesn't give bogus
+dnl values.
+dnl
+dnl Parameters:
+dnl $1 = option name
+dnl $2 = help-string
+dnl $3 = action to perform if option is not default
+dnl $4 = action if perform if option is default
+dnl $5 = default option value (either 'yes' or 'no')
+AC_DEFUN([CF_ARG_OPTION],
+[AC_ARG_ENABLE($1,[$2],[test "$enableval" != ifelse($5,no,yes,no) && enableval=ifelse($5,no,no,yes)
+  if test "$enableval" != "$5" ; then
+ifelse($3,,[    :]dnl
+,[    $3]) ifelse($4,,,[
+  else
+    $4])
+  fi],[enableval=$5 ifelse($4,,,[
+  $4
+])dnl
+  ])])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_CACHE version: 11 updated: 2008/03/23 14:45:59
+dnl --------------
+dnl Check if we're accidentally using a cache from a different machine.
+dnl Derive the system name, as a check for reusing the autoconf cache.
+dnl
+dnl If we've packaged config.guess and config.sub, run that (since it does a
+dnl better job than uname).  Normally we'll use AC_CANONICAL_HOST, but allow
+dnl an extra parameter that we may override, e.g., for AC_CANONICAL_SYSTEM
+dnl which is useful in cross-compiles.
+dnl
+dnl Note: we would use $ac_config_sub, but that is one of the places where
+dnl autoconf 2.5x broke compatibility with autoconf 2.13
+AC_DEFUN([CF_CHECK_CACHE],
+[
+if test -f $srcdir/config.guess || test -f $ac_aux_dir/config.guess ; then
+	ifelse([$1],,[AC_CANONICAL_HOST],[$1])
+	system_name="$host_os"
+else
+	system_name="`(uname -s -r) 2>/dev/null`"
+	if test -z "$system_name" ; then
+		system_name="`(hostname) 2>/dev/null`"
+	fi
+fi
+test -n "$system_name" && AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
+AC_CACHE_VAL(cf_cv_system_name,[cf_cv_system_name="$system_name"])
+
+test -z "$system_name" && system_name="$cf_cv_system_name"
+test -n "$cf_cv_system_name" && AC_MSG_RESULT(Configuring for $cf_cv_system_name)
+
+if test ".$system_name" != ".$cf_cv_system_name" ; then
+	AC_MSG_RESULT(Cached system name ($system_name) does not agree with actual ($cf_cv_system_name))
+	AC_MSG_ERROR("Please remove config.cache and try again.")
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_DISABLE_ECHO version: 10 updated: 2003/04/17 22:27:11
+dnl ---------------
+dnl You can always use "make -n" to see the actual options, but it's hard to
+dnl pick out/analyze warning messages when the compile-line is long.
+dnl
+dnl Sets:
+dnl	ECHO_LT - symbol to control if libtool is verbose
+dnl	ECHO_LD - symbol to prefix "cc -o" lines
+dnl	RULE_CC - symbol to put before implicit "cc -c" lines (e.g., .c.o)
+dnl	SHOW_CC - symbol to put before explicit "cc -c" lines
+dnl	ECHO_CC - symbol to put before any "cc" line
+dnl
+AC_DEFUN([CF_DISABLE_ECHO],[
+AC_MSG_CHECKING(if you want to see long compiling messages)
+CF_ARG_DISABLE(echo,
+	[  --disable-echo          display "compiling" commands],
+	[
+    ECHO_LT='--silent'
+    ECHO_LD='@echo linking [$]@;'
+    RULE_CC='	@echo compiling [$]<'
+    SHOW_CC='	@echo compiling [$]@'
+    ECHO_CC='@'
+],[
+    ECHO_LT=''
+    ECHO_LD=''
+    RULE_CC='# compiling'
+    SHOW_CC='# compiling'
+    ECHO_CC=''
+])
+AC_MSG_RESULT($enableval)
+AC_SUBST(ECHO_LT)
+AC_SUBST(ECHO_LD)
+AC_SUBST(RULE_CC)
+AC_SUBST(SHOW_CC)
+AC_SUBST(ECHO_CC)
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_GCC_VERSION version: 4 updated: 2005/08/27 09:53:42
 dnl --------------
@@ -319,9 +421,9 @@ else
    fi
 fi])
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_MAINTAINER version: 1 updated: 2008/09/09 19:18:22
+dnl CF_MAWK_MAINTAINER version: 2 updated: 2009/07/12 09:10:33
 dnl ------------------
-AC_DEFUN([CF_MAWK_MAINTAINER], [brennan@whidbey.com])
+AC_DEFUN([CF_MAWK_MAINTAINER], [dickey@invisible-island.net])
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_MATHLIB version: 2 updated: 2009/07/05 13:56:25
 dnl ---------------
