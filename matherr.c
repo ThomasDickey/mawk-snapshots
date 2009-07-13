@@ -1,4 +1,3 @@
-
 /********************************************
 matherr.c
 copyright 1991, Michael D. Brennan
@@ -10,9 +9,11 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
 ********************************************/
 
-/*@Log: matherr.c,v @
- *Revision 1.9  1996/09/01 16:54:35  mike
- *Third try at bug fix for solaris strtod.
+/*
+ * $MawkId: matherr.c,v 1.7 2009/07/12 17:51:37 tom Exp $
+ * @Log: matherr.c,v @
+ * Revision 1.9  1996/09/01 16:54:35  mike
+ * Third try at bug fix for solaris strtod.
  *
  * Revision 1.6  1994/12/18  20:53:43  mike
  * check NetBSD mathlib defines
@@ -41,6 +42,8 @@ the GNU General Public License, version 2, 1991.
 */
 
 #include  "mawk.h"
+#include  "init.h"
+
 #include  <math.h>
 
 /* Sets up NetBSD 1.0A for ieee floating point */
@@ -51,8 +54,8 @@ _LIB_VERSION_TYPE _LIB_VERSION = _IEEE_;
 #ifdef	USE_IEEEFP_H
 #include <ieeefp.h>
 #ifdef   HAVE_STRTOD_OVF_BUG
-static fp_except entry_mask ;
-static fp_except working_mask ;
+static fp_except entry_mask;
+static fp_except working_mask;
 #endif
 #endif
 
@@ -77,71 +80,68 @@ static fp_except working_mask ;
 
 #ifdef   SV_SIGINFO
 static void
-fpe_catch(signal, sip)
-   int signal; 
-   siginfo_t *sip ;
+fpe_catch(int signal, siginfo_t * sip)
 {
-   int why = sip->si_code ;
+    int why = sip->si_code;
 
 #else
 
 static void
-fpe_catch(signal, why)
-   int signal, why ;
+fpe_catch(int signal, int why)
 {
 #endif /* SV_SIGINFO  */
 
-#if   NOINFO_SIGFPE
-   rt_error("floating point exception, probably overflow") ;
-   /* does not return */
+#ifdef NOINFO_SIGFPE
+    rt_error("floating point exception, probably overflow");
+    /* does not return */
 #else
 
-   switch (why)
-   {
-      case FPE_ZERODIVIDE:
-	 rt_error("division by zero") ;
+    switch (why) {
+    case FPE_ZERODIVIDE:
+	rt_error("division by zero");
 
-      case FPE_OVERFLOW:
-	 rt_error("floating point overflow") ;
+    case FPE_OVERFLOW:
+	rt_error("floating point overflow");
 
-      default:
-	 rt_error("floating point exception") ;
-   }
+    default:
+	rt_error("floating point exception");
+    }
 #endif /* noinfo_sigfpe */
 }
 
 void
-fpe_init()
+fpe_init(void)
 {
-   TURN_ON_FPE_TRAPS() ;
+    TURN_ON_FPE_TRAPS();
 
 #ifndef  SV_SIGINFO
-   signal(SIGFPE, fpe_catch) ;
+    signal(SIGFPE, fpe_catch);
 
 #else
-   { struct sigaction x ;
+    {
+	struct sigaction x;
 
-     memset(&x, 0, sizeof(x)) ;
-     x.sa_handler = fpe_catch ;
-     x.sa_flags = SA_SIGINFO ;
+	memset(&x, 0, sizeof(x));
+	x.sa_handler = fpe_catch;
+	x.sa_flags = SA_SIGINFO;
 
-     sigaction(SIGFPE, &x, (struct sigaction*)0) ;
-   }
+	sigaction(SIGFPE, &x, (struct sigaction *) 0);
+    }
 #endif
 
 #ifdef  HAVE_STRTOD_OVF_BUG
-   /* we've already turned the traps on */
-   working_mask = fpgetmask() ;
-   entry_mask = working_mask & ~FP_X_DZ & ~FP_X_OFL ;
+    /* we've already turned the traps on */
+    working_mask = fpgetmask();
+    entry_mask = working_mask & ~FP_X_DZ & ~FP_X_OFL;
 #endif
 }
 
 #else /* FPE_TRAPS not defined */
 
 void
-fpe_init()
+fpe_init(void)
 {
-   TURN_OFF_FPE_TRAPS() ;
+    TURN_OFF_FPE_TRAPS();
 }
 #endif
 
@@ -153,72 +153,73 @@ fpe_init()
 */
 
 int
-matherr(e)
-   struct exception *e ;
+matherr(struct exception *e)
 {
-   return 1 ;
+    return 1;
 }
 
 #else /* print error message and exit */
 
 int
-matherr(e)
-   struct exception *e ;
+matherr(struct exception *e)
 {
-   char *error ;
+    char *error;
 
-   switch (e->type)
-   {
-      case DOMAIN:
-      case SING:
-	 error = "domain error" ;
-	 break ;
+    switch (e->type) {
+    case DOMAIN:
+    case SING:
+	error = "domain error";
+	break;
 
-      case OVERFLOW:
-	 error = "overflow" ;
-	 break ;
+    case OVERFLOW:
+	error = "overflow";
+	break;
 
-      case TLOSS:
-      case PLOSS:
-	 error = "loss of significance" ;
-	 break ;
+    case TLOSS:
+    case PLOSS:
+	error = "loss of significance";
+	break;
 
-      case UNDERFLOW:
-	 e->retval = 0.0 ;
-	 return 1 ;		 /* ignore it */
-   }
+    case UNDERFLOW:
+	e->retval = 0.0;
+	return 1;		/* ignore it */
+    }
 
-   if (strcmp(e->name, "atan2") == 0)  rt_error("atan2(%g,%g) : %s",
-	       e->arg1, e->arg2, error) ;
-   else	 rt_error("%s(%g) : %s", e->name, e->arg1, error) ;
+    if (strcmp(e->name, "atan2") == 0)
+	rt_error("atan2(%g,%g) : %s",
+		 e->arg1, e->arg2, error);
+    else
+	rt_error("%s(%g) : %s", e->name, e->arg1, error);
 
-   /* won't get here */
-   return 0 ;
+    /* won't get here */
+    return 0;
 }
 #endif /* FPE_TRAPS_ON */
 
 #endif /*  ! no matherr */
 
-
 /* this is how one gets the libm calls to do the right
 thing on bsd43_vax
 */
 
-#ifdef	 BSD43_VAX
+#if defined(BSD43_VAX) || defined(__vax__)
 
 #include <errno.h>
 
-double	infnan(arg)
-   int arg ;
+double
+infnan(int arg)
 {
-   switch (arg)
-   {
-	 case  ERANGE : errno = ERANGE ; return HUGE ;
-	 case -ERANGE : errno = EDOM ; return -HUGE ;
-      default:
-	 errno = EDOM ;
-   }
-   return 0.0 ;
+    switch (arg) {
+    case ERANGE:
+	errno = ERANGE;
+	return HUGE;
+    case -ERANGE:
+	errno = EDOM;
+	return -HUGE;
+    default:
+	errno = EDOM;
+    }
+    return 0.0;
 }
 
 #endif /* BSD43_VAX */
@@ -227,7 +228,7 @@ double	infnan(arg)
     Error check routine to be called after fp arithmetic.
 */
 
-#if SW_FP_CHECK
+#ifdef SW_FP_CHECK
 /* Definitions of bit values in iserr() return value */
 
 #define OVFLOW		2
@@ -237,22 +238,28 @@ double	infnan(arg)
 #define INFNAN		64
 
 void
-fpcheck()
+fpcheck(void)
 {
-   register int fperrval ;
-   char *errdesc ;
+    register int fperrval;
+    char *errdesc;
 
-   if ((fperrval = iserr()) == 0)
-      return ;			 /* no error */
+    if ((fperrval = iserr()) == 0)
+	return;			/* no error */
 
-   errdesc = (char *) 0 ;
+    errdesc = (char *) 0;
 
-   if (fperrval & INFNAN)  errdesc = "arg is infinity or NAN" ;
-   else if (fperrval & ZERODIV)	 errdesc = "division by zero" ;
-   else if (fperrval & OVFLOW)	errdesc = "overflow" ;
-   else if (fperrval & UFLOW) ; /* ignored */
+    if (fperrval & INFNAN)
+	errdesc = "arg is infinity or NAN";
+    else if (fperrval & ZERODIV)
+	errdesc = "division by zero";
+    else if (fperrval & OVFLOW)
+	errdesc = "overflow";
+    else if (fperrval & UFLOW) {
+	;			/* ignored */
+    }
 
-   if (errdesc)	 rt_error("%s", errdesc) ;
+    if (errdesc)
+	rt_error("%s", errdesc);
 }
 
 #endif
@@ -262,16 +269,14 @@ fpcheck()
    strtod can generate an fpe  */
 
 double
-strtod_with_ovf_bug(s, ep)
-   const char *s ;
-   char **ep ;
+strtod_with_ovf_bug(const char *s, char **ep)
 {
-   double ret ;
+    double ret;
 
-   fpsetmask(entry_mask) ;  /* traps off */
-#undef strtod               /* make real strtod visible */
-   ret = strtod(s, ep) ;
-   fpsetmask(working_mask) ; /* traps on */
-   return ret ;
+    fpsetmask(entry_mask);	/* traps off */
+#undef strtod			/* make real strtod visible */
+    ret = strtod(s, ep);
+    fpsetmask(working_mask);	/* traps on */
+    return ret;
 }
 #endif

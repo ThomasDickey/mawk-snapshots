@@ -1,4 +1,3 @@
-
 /********************************************
 version.c
 copyright 1991-95.  Michael D. Brennan
@@ -10,9 +9,11 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
 ********************************************/
 
-/*@Log: version.c,v @
- *Revision 1.10  1996/07/28 21:47:07  mike
- *gnuish patch
+/*
+ * $MawkId: version.c,v 1.5 2009/07/12 13:08:03 tom Exp $
+ * @Log: version.c,v @
+ * Revision 1.10  1996/07/28 21:47:07  mike
+ * gnuish patch
  *
  * Revision 1.9  1996/02/01  04:44:15  mike
  * roll a beta version
@@ -23,12 +24,11 @@ the GNU General Public License, version 2, 1991.
  * Revision 1.7  1995/06/10  17:04:10  mike
  * "largest field" replaced by "max NF"
  *
-*/
+ */
 
 #include "mawk.h"
+#include "init.h"
 #include "patchlev.h"
-
-static char mawkid[] = MAWK_ID ;
 
 #define	 VERSION_STRING	 \
   "mawk 1.3%s%s %s, Copyright (C) Michael D. Brennan\n\n"
@@ -46,14 +46,14 @@ static char mawkid[] = MAWK_ID ;
 #define DOS_STRING	""
 #endif
 
-int print_compiler_id();
-int print_aux_limits();
+int print_compiler_id(void);
+int print_aux_limits(void);
 
 static char fmt[] = "%-14s%10lu\n" ;
 
 /* print VERSION and exit */
 void
-print_version()
+print_version(void)
 {
 
    printf(VERSION_STRING, PATCH_STRING, DOS_STRING, DATE_STRING) ;
@@ -99,7 +99,7 @@ extern unsigned _stklen = 16 * 1024U ;
 
 
 int
-print_compiler_id()
+print_compiler_id(void)
 {
 
 #ifdef	__TURBOC__
@@ -125,7 +125,7 @@ print_compiler_id()
 
 
 int
-print_aux_limits()
+print_aux_limits(void)
 {
 #ifdef BORL
    extern unsigned _stklen ;

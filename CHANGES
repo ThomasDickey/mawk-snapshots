@@ -1,8 +1,38 @@
--- $Id: CHANGES,v 1.20 2009/07/12 00:59:42 tom Exp $
+-- $MawkId: CHANGES,v 1.29 2009/07/12 21:39:52 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
+20090712
+	update patch-date.
+
+	fix Debian #127293 "mawk does not understand unescaped '/' in character
+	classes", noting that gawk 3.1.6 also has problems with this area.
+
+	drop support for varargs; use stdarg only.
+
+	add tags rule to makefile.
+
+	rename configure option "--with-local-regexp" to "--with-builtin-regex"
+
+	add build-fix from NetBSD port:  enable vax FP support when
+	defined(__vax__) as well as BSD43_VAX.  from ragge.
+
+	add configure --disable-echo option
+
+	identify updated files with "MawkId" keywords, retaining old log
+	comments for reference.  Ongoing changes are recorded here.
+
+	update maintainer email address.
+
 20090711
+	use conventional install/uninstall rules in makefile.
+
+	add install-sh script, mkdirs.sh, config.guess and config.sub
+
+	add $DESTDIR support to makefile
+
+	add uninstall make-target
+
 	add configure --enable-warnings option (fixed some warnings...)
 
 	update configure script to autoconf 2.52 to permit cross-compiles.
