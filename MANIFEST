@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20090721
+MANIFEST for mawk, version t20090723
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -20,6 +20,7 @@ code.c                          machine opcode functions
 code.h                          machine opcodes header
 config.guess                    configure-script
 config.sub                      configure-script
+config_h.in                     template for config.h
 configure                       Configuration script for UNIX
 configure.in                    template for autoconf script
 da.c                            disassemble mawk-code
@@ -87,24 +88,6 @@ config-user/cray                mawk 1.3.3 (with Debian package)
 config-user/mips                mawk 1.3.3 (with Debian package)
 config-user/sgi                 mawk 1.3.3 (with Debian package)
 config-user/ultrix-mips         mawk 1.3.3 (with Debian package)
-debian                          subdirectory
-debian/changelog                mawk 1.3.3 (with Debian package)
-debian/control                  mawk 1.3.3 (with Debian package)
-debian/copyright                mawk 1.3.3 (with Debian package)
-debian/patches                  subdirectory
-debian/patches/00list           mawk 1.3.3 (with Debian package)
-debian/patches/01_error-on-full-fs.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/02_fix-examples.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/03_read-and-close-redefinition.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/04_mawk.1-fix-pi.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/05_-Wall-fixes.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/06_parse.y-semicolons.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/07_mawktest-check-devfull.dpatch  mawk 1.3.3 (with Debian package)
-debian/patches/08_fix-for-gcc3.3.dpatch  mawk 1.3.3 (with Debian package)
-debian                          subdirectory
-debian/postinst                 mawk 1.3.3 (with Debian package)
-debian/prerm                    mawk 1.3.3 (with Debian package)
-debian/rules                    mawk 1.3.3 (with Debian package)
 examples                        subdirectory
 examples/ct_length.awk          change length to length()
 examples/decl.awk               parse a C declaration by recursive descent

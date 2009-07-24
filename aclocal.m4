@@ -1,10 +1,162 @@
-dnl $MawkId: aclocal.m4,v 1.16 2009/07/14 22:24:42 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.24 2009/07/24 01:05:00 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
 dnl renamed for consistency by Thomas E Dickey.
 dnl 
 dnl ---------------------------------------------------------------------------
+dnl ---------------------------------------------------------------------------
+dnl CF_ADD_CFLAGS version: 8 updated: 2009/01/06 19:33:30
+dnl -------------
+dnl Copy non-preprocessor flags to $CFLAGS, preprocessor flags to $CPPFLAGS
+dnl The second parameter if given makes this macro verbose.
+dnl
+dnl Put any preprocessor definitions that use quoted strings in $EXTRA_CPPFLAGS,
+dnl to simplify use of $CPPFLAGS in compiler checks, etc., that are easily
+dnl confused by the quotes (which require backslashes to keep them usable).
+AC_DEFUN([CF_ADD_CFLAGS],
+[
+cf_fix_cppflags=no
+cf_new_cflags=
+cf_new_cppflags=
+cf_new_extra_cppflags=
+
+for cf_add_cflags in $1
+do
+case $cf_fix_cppflags in
+no)
+	case $cf_add_cflags in #(vi
+	-undef|-nostdinc*|-I*|-D*|-U*|-E|-P|-C) #(vi
+		case $cf_add_cflags in
+		-D*)
+			cf_tst_cflags=`echo ${cf_add_cflags} |sed -e 's/^-D[[^=]]*='\''\"[[^"]]*//'`
+
+			test "${cf_add_cflags}" != "${cf_tst_cflags}" \
+			&& test -z "${cf_tst_cflags}" \
+			&& cf_fix_cppflags=yes
+
+			if test $cf_fix_cppflags = yes ; then
+				cf_new_extra_cppflags="$cf_new_extra_cppflags $cf_add_cflags"
+				continue
+			elif test "${cf_tst_cflags}" = "\"'" ; then
+				cf_new_extra_cppflags="$cf_new_extra_cppflags $cf_add_cflags"
+				continue
+			fi
+			;;
+		esac
+		case "$CPPFLAGS" in
+		*$cf_add_cflags) #(vi
+			;;
+		*) #(vi
+			cf_new_cppflags="$cf_new_cppflags $cf_add_cflags"
+			;;
+		esac
+		;;
+	*)
+		cf_new_cflags="$cf_new_cflags $cf_add_cflags"
+		;;
+	esac
+	;;
+yes)
+	cf_new_extra_cppflags="$cf_new_extra_cppflags $cf_add_cflags"
+
+	cf_tst_cflags=`echo ${cf_add_cflags} |sed -e 's/^[[^"]]*"'\''//'`
+
+	test "${cf_add_cflags}" != "${cf_tst_cflags}" \
+	&& test -z "${cf_tst_cflags}" \
+	&& cf_fix_cppflags=no
+	;;
+esac
+done
+
+if test -n "$cf_new_cflags" ; then
+	ifelse($2,,,[CF_VERBOSE(add to \$CFLAGS $cf_new_cflags)])
+	CFLAGS="$CFLAGS $cf_new_cflags"
+fi
+
+if test -n "$cf_new_cppflags" ; then
+	ifelse($2,,,[CF_VERBOSE(add to \$CPPFLAGS $cf_new_cppflags)])
+	CPPFLAGS="$CPPFLAGS $cf_new_cppflags"
+fi
+
+if test -n "$cf_new_extra_cppflags" ; then
+	ifelse($2,,,[CF_VERBOSE(add to \$EXTRA_CPPFLAGS $cf_new_extra_cppflags)])
+	EXTRA_CPPFLAGS="$cf_new_extra_cppflags $EXTRA_CPPFLAGS"
+fi
+
+AC_SUBST(EXTRA_CPPFLAGS)
+
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ANSI_CC_CHECK version: 9 updated: 2001/12/30 17:53:34
+dnl ----------------
+dnl This is adapted from the macros 'fp_PROG_CC_STDC' and 'fp_C_PROTOTYPES'
+dnl in the sharutils 4.2 distribution.
+AC_DEFUN([CF_ANSI_CC_CHECK],
+[
+AC_CACHE_CHECK(for ${CC-cc} option to accept ANSI C, cf_cv_ansi_cc,[
+cf_cv_ansi_cc=no
+cf_save_CFLAGS="$CFLAGS"
+cf_save_CPPFLAGS="$CPPFLAGS"
+# Don't try gcc -ansi; that turns off useful extensions and
+# breaks some systems' header files.
+# AIX			-qlanglvl=ansi
+# Ultrix and OSF/1	-std1
+# HP-UX			-Aa -D_HPUX_SOURCE
+# SVR4			-Xc
+# UnixWare 1.2		(cannot use -Xc, since ANSI/POSIX clashes)
+for cf_arg in "-DCC_HAS_PROTOS" \
+	"" \
+	-qlanglvl=ansi \
+	-std1 \
+	-Ae \
+	"-Aa -D_HPUX_SOURCE" \
+	-Xc
+do
+	CF_ADD_CFLAGS($cf_arg)
+	AC_TRY_COMPILE(
+[
+#ifndef CC_HAS_PROTOS
+#if !defined(__STDC__) || (__STDC__ != 1)
+choke me
+#endif
+#endif
+],[
+	int test (int i, double x);
+	struct s1 {int (*f) (int a);};
+	struct s2 {int (*f) (double a);};],
+	[cf_cv_ansi_cc="$cf_arg"; break])
+done
+CFLAGS="$cf_save_CFLAGS"
+CPPFLAGS="$cf_save_CPPFLAGS"
+])
+
+if test "$cf_cv_ansi_cc" != "no"; then
+if test ".$cf_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
+	CF_ADD_CFLAGS($cf_cv_ansi_cc)
+else
+	AC_DEFINE(CC_HAS_PROTOS)
+fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ANSI_CC_REQD version: 4 updated: 2008/03/23 14:48:54
+dnl ---------------
+dnl For programs that must use an ANSI compiler, obtain compiler options that
+dnl will make it recognize prototypes.  We'll do preprocessor checks in other
+dnl macros, since tools such as unproto can fake prototypes, but only part of
+dnl the preprocessor.
+AC_DEFUN([CF_ANSI_CC_REQD],
+[AC_REQUIRE([CF_ANSI_CC_CHECK])
+if test "$cf_cv_ansi_cc" = "no"; then
+	AC_MSG_ERROR(
+[Your compiler does not appear to recognize prototypes.
+You have the following choices:
+	a. adjust your compiler options
+	b. get an up-to-date compiler
+	c. use a wrapper such as unproto])
+fi
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_ARG_DISABLE version: 3 updated: 1999/03/30 17:24:31
 dnl --------------
@@ -105,6 +257,110 @@ AC_SUBST(ECHO_LD)
 AC_SUBST(RULE_CC)
 AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_GCC_ATTRIBUTES version: 12 updated: 2009/07/23 17:08:33
+dnl -----------------
+dnl Test for availability of useful gcc __attribute__ directives to quiet
+dnl compiler warnings.  Though useful, not all are supported -- and contrary
+dnl to documentation, unrecognized directives cause older compilers to barf.
+AC_DEFUN([CF_GCC_ATTRIBUTES],
+[
+if test "$GCC" = yes
+then
+cat > conftest.i <<EOF
+#ifndef GCC_PRINTF
+#define GCC_PRINTF 0
+#endif
+#ifndef GCC_SCANF
+#define GCC_SCANF 0
+#endif
+#ifndef GCC_NORETURN
+#define GCC_NORETURN /* nothing */
+#endif
+#ifndef GCC_UNUSED
+#define GCC_UNUSED /* nothing */
+#endif
+EOF
+if test "$GCC" = yes
+then
+	AC_CHECKING([for $CC __attribute__ directives])
+cat > conftest.$ac_ext <<EOF
+#line __oline__ "${as_me-configure}"
+#include "confdefs.h"
+#include "conftest.h"
+#include "conftest.i"
+#if	GCC_PRINTF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+#else
+#define GCC_PRINTFLIKE(fmt,var) /*nothing*/
+#endif
+#if	GCC_SCANF
+#define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
+#else
+#define GCC_SCANFLIKE(fmt,var)  /*nothing*/
+#endif
+extern void wow(char *,...) GCC_SCANFLIKE(1,2);
+extern void oops(char *,...) GCC_PRINTFLIKE(1,2) GCC_NORETURN;
+extern void foo(void) GCC_NORETURN;
+int main(int argc GCC_UNUSED, char *argv[[]] GCC_UNUSED) { return 0; }
+EOF
+	cf_printf_attribute=no
+	cf_scanf_attribute=no
+	for cf_attribute in scanf printf unused noreturn
+	do
+		CF_UPPER(cf_ATTRIBUTE,$cf_attribute)
+		cf_directive="__attribute__(($cf_attribute))"
+		echo "checking for $CC $cf_directive" 1>&AC_FD_CC
+
+		case $cf_attribute in #(vi
+		printf) #(vi
+			cf_printf_attribute=yes
+			cat >conftest.h <<EOF
+#define GCC_$cf_ATTRIBUTE 1
+EOF
+			;;
+		scanf) #(vi
+			cf_scanf_attribute=yes
+			cat >conftest.h <<EOF
+#define GCC_$cf_ATTRIBUTE 1
+EOF
+			;;
+		*) #(vi
+			cat >conftest.h <<EOF
+#define GCC_$cf_ATTRIBUTE $cf_directive
+EOF
+			;;
+		esac
+
+		if AC_TRY_EVAL(ac_compile); then
+			test -n "$verbose" && AC_MSG_RESULT(... $cf_attribute)
+			cat conftest.h >>confdefs.h
+			if test "$cf_printf_attribute" = no ; then
+				cat >>confdefs.h <<EOF
+#define GCC_PRINTFLIKE(fmt,var) /* nothing */
+EOF
+			else
+				cat >>confdefs.h <<EOF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+EOF
+			fi
+			if test "$cf_scanf_attribute" = no ; then
+				cat >>confdefs.h <<EOF
+#define GCC_SCANFLIKE(fmt,var) /* nothing */
+EOF
+			else
+				cat >>confdefs.h <<EOF
+#define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
+EOF
+			fi
+		fi
+	done
+else
+	fgrep define conftest.i >>confdefs.h
+fi
+rm -rf conftest*
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_GCC_VERSION version: 4 updated: 2005/08/27 09:53:42
@@ -267,30 +523,12 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147 -no-gcc"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CC_FEATURES version: 1 updated: 2008/09/09 19:18:22
-dnl -------------------
-dnl Check compiler.
-AC_DEFUN([CF_MAWK_CC_FEATURES],
-[AC_MSG_CHECKING(compiler supports void*)
-AC_TRY_COMPILE(
-[char *cp ;
-void *foo() ;] ,
-[cp = (char*)(void*)(int*)foo() ;],void_star=yes,void_star=no)
-AC_MSG_RESULT($void_star)
-test "$void_star" = no && CF_MAWK_DEFINE2(NO_VOID_STAR,1)
-AC_MSG_CHECKING(compiler groks prototypes)
-AC_TRY_COMPILE(,[int x(char*);],protos=yes,protos=no)
-AC_MSG_RESULT([$protos])
-test "$protos" = no && CF_MAWK_DEFINE2(NO_PROTOS,1)
-AC_C_CONST
-test "$ac_cv_c_const" = no && CF_MAWK_DEFINE2(const)])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_FUNC version: 3 updated: 2008/09/09 20:32:43
+dnl CF_MAWK_CHECK_FUNC version: 4 updated: 2009/07/23 05:15:39
 dnl ------------------
 AC_DEFUN([CF_MAWK_CHECK_FUNC],[
     AC_CHECK_FUNC($1,,[
         CF_UPPER(cf_check_func,NO_$1)
-        CF_MAWK_DEFINE($cf_check_func)])
+        AC_DEFINE($cf_check_func)])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_CHECK_FUNCS version: 3 updated: 2008/09/09 20:32:43
@@ -302,12 +540,12 @@ do
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_HEADER version: 3 updated: 2008/09/09 20:38:19
+dnl CF_MAWK_CHECK_HEADER version: 4 updated: 2009/07/23 05:15:39
 dnl --------------------
 AC_DEFUN([CF_MAWK_CHECK_HEADER],[
     AC_CHECK_HEADER($1,,[
         CF_UPPER(cf_check_header,NO_$1)
-        CF_MAWK_DEFINE($cf_check_header)])
+        AC_DEFINE($cf_check_header)])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_CHECK_HEADERS version: 3 updated: 2008/09/09 20:32:43
@@ -325,80 +563,66 @@ AC_DEFUN([CF_MAWK_CHECK_LIMITS_MSG],
 [AC_MSG_ERROR(C program to compute maxint and maxlong failed.
 Please send bug report to CF_MAWK_MAINTAINER.)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_SIZE_T version: 1 updated: 2008/09/09 19:18:22
+dnl CF_MAWK_CHECK_SIZE_T version: 2 updated: 2009/07/23 05:15:39
 dnl --------------------
+dnl Check if size_t is found in the given header file, unless we have already
+dnl found it.
+dnl $1 = header to check
+dnl $2 = symbol to define if size_t is found there.
 dnl Find size_t.
 AC_DEFUN([CF_MAWK_CHECK_SIZE_T],[
-  [if test "$size_t_defed" != 1 ; then]
-   AC_CHECK_HEADER($1,size_t_header=ok)
-   [if test "$size_t_header" = ok ; then]
-   AC_TRY_COMPILE([
-#include <$1>],
-[size_t *n ;
-], [size_t_defed=1;
-CF_MAWK_DEFINE2($2,1)
-echo getting size_t from '<$1>'])
-[fi;fi]])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CONFIG_H_HEADER version: 1 updated: 2008/09/09 19:18:22
-dnl -----------------------
-dnl Header for config.h
-AC_DEFUN([CF_MAWK_CONFIG_H_HEADER],
-[cat<<'EOF'
-/* config.h -- generated by configure */
-#ifndef CONFIG_H
-#define CONFIG_H
+if test "x$cf_mawk_check_size_t" != xyes ; then
 
-EOF])dnl
+AC_CACHE_VAL(cf_cv_size_t_$2,[
+	AC_CHECK_HEADER($1,cf_mawk_check_size=ok)
+	if test "x$cf_mawk_check_size" = xok ; then
+		AC_CACHE_CHECK(if size_t is declared in $1,cf_cv_size_t_$2,[
+			AC_TRY_COMPILE([#include <$1>],[size_t *n],
+				[cf_cv_size_t_$2=yes],
+				[cf_cv_size_t_$2=no])])
+	fi
+])
+	if test "x$cf_cv_size_t_$2" = xyes ; then
+		AC_DEFINE_UNQUOTED($2,1)
+		cf_mawk_check_size_t=yes
+	fi
+fi
+])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CONFIG_H_TRAILER version: 1 updated: 2008/09/09 19:18:22
-dnl ------------------------
-dnl Footer for config.h
-AC_DEFUN([CF_MAWK_CONFIG_H_TRAILER],
-[cat<<'EOF'
-
-#define HAVE_REAL_PIPES 1
-#endif /* CONFIG_H */
-EOF])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_DEFINE version: 2 updated: 2008/09/09 20:32:43
-dnl --------------
-dnl  I can't get AC_DEFINE_NOQUOTE to work so give up
-AC_DEFUN([CF_MAWK_DEFINE],[AC_DEFINE($1)
-echo  X $1 'ifelse($2,,1,$2)' >> defines.out])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_DEFINE2 version: 1 updated: 2008/09/09 19:18:22
-dnl ---------------
-AC_DEFUN([CF_MAWK_DEFINE2],
-[echo  X '$1' '$2' >> defines.out])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FIND_MAX_INT version: 1 updated: 2008/09/09 19:18:22
+dnl CF_MAWK_FIND_MAX_INT version: 2 updated: 2009/07/23 05:15:39
 dnl --------------------
 dnl Try to find a definition of MAX__INT from limits.h else compute.
 AC_DEFUN([CF_MAWK_FIND_MAX_INT],
-[AC_CHECK_HEADER(limits.h,limits_h=yes)
-if test "$limits_h" = yes ; then :
+[AC_CHECK_HEADER(limits.h,cf_limits_h=yes)
+if test "$cf_limits_h" = yes ; then :
 else
-AC_CHECK_HEADER(values.h,values_h=yes)
-   if test "$values_h" = yes ; then
+AC_CHECK_HEADER(values.h,cf_values_h=yes)
+   if test "$cf_values_h" = yes ; then
    AC_TRY_RUN(
 [#include <values.h>
 #include <stdio.h>
 int main()
-{   FILE *out = fopen("maxint.out", "w") ;
+{   FILE *out = fopen("conftest.out", "w") ;
     if ( ! out ) exit(1) ;
-    fprintf(out, "X MAX__INT 0x%x\n", MAXINT) ;
-    fprintf(out, "X MAX__LONG 0x%lx\n", MAXLONG) ;
+    fprintf(out, "MAX__INT 0x%x\n", MAXINT) ;
+    fprintf(out, "MAX__LONG 0x%lx\n", MAXLONG) ;
     exit(0) ; return(0) ;
 }
-], maxint_set=1,[CF_MAWK_CHECK_LIMITS_MSG])
+], cf_maxint_set=yes,[CF_MAWK_CHECK_LIMITS_MSG])
    fi
-if test "$maxint_set" != 1 ; then 
+if test "x$cf_maxint_set" != xyes ; then 
 # compute it  --  assumes two's complement
 AC_TRY_RUN(CF_MAWK_MAX__INT_PROGRAM,:,[CF_MAWK_CHECK_LIMITS_MSG])
 fi
-cat maxint.out >> defines.out ; rm -f maxint.out
-fi ;])dnl
+cat conftest.out | while true
+do
+	read name value
+	test -z "$name" && break
+	AC_DEFINE_UNQUOTED($name,$value)
+done
+rm -f conftest.out
+fi
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_FIND_SIZE_T version: 1 updated: 2008/09/09 19:18:22
 dnl -------------------
@@ -406,18 +630,18 @@ AC_DEFUN([CF_MAWK_FIND_SIZE_T],
 [CF_MAWK_CHECK_SIZE_T(stddef.h,SIZE_T_STDDEF_H)
 CF_MAWK_CHECK_SIZE_T(sys/types.h,SIZE_T_TYPES_H)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FPE_SIGINFO version: 2 updated: 2009/07/14 18:24:42
+dnl CF_MAWK_FPE_SIGINFO version: 3 updated: 2009/07/23 05:15:39
 dnl -------------------
 dnl SYSv and Solaris FPE checks
 AC_DEFUN([CF_MAWK_FPE_SIGINFO],
 [AC_CHECK_FUNC(sigaction, sigaction=1)
 AC_CHECK_HEADER(siginfo.h,siginfo_h=1)
 if test "$sigaction" = 1 && test "$siginfo_h" = 1 ; then
-   CF_MAWK_DEFINE(SV_SIGINFO)
+   AC_DEFINE(MAWK_SV_SIGINFO)
 else
    AC_CHECK_FUNC(sigvec,sigvec=1)
    if test "$sigvec" = 1 && ./fpe_check$ac_exeext  phoney_arg >> defines.out ; then :
-   else CF_MAWK_DEFINE(NOINFO_SIGFPE)
+   else AC_DEFINE(NOINFO_SIGFPE)
    fi
 fi])
 dnl ---------------------------------------------------------------------------
@@ -443,7 +667,7 @@ fi])dnl
 fi
 AC_SUBST(MATHLIB)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_MAX__INT_PROGRAM version: 1 updated: 2008/09/09 19:18:22
+dnl CF_MAWK_MAX__INT_PROGRAM version: 2 updated: 2009/07/23 05:15:39
 dnl ------------------------
 dnl C program to compute MAX__INT and MAX__LONG if looking at headers fails
 AC_DEFUN([CF_MAWK_MAX__INT_PROGRAM],
@@ -452,30 +676,17 @@ int main()
 { int y ; long yy ;
   FILE *out ;
 
-    if ( !(out = fopen("maxint.out","w")) ) exit(1) ;
+    if ( !(out = fopen("conftest.out","w")) ) exit(1) ;
     /* find max int and max long */
     y = 0x1000 ;
     while ( y > 0 ) y *= 2 ;
-    fprintf(out,"X MAX__INT 0x%x\n", y-1) ;
+    fprintf(out,"MAX__INT 0x%x\n", y-1) ;
     yy = 0x1000 ;
     while ( yy > 0 ) yy *= 2 ;
-    fprintf(out,"X MAX__LONG 0x%lx\n", yy-1) ;
+    fprintf(out,"MAX__LONG 0x%lx\n", yy-1) ;
     exit(0) ;
     return 0 ;
  }]])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_OUTPUT_CONFIG_H version: 1 updated: 2008/09/09 19:18:22
-dnl -----------------------
-dnl Build config.h
-AC_DEFUN([CF_MAWK_OUTPUT_CONFIG_H],
-[# output config.h
-rm -f config.h
-(
-CF_MAWK_CONFIG_H_HEADER
-[sed 's/^X/#define/' defines.out]
-CF_MAWK_CONFIG_H_TRAILER
-) | tee config.h
-rm defines.out])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_PROG_GCC version: 1 updated: 2008/09/09 19:18:22
 dnl ----------------
@@ -508,7 +719,7 @@ AC_DEFUN([CF_MAWK_PROG_YACC],
 [AC_CHECK_PROGS(YACC, byacc bison yacc)
 test "$YACC" = bison && YACC='bison -y'])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 2 updated: 2009/07/14 18:24:42
+dnl CF_MAWK_RUN_FPE_TESTS version: 4 updated: 2009/07/23 06:15:09
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -531,7 +742,7 @@ fi
 case $status in
    0)  ;;  # good news do nothing
    3)      # reasonably good news]
-CF_MAWK_DEFINE(FPE_TRAPS_ON)
+AC_DEFINE(FPE_TRAPS_ON)
 CF_MAWK_FPE_SIGINFO ;;
 
    1|2|4)   # bad news have to turn off traps
@@ -539,9 +750,9 @@ CF_MAWK_FPE_SIGINFO ;;
 AC_CHECK_HEADER(ieeefp.h, ieeefp_h=1)
 AC_CHECK_FUNC(fpsetmask, fpsetmask=1)
 [if test "$ieeefp_h" = 1 && test "$fpsetmask" = 1 ; then]
-CF_MAWK_DEFINE(FPE_TRAPS_ON)
-CF_MAWK_DEFINE(USE_IEEEFP_H)
-CF_MAWK_DEFINE2([TURN_ON_FPE_TRAPS()],
+AC_DEFINE(FPE_TRAPS_ON)
+AC_DEFINE(USE_IEEEFP_H)
+AC_DEFINE_UNQUOTED([TURN_ON_FPE_TRAPS],
 [fpsetmask(fpgetmask()|FP_X_DZ|FP_X_OFL)])
 CF_MAWK_FPE_SIGINFO 
 # look for strtod overflow bug
@@ -554,12 +765,12 @@ then
    AC_MSG_RESULT([no bug])
 else
    AC_MSG_RESULT([buggy -- will use work around])
-   CF_MAWK_DEFINE2([HAVE_STRTOD_OVF_BUG],1)
+   AC_DEFINE_UNQUOTED([HAVE_STRTOD_OVF_BUG],1)
 fi
 
 else
    [if test $status != 4 ; then]
-      CF_MAWK_DEFINE(FPE_TRAPS_ON)
+      AC_DEFINE(FPE_TRAPS_ON)
       CF_MAWK_FPE_SIGINFO 
     fi
 
@@ -568,7 +779,7 @@ else
 cat 1>&2 <<'EOF'
 Warning: Your system defaults generate floating point exception 
 on divide by zero but not on overflow.  You need to 
-#define TURN_ON_FPE_TRAPS() to handle overflow.
+#define TURN_ON_FPE_TRAPS to handle overflow.
 Please report this so I can fix this script to do it automatically.
 EOF
 ;;
@@ -576,7 +787,7 @@ EOF
 cat 1>&2 <<'EOF'
 Warning: Your system defaults generate floating point exception 
 on overflow  but not on divide by zero.  You need to 
-#define TURN_ON_FPE_TRAPS() to handle divide by zero.
+#define TURN_ON_FPE_TRAPS to handle divide by zero.
 Please report this so I can fix this script to do it automatically.
 EOF
 ;;
@@ -585,7 +796,7 @@ cat 1>&2 <<'EOF'
 Warning: Your system defaults do not generate floating point
 exceptions, but your math library does not support this behavior.
 You need to
-#define TURN_ON_FPE_TRAPS() to use fp exceptions for consistency.
+#define TURN_ON_FPE_TRAPS to use fp exceptions for consistency.
 Please report this so I can fix this script to do it automatically.
 EOF
 ;;

@@ -1,0 +1,41 @@
+/*
+ * $MawkId: config_h.in,v 1.5 2009/07/23 21:07:19 tom Exp $
+ * vile:cmode
+ * template for config.h
+ */
+
+#undef FPE_TRAPS_ON
+#undef GCC_NORETURN
+#undef GCC_PRINTF
+#undef GCC_PRINTFLIKE
+#undef GCC_SCANF
+#undef GCC_SCANFLIKE
+#undef GCC_UNUSED
+#undef HAVE_REAL_PIPES
+#undef HAVE_STRTOD_OVF_BUG
+#undef MAWK_SV_SIGINFO
+#undef MAX__INT
+#undef MAX__LONG
+#undef NOINFO_SIGFPE
+#undef NO_ERRNO_H
+#undef NO_FCNTL_H
+#undef NO_FMOD
+#undef NO_MATHERR
+#undef NO_MATH_H
+#undef NO_MEMCPY
+#undef NO_PROTOS
+#undef NO_STDARG_H
+#undef NO_STDLIB_H
+#undef NO_STRCHR
+#undef NO_STRERROR
+#undef NO_STRING_H
+#undef NO_STRTOD
+#undef NO_TIME_H
+#undef NO_VFPRINTF
+#undef NO_VOID_STAR
+#undef SIZE_T_STDDEF_H
+#undef SIZE_T_TYPES_H
+#undef SYSTEM_NAME
+#undef TURN_ON_FPE_TRAPS
+#undef USE_IEEEFP_H
+#undef const

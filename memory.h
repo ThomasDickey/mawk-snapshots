@@ -9,8 +9,9 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
 ********************************************/
 
-
-/* @Log: memory.h,v @
+/*
+ * $MawkId: memory.h,v 1.4 2009/07/24 00:52:37 tom Exp $
+ * @Log: memory.h,v @
  * Revision 1.1.1.1  1993/07/03  18:58:17  mike
  * move source to cvs
  *
@@ -27,13 +28,14 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MEMORY_H
 #define  MEMORY_H
 
+#include "types.h"
 #include "zmalloc.h"
 
-STRING *new_STRING(char*);
+STRING *new_STRING(char *);
 STRING *new_STRING0(unsigned);
 
 #ifdef   DEBUG
-void  DB_free_STRING(STRING *);
+void DB_free_STRING(STRING *);
 
 #define  free_STRING(s)  DB_free_STRING(s)
 
@@ -46,4 +48,4 @@ void  DB_free_STRING(STRING *);
 	    } while (0)
 #endif
 
-#endif   /* MEMORY_H */
+#endif /* MEMORY_H */
