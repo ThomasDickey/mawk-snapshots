@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.5 2009/07/12 18:58:23 tom Exp $
+ * $MawkId: rexp3.c,v 1.8 2009/07/25 11:43:24 tom Exp $
  * @Log: rexp3.c,v @
  * Revision 1.3  1993/07/24  17:55:15  mike
  * more cleanup
@@ -55,8 +55,10 @@ extern RT_STATE *RE_run_stack_empty;
 
 #define	 push(mx,sx,ssx,ux)   if (++stackp == RE_run_stack_limit)\
 				stackp = RE_new_run_stack() ;\
-stackp->m=(mx);stackp->s=(sx);stackp->ss=(ssx);\
-stackp->u = (ux)
+			      stackp->m = (mx); \
+			      stackp->s = (sx); \
+			      stackp->ss = (ssx); \
+			      stackp->u = (ux)
 
 #define	  CASE_UANY(x)	case  x + U_OFF :  case	 x + U_ON
 
@@ -64,14 +66,18 @@ stackp->u = (ux)
    reference.  If no match returns NULL and length zero */
 
 char *
-REmatch(char *str, PTR machine, unsigned *lenp)
+REmatch(char *str,		/* string to test */
+	unsigned str_len,	/* ...its length */
+	PTR machine,		/* compiled regular expression */
+	unsigned *lenp)		/* where to return matched-length */
 {
     register STATE *m = (STATE *) machine;
     register char *s = str;
     char *ss;
     register RT_STATE *stackp;
     int u_flag, t;
-    char *str_end, *ts;
+    char *str_end = s + str_len;
+    char *ts;
 
     /* state of current best match stored here */
     char *cb_ss;		/* the start */
@@ -80,32 +86,32 @@ REmatch(char *str, PTR machine, unsigned *lenp)
     *lenp = 0;
 
     /* check for the easy case */
-    if ((m + 1)->type == M_ACCEPT && m->type == M_STR) {
-	if ((ts = str_str(s, m->data.str, m->len)))
-	    *lenp = m->len;
+    if ((m + 1)->s_type == M_ACCEPT && m->s_type == M_STR) {
+	if ((ts = str_str(s, str_len, m->s_data.str, m->s_len)))
+	    *lenp = m->s_len;
 	return ts;
     }
 
     u_flag = U_ON;
-    cb_ss = ss = str_end = (char *) 0;
+    cb_ss = ss = (char *) 0;
     stackp = RE_run_stack_empty;
     goto reswitch;
 
   refill:
     if (stackp == RE_run_stack_empty) {
 	if (cb_ss)
-	    *lenp = cb_e - cb_ss;
+	    *lenp = (unsigned) (cb_e - cb_ss);
 	return cb_ss;
     }
     ss = stackp->ss;
-    s = stackp--->s;
-    if (cb_ss)			/* does new state start too late ? */
-    {
+    s = (stackp--)->s;
+    if (cb_ss) {		/* does new state start too late ? */
 	if (ss) {
 	    if (cb_ss < ss)
 		goto refill;
-	} else if (cb_ss < s)
+	} else if (cb_ss < s) {
 	    goto refill;
+	}
     }
 
     m = (stackp + 1)->m;
@@ -113,9 +119,9 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 
   reswitch:
 
-    switch (m->type + u_flag) {
+    switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
-	if (strncmp(s, m->data.str, m->len))
+	if (strncmp(s, m->s_data.str, m->s_len))
 	    goto refill;
 	if (!ss) {
 	    if (cb_ss && s > cb_ss)
@@ -123,43 +129,45 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	    else
 		ss = s;
 	}
-	s += m->len;
+	s += m->s_len;
 	m++;
 	goto reswitch;
 
     case M_STR + U_OFF + END_ON:
-	if (strcmp(s, m->data.str))
+	if (strcmp(s, m->s_data.str))
 	    goto refill;
 	if (!ss) {
-	    if (cb_ss && s > cb_ss)
+	    if (cb_ss && s > cb_ss) {
 		goto refill;
-	    else
+	    } else {
 		ss = s;
+	    }
 	}
-	s += m->len;
+	s += m->s_len;
 	m++;
 	goto reswitch;
 
     case M_STR + U_ON + END_OFF:
-	if (!(s = str_str(s, m->data.str, m->len)))
+	if (!(s = str_str(s, str_len, m->s_data.str, m->s_len)))
+	    goto refill;
+	if (s >= str + strlen(str))
 	    goto refill;
 	push(m, s + 1, ss, U_ON);
 	if (!ss) {
-	    if (cb_ss && s > cb_ss)
+	    if (cb_ss && s > cb_ss) {
 		goto refill;
-	    else
+	    } else {
 		ss = s;
+	    }
 	}
-	s += m->len;
+	s += m->s_len;
 	m++;
 	u_flag = U_OFF;
 	goto reswitch;
 
     case M_STR + U_ON + END_ON:
-	if (!str_end)
-	    str_end = s + strlen(s);
-	t = (str_end - s) - m->len;
-	if (t < 0 || memcmp(ts = s + t, m->data.str, m->len))
+	t = (str_end - s) - m->s_len;
+	if (t < 0 || memcmp(ts = s + t, m->s_data.str, m->s_len))
 	    goto refill;
 	if (!ss) {
 	    if (cb_ss && ts > cb_ss)
@@ -173,7 +181,7 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
     case M_CLASS + U_OFF + END_OFF:
-	if (!ison(*m->data.bvp, s[0]))
+	if (!ison(*m->s_data.bvp, s[0]))
 	    goto refill;
 	if (!ss) {
 	    if (cb_ss && s > cb_ss)
@@ -186,7 +194,7 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
     case M_CLASS + U_OFF + END_ON:
-	if (s[1] || !ison(*m->data.bvp, s[0]))
+	if (s[1] || !ison(*m->s_data.bvp, s[0]))
 	    goto refill;
 	if (!ss) {
 	    if (cb_ss && s > cb_ss)
@@ -199,7 +207,7 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
     case M_CLASS + U_ON + END_OFF:
-	while (!ison(*m->data.bvp, s[0])) {
+	while (!ison(*m->s_data.bvp, s[0])) {
 	    if (s[0] == 0)
 		goto refill;
 	    else
@@ -218,9 +226,7 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
     case M_CLASS + U_ON + END_ON:
-	if (!str_end)
-	    str_end = s + strlen(s);
-	if (s[0] == 0 || !ison(*m->data.bvp, str_end[-1]))
+	if (s[0] == 0 || !ison(*m->s_data.bvp, str_end[-1]))
 	    goto refill;
 	if (!ss) {
 	    if (cb_ss && str_end - 1 > cb_ss)
@@ -277,8 +283,6 @@ REmatch(char *str, PTR machine, unsigned *lenp)
     case M_ANY + U_ON + END_ON:
 	if (s[0] == 0)
 	    goto refill;
-	if (!str_end)
-	    str_end = s + strlen(s);
 	if (!ss) {
 	    if (cb_ss && str_end - 1 > cb_ss)
 		goto refill;
@@ -321,7 +325,7 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
     case M_END + U_ON:
-	s = str_end ? str_end : (str_end = s + strlen(s));
+	s = str_end;
 	if (!ss) {
 	    if (cb_ss && s > cb_ss)
 		goto refill;
@@ -344,17 +348,17 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto reswitch;
 
       CASE_UANY(M_1J):
-	m += m->data.jump;
+	m += m->s_data.jump;
 	goto reswitch;
 
       CASE_UANY(M_2JA):	/* take the non jump branch */
-	push(m + m->data.jump, s, ss, u_flag);
+	push(m + m->s_data.jump, s, ss, u_flag);
 	m++;
 	goto reswitch;
 
       CASE_UANY(M_2JB):	/* take the jump branch */
 	push(m + 1, s, ss, u_flag);
-	m += m->data.jump;
+	m += m->s_data.jump;
 	goto reswitch;
 
     case M_ACCEPT + U_OFF:
@@ -368,10 +372,11 @@ REmatch(char *str, PTR machine, unsigned *lenp)
 	goto refill;
 
     case M_ACCEPT + U_ON:
-	if (!ss)
+	if (!ss) {
 	    ss = s;
-	else
-	    s = str_end ? str_end : (str_end = s + strlen(s));
+	} else {
+	    s = str_end;
+	}
 
 	if (!cb_ss || ss < cb_ss || (ss == cb_ss && s > cb_e)) {
 	    /* we have a new current best */

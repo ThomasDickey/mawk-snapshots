@@ -1,8 +1,16 @@
--- $MawkId: CHANGES,v 1.33 2009/07/24 01:07:00 tom Exp $
+-- $MawkId: CHANGES,v 1.36 2009/07/25 11:45:32 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-2009072?
+20090725
+	modify internal functions for gsub() to handle a case from makewhatis
+	script from man 1.6f which substitutes embedded zero bytes to a
+	different value (report by Gabor Z Papp).
+
+	change default for configure --with-builtin-regex to prefer the
+	builtin regular expressions.  They are incomplete, but POSIX regular
+	expressions cannot match nulls embedded in strings.
+
 	require standard C compiler; converted to ANSI C.
 
 	rename #define'd SV_SIGINFO to MAWK_SV_SIGINFO to avoid predefined

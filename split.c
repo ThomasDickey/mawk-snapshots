@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.3 2009/07/23 23:55:06 tom Exp $
+ * $MawkId: split.c,v 1.5 2009/07/25 12:02:25 tom Exp $
  * @Log: split.c,v @
  * Revision 1.3  1996/02/01  04:39:42  mike
  * dynamic array scheme
@@ -70,11 +70,12 @@ static int re_ov_split(char *, PTR);
 static int space_ov_split(char *, char *);
 static int null_ov_split(char *);
 
-/* split string s of length slen on SPACE without changing s.
-   load the pieces into STRINGS and ptrs into
-   split_buff[]
-   return the number of pieces */
-
+/*
+ * Split string s of length slen on SPACE without changing s.
+ * Load the pieces into STRINGS and ptrs into split_buff[].
+ *
+ * return the number of pieces
+ */
 int
 space_split(char *s, unsigned slen)
 {
@@ -154,17 +155,22 @@ space_ov_split(char *s, char *back)
 }
 
 /* match a string with a regular expression, but
-   only matches of positive length count */
+ * only matches of positive length count
+ *
+ * FIXME: use of strlen() here prevents matching embedded nulls
+ */
 char *
 re_pos_match(char *s, PTR re, unsigned *lenp)
 {
-    while ((s = REmatch(s, re, lenp)))
-	if (*lenp)
+    while ((s = REmatch(s, strlen(s), re, lenp))) {
+	if (*lenp) {
 	    return s;
-	else if (*s == 0)
+	} else if (*s == 0) {
 	    break;
-	else
+	} else {
 	    s++;
+	}
+    }
 
     return (char *) 0;
 }
@@ -206,11 +212,10 @@ re_split(char *s, PTR re)
 }
 
 /*
-  we've overflowed split_buff[] , put
-  the rest on the split_ov_list
-  return number of pieces
-*/
-
+ *  We've overflowed split_buff[], put the rest on the split_ov_list.
+ *
+ *  Return number of pieces.
+ */
 static int
 re_ov_split(char *s, PTR re)
 {
@@ -274,12 +279,12 @@ null_ov_split(char *s)
 }
 
 /*  split(s, X, r)
-    split s into array X on r
-
-    entry: sp[0] holds r
-	   sp[-1] pts at X
-	   sp[-2] holds s
-*/
+ *  split s into array X on r
+ *
+ *    entry: sp[0] holds r
+ *	   sp[-1] pts at X
+ *	   sp[-2] holds s
+ */
 CELL *
 bi_split(CELL * sp)
 {
