@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.4 2009/07/23 23:01:32 tom Exp $
+ * $MawkId: rexp.h,v 1.8 2009/07/25 00:27:04 tom Exp $
  * @Log: rexp.h,v @
  * Revision 1.2  1993/07/23  13:21:35  mike
  * cleanup rexp code
@@ -51,11 +51,12 @@ the GNU General Public License, version 2, 1991.
 #define  REXP_H
 
 #include "nstd.h"
+#include "types.h"
 #include <stdio.h>
 #include  <setjmp.h>
 
-PTR RE_malloc (unsigned);
-PTR RE_realloc (void *, unsigned);
+PTR RE_malloc(unsigned);
+PTR RE_realloc(void *, unsigned);
 
 /*  finite machine  state types  */
 
@@ -75,16 +76,18 @@ PTR RE_realloc (void *, unsigned);
 #define  END_OFF   0
 #define  END_ON    (2*U_ON)
 
-typedef unsigned char BV[32];	/* bit vector */
+typedef UChar BV[32];		/* bit vector */
+typedef char SType;
+typedef UChar SLen;
 
 typedef struct {
-    char type;
-    unsigned char len;		/* used for M_STR  */
+    SType s_type;
+    SLen s_len;			/* used for M_STR  */
     union {
 	char *str;		/* string */
 	BV *bvp;		/*  class  */
 	int jump;
-    } data;
+    } s_data;
 } STATE;
 
 #define  STATESZ  (sizeof(STATE))
@@ -124,7 +127,7 @@ typedef struct {
 
 #define  MEMORY_FAILURE      5
 
-#define  ison(b,x)  ((b)[((unsigned char)(x))>>3] & (1<<((x)&7)))
+#define  ison(b,x)  ((b)[((UChar)(x)) >> 3] & (1 << ((x) & 7)))
 
 /* struct for the run time stack */
 typedef struct {
@@ -136,7 +139,7 @@ typedef struct {
 
 /*  error  trap   */
 extern int REerrno;
-void RE_error_trap (int);
+void RE_error_trap(int);
 
 #ifndef GCC_NORETURN
 #define GCC_NORETURN		/* nothing */
@@ -154,7 +157,7 @@ void RE_close(MACHINE *);
 void RE_poscl(MACHINE *);
 void RE_01(MACHINE *);
 void RE_panic(char *) GCC_NORETURN;
-char *str_str(char *, char *, unsigned);
+char *str_str(char *, unsigned, char *, unsigned);
 
 void RE_lex_init(char *);
 int RE_lex(MACHINE *);
