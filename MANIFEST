@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20090725-after
+MANIFEST for mawk, version t20090726
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -141,6 +141,9 @@ test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
 test/mawktest.g                 mawk 1.3.3 (with Debian package)
 test/mawktest.v7                mawk 1.3.3 (with Debian package)
+test/null-rs.awk                test-script for setting RS to explicit null
+test/null-rs.dat                input-data for null-rs.awk
+test/null-rs.out                reference for null-rs.awk
 test/reg-awk.out                reference for testing regular expressions
 test/reg0.awk                   test simple pattern matching
 test/reg1.awk                   test pattern with "|" OR

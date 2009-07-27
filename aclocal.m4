@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.24 2009/07/24 01:05:00 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.28 2009/07/26 21:53:44 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -164,6 +164,12 @@ dnl Allow user to disable a normally-on option.
 AC_DEFUN([CF_ARG_DISABLE],
 [CF_ARG_OPTION($1,[$2],[$3],[$4],yes)])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_ARG_ENABLE version: 3 updated: 1999/03/30 17:24:31
+dnl -------------
+dnl Allow user to enable a normally-off option.
+AC_DEFUN([CF_ARG_ENABLE],
+[CF_ARG_OPTION($1,[$2],[$3],[$4],no)])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_ARG_OPTION version: 3 updated: 1997/10/18 14:42:41
 dnl -------------
 dnl Restricted form of AC_ARG_ENABLE that ensures user doesn't give bogus
@@ -257,6 +263,26 @@ AC_SUBST(ECHO_LD)
 AC_SUBST(RULE_CC)
 AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ENABLE_WARNINGS version: 4 updated: 2009/07/26 17:53:03
+dnl ------------------
+dnl Configure-option to enable gcc warnings
+AC_DEFUN([CF_ENABLE_WARNINGS],[
+if ( test "$GCC" = yes || test "$GXX" = yes )
+then
+AC_MSG_CHECKING(if you want to turn on gcc warnings)
+CF_ARG_ENABLE(warnings,
+	[  --enable-warnings       test: turn on gcc compiler warnings],
+	[with_warnings=yes],
+	[with_warnings=no])
+AC_MSG_RESULT($with_warnings)
+if test "$with_warnings" = "yes"
+then
+	CF_GCC_ATTRIBUTES
+	CF_GCC_WARNINGS
+fi
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_GCC_ATTRIBUTES version: 12 updated: 2009/07/23 17:08:33
@@ -589,7 +615,7 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FIND_MAX_INT version: 2 updated: 2009/07/23 05:15:39
+dnl CF_MAWK_FIND_MAX_INT version: 4 updated: 2009/07/26 17:53:03
 dnl --------------------
 dnl Try to find a definition of MAX__INT from limits.h else compute.
 AC_DEFUN([CF_MAWK_FIND_MAX_INT],
@@ -603,9 +629,18 @@ AC_CHECK_HEADER(values.h,cf_values_h=yes)
 #include <stdio.h>
 int main()
 {   FILE *out = fopen("conftest.out", "w") ;
+	unsigned max_uint = 0;
     if ( ! out ) exit(1) ;
-    fprintf(out, "MAX__INT 0x%x\n", MAXINT) ;
+    fprintf(out, "MAX__INT  0x%x\n", MAXINT) ;
     fprintf(out, "MAX__LONG 0x%lx\n", MAXLONG) ;
+#ifdef MAXUINT
+	max_uint = MAXUINT;	/* not likely (SunOS/Solaris lacks it) */
+#else
+	max_uint = MAXINT;
+	max_uint <<= 1;
+	max_uint |= 1;  
+#endif
+    fprintf(out, "MAX__UINT 0x%lx\n", max_uint) ;
     exit(0) ; return(0) ;
 }
 ], cf_maxint_set=yes,[CF_MAWK_CHECK_LIMITS_MSG])
@@ -667,20 +702,26 @@ fi])dnl
 fi
 AC_SUBST(MATHLIB)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_MAX__INT_PROGRAM version: 2 updated: 2009/07/23 05:15:39
+dnl CF_MAWK_MAX__INT_PROGRAM version: 3 updated: 2009/07/26 17:23:40
 dnl ------------------------
 dnl C program to compute MAX__INT and MAX__LONG if looking at headers fails
 AC_DEFUN([CF_MAWK_MAX__INT_PROGRAM],
 [[#include <stdio.h>
 int main()
-{ int y ; long yy ;
+{ int y ; unsigned yu; long yy ;
   FILE *out ;
 
     if ( !(out = fopen("conftest.out","w")) ) exit(1) ;
     /* find max int and max long */
     y = 0x1000 ;
-    while ( y > 0 ) y *= 2 ;
-    fprintf(out,"MAX__INT 0x%x\n", y-1) ;
+    while ( y > 0 ) { yu = y; y *= 2 ; }
+    fprintf(out,"MAX__INT  0x%x\n", y-1) ;
+
+	yu = yu - 1;
+	yu <<= 1;
+	yu |= 1;
+    fprintf(out,"MAX__UINT 0x%x\n", y-1) ;
+
     yy = 0x1000 ;
     while ( yy > 0 ) yy *= 2 ;
     fprintf(out,"MAX__LONG 0x%lx\n", yy-1) ;
