@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: memory.c,v 1.2 2009/07/23 23:43:56 tom Exp $
+ * $MawkId: memory.c,v 1.4 2009/07/26 17:02:58 tom Exp $
  * @Log: memory.c,v @
  * Revision 1.2  1993/07/17  13:23:08  mike
  * indent and general code cleanup
@@ -54,6 +54,23 @@ new_STRING0(unsigned len)
 	return &null_str;
     } else {
 	STRING *sval = xnew_STRING(len);
+	sval->str[len] = 0;
+	return sval;
+    }
+}
+
+/*
+ * Create a new string which may contain embedded nulls.
+ */
+STRING *
+new_STRING1(const char *s, unsigned len)
+{
+    if (len == 0) {
+	null_str.ref_cnt++;
+	return &null_str;
+    } else {
+	STRING *sval = xnew_STRING(len);
+	memcpy(sval->str, s, len);
 	sval->str[len] = 0;
 	return sval;
     }
