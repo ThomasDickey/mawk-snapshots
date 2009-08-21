@@ -1,10 +1,21 @@
--- $MawkId: CHANGES,v 1.48 2009/08/01 15:25:03 tom Exp $
+-- $MawkId: CHANGES,v 1.52 2009/08/21 00:37:08 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20090801
-	modify "%s" and "%c" formatting in printf/sprintf commands to allow
-	zero-padding as done by nawk (Debian #339799).
+20090820
+	minor portability/standards fixes for examples/hical
+
+	add WHINY_USERS sorted-array feature, for compatibility with gawk
+	(patch by Aharon Robbins).
+
+	correct lower-limit for d_to_U() function, which broke conversion of
+	zero in "%x" format, added in fix for Debian #303825 (report by Masami
+	Hiramatsu).
+
+	modify "%s" and "%c" formatting in printf/sprintf commands to ensure
+	that "%02s" does not do zero-padding, for standards conformance
+	(discussion with Aharon Robbins, Mike Brennan, prompted by Debian
+	#339799).
 
 20090728
 	add fallback definitions for GCC_NORETURN and GCC_UNUSED to build with
