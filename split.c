@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.8 2009/07/28 23:24:51 tom Exp $
+ * $MawkId: split.c,v 1.12 2009/09/15 00:32:11 tom Exp $
  * @Log: split.c,v @
  * Revision 1.3  1996/02/01  04:39:42  mike
  * dynamic array scheme
@@ -67,7 +67,6 @@ the GNU General Public License, version 2, 1991.
 
 SPLIT_OV *split_ov_list;
 
-static int re_ov_split(char *, PTR);
 static int space_ov_split(char *, char *);
 static int null_ov_split(char *);
 
@@ -157,59 +156,25 @@ space_ov_split(char *s, char *back)
 
 /* match a string with a regular expression, but
  * only matches of positive length count
- *
- * FIXME: use of strlen() here prevents matching embedded nulls
  */
 char *
-re_pos_match(char *s, PTR re, unsigned *lenp)
+re_pos_match(char *s, size_t str_len, PTR re, unsigned *lenp)
 {
-    while ((s = REmatch(s, strlen(s), cast_to_re(re), lenp))) {
+    char *result = 0;
+
+    while (str_len && (s = REmatch(s, str_len, cast_to_re(re), lenp))) {
 	if (*lenp) {
-	    return s;
+	    result = s;
+	    break;
 	} else if (*s == 0) {
 	    break;
 	} else {
 	    s++;
+	    --str_len;
 	}
     }
 
-    return (char *) 0;
-}
-
-int
-re_split(char *s, PTR re)
-{
-    register char *t;
-    int i = 0;
-    unsigned mlen, len;
-    STRING *sval;
-    int lcnt = MAX_SPLIT / 3;
-
-    while (lcnt--) {
-	if (!(t = re_pos_match(s, re, &mlen)))
-	    goto done;
-	sval = split_buff[i++] = new_STRING0(len = (unsigned) (t - s));
-	memcpy(sval->str, s, len);
-	s = t + mlen;
-
-	if (!(t = re_pos_match(s, re, &mlen)))
-	    goto done;
-	sval = split_buff[i++] = new_STRING0(len = (unsigned) (t - s));
-	memcpy(sval->str, s, len);
-	s = t + mlen;
-
-	if (!(t = re_pos_match(s, re, &mlen)))
-	    goto done;
-	sval = split_buff[i++] = new_STRING0(len = (unsigned) (t - s));
-	memcpy(sval->str, s, len);
-	s = t + mlen;
-    }
-    /* we've overflowed */
-    return i + re_ov_split(s, re);
-
-  done:
-    split_buff[i++] = new_STRING(s);
-    return i;
+    return result;
 }
 
 /*
@@ -218,28 +183,63 @@ re_split(char *s, PTR re)
  *  Return number of pieces.
  */
 static int
-re_ov_split(char *s, PTR re)
+re_ov_split(char *s, size_t slen, PTR re)
 {
     SPLIT_OV dummy;
-    register SPLIT_OV *tail = &dummy;
+    SPLIT_OV *tail = &dummy;
     int cnt = 1;
+    char *limit = s + slen;
     char *t;
-    unsigned len, mlen;
+    unsigned mlen;
 
-    while ((t = re_pos_match(s, re, &mlen))) {
+    while ((s < limit)
+	   && (t = re_pos_match(s, (size_t) (limit - s), re, &mlen))) {
 	tail = tail->link = ZMALLOC(SPLIT_OV);
-	tail->sval = new_STRING0(len = (unsigned) (t - s));
-	memcpy(tail->sval->str, s, len);
+	tail->sval = new_STRING1(s, (unsigned) (t - s));
 	s = t + mlen;
 	cnt++;
     }
     /* and one more */
     tail = tail->link = ZMALLOC(SPLIT_OV);
-    tail->sval = new_STRING(s);
+    tail->sval = new_STRING1(s, (unsigned) (limit - s));
     tail->link = (SPLIT_OV *) 0;
     split_ov_list = dummy.link;
 
     return cnt;
+}
+
+#define RE_SPLIT3 \
+	if (!(t = re_pos_match(s, slen, re, &mlen))) \
+	    goto done; \
+	sval = split_buff[i++] = new_STRING1(s, (unsigned) (t - s)); \
+	s = t + mlen; \
+	slen = (size_t) (limit - s)
+
+int
+re_split(STRING * s_param, PTR re)
+{
+    char *limit = s_param->str + s_param->len;
+    char *s = s_param->str;
+    char *t;
+    int i = 0;
+    size_t slen = s_param->len;
+    unsigned mlen;
+    STRING *sval;
+    int lcnt = MAX_SPLIT / 3;
+
+    while (lcnt--) {
+	RE_SPLIT3;
+	RE_SPLIT3;
+	RE_SPLIT3;
+    }
+    /* we've overflowed */
+    return i + re_ov_split(s, slen, re);
+
+  done:
+    if ((int) slen >= 0) {
+	split_buff[i++] = new_STRING1(s, slen);
+    }
+    return i;
 }
 
 int
@@ -303,7 +303,7 @@ bi_split(CELL * sp)
     } else {
 	switch ((sp + 2)->type) {
 	case C_RE:
-	    cnt = re_split(string(sp)->str, (sp + 2)->ptr);
+	    cnt = re_split(string(sp), (sp + 2)->ptr);
 	    break;
 
 	case C_SPACE:
