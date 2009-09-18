@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.13 2009/09/13 22:38:22 tom Exp $
+ * $MawkId: rexp0.c,v 1.16 2009/09/17 22:58:49 tom Exp $
  * @Log: rexp0.c,v @
  * Revision 1.5  1996/11/08 15:39:27  mike
  * While cleaning up block_on, I introduced a bug. Now fixed.
@@ -84,7 +84,7 @@ static BV *store_bvp(BV *);
 static const
 char RE_char2token['|' + 1] =
 {
-    0,      T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*07*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*07*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*0f*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*17*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*1f*/
@@ -126,6 +126,10 @@ int
 RE_lex(MACHINE * mp)
 {
     register int c;
+
+    if ((unsigned) (1 + lp - re_str) >= re_len) {
+	return 0;
+    }
 
     switch (c = char2token((UChar) (*lp))) {
     case T_PLUS:
@@ -269,7 +273,7 @@ do_str(
     *s++ = (char) c;
     len = 1;
 
-    while (1) {
+    while ((1 + p - re_str) < (int) re_len) {
 	char *save;
 
 	switch (char2token((UChar) (*p))) {
@@ -398,8 +402,9 @@ lookup_cclass(char **start)
 	}
     }
 
-    if (code == CCLASS_NONE)
+    if (code == CCLASS_NONE) {
 	RE_error_trap(-E3);
+    }
 
     if ((result = cclass_table[item].data) == 0) {
 	int ch = 0;
@@ -485,6 +490,38 @@ lookup_cclass(char **start)
     return result;
 }
 
+static CCLASS *
+get_cclass(char *start, char **next)
+{
+    CCLASS *result = 0;
+
+    if (start[0] == '['
+	&& start[1] == ':') {
+	result = lookup_cclass(&start);
+	if (next != 0) {
+	    *next = start;
+	}
+    }
+    return result;
+}
+
+/*
+ * Check if we're pointing to a left square-bracket.  If so, return nonzero
+ * if that is a literal one, not part of character class, etc.
+ *
+ * http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap09.html#tag_09_03_05
+ */
+static int
+literal_leftsq(char *start)
+{
+    int result = 0;
+    if (start[0] == '[') {
+	if (get_cclass(start, 0) == 0)
+	    result = 1;
+    }
+    return result;
+}
+
 /* build a BV for a character class.
    *start points at the '['
    on exit:   *start points at the character after ']'
@@ -506,15 +543,16 @@ do_class(char **start, MACHINE * mp)
     /* []...]  puts ] in a class
        [^]..]  negates a class with ]
      */
-    if (*p == ']')
+    if (literal_leftsq(p) || p[0] == ']')
 	p++;
-    else if (*p == '^' && *(p + 1) == ']')
+    else if (p[0] == '^' && (literal_leftsq(p + 1) || p[1] == ']'))
 	p += 2;
 
     for (level = 0, q = p; (level != 0) || (*q != ']'); ++q) {
 	if (*q == '[') {
-	    if (q[1] != ':' || ++level > 1)
+	    if (q[1] != ':' || ++level > 1) {
 		RE_error_trap(-E3);
+	    }
 	} else if (*q == ']') {
 	    if (level > 0) {
 		if (q[-1] != ':')
@@ -554,7 +592,7 @@ do_class(char **start, MACHINE * mp)
 	    break;
 
 	case '[':
-	    if (p[1] == ':' && (cclass = lookup_cclass(&p)) != 0) {
+	    if ((cclass = get_cclass(p, &p)) != 0) {
 		while (cclass->first >= 0) {
 		    block_on(*bvp, cclass->first, cclass->last);
 		    ++cclass;
