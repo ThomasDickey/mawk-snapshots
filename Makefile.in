@@ -1,9 +1,14 @@
-# $MawkId: Makefile.in,v 1.15 2009/07/26 16:24:30 tom Exp $
+# $MawkId: Makefile.in,v 1.21 2009/09/20 22:47:54 tom Exp $
 # Makefile-template for MAWK
 
 SHELL=/bin/sh
 
 ####################################
+
+srcdir		= @srcdir@
+srcdir_sl	= @srcdir@/
+VPATH		= @srcdir@
+@SET_MAKE@
 
 x               = @EXEEXT@
 o               = .@OBJEXT@
@@ -19,10 +24,10 @@ mandir		= @mandir@/man$(manext)
 
 CC              = @CC@
 
-CPPFLAGS	= @CPPFLAGS@
+CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS          = @CFLAGS@ $(EXTRA_CFLAGS)
-LDFLAGS         = @LDFLAGS@
+LDFLAGS         = @CFLAGS@ @LDFLAGS@
 MATHLIB         = @MATHLIB@
 
 YACC            = @YACC@
@@ -66,10 +71,10 @@ $(PROG) : $(OBJS)
 TESTPATH= PATH=`pwd`:`cd $(srcdir);pwd`/test:/bin:/usr/bin; export PATH
 
 mawk_test :  $(PROG)  # test that we have a sane mawk
-	sh -c '$(TESTPATH); cd $(srcdir)/test ; mawktest'
+	@sh -c '$(TESTPATH); SRCDIR=`cd $(srcdir);pwd`; cd $(srcdir)/test ; echo "** mawktest $$SRCDIR"; mawktest $$SRCDIR'
 
 fpe_test :  $(PROG) # test FPEs are handled OK
-	sh -c '$(TESTPATH); cd $(srcdir)/test ; fpe_test'
+	@sh -c '$(TESTPATH); cd $(srcdir)/test ; echo "** fpe_test"; fpe_test'
 
 parse.c  : parse.y
 	@echo  expect 4 shift/reduce conflicts
@@ -79,13 +84,15 @@ parse.c  : parse.y
 	   then rm y.tab.h ;\
 	   else mv y.tab.h parse.h ; fi
 
+NOIDENT = sed -e 's/[$$]MawkId\([^$$]*\)[$$]/@MawkId\1@/'
+
 array.c : array.w
 	-@rm -f $@
-	notangle -R'"array.c"' array.w | cpif array.c
+	notangle -R'"array.c"' array.w | $(NOIDENT) | cpif array.c
 
 array.h : array.w
 	-@rm -f $@
-	notangle -R'"array.h"' array.w | cpif array.h
+	notangle -R'"array.h"' array.w | $(NOIDENT) | cpif array.h
 
 scancode.c :  makescan.c  scan.h
 	@ECHO_LD@$(CC) -o makescan.exe  makescan.c

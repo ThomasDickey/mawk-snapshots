@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.29 2009/07/27 10:27:40 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.31 2009/09/18 08:50:46 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -285,7 +285,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_ATTRIBUTES version: 12 updated: 2009/07/23 17:08:33
+dnl CF_GCC_ATTRIBUTES version: 13 updated: 2009/08/11 20:19:56
 dnl -----------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary
@@ -362,24 +362,30 @@ EOF
 		if AC_TRY_EVAL(ac_compile); then
 			test -n "$verbose" && AC_MSG_RESULT(... $cf_attribute)
 			cat conftest.h >>confdefs.h
-			if test "$cf_printf_attribute" = no ; then
-				cat >>confdefs.h <<EOF
+			case $cf_attribute in #(vi
+			printf) #(vi
+				if test "$cf_printf_attribute" = no ; then
+					cat >>confdefs.h <<EOF
 #define GCC_PRINTFLIKE(fmt,var) /* nothing */
 EOF
-			else
-				cat >>confdefs.h <<EOF
+				else
+					cat >>confdefs.h <<EOF
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 EOF
-			fi
-			if test "$cf_scanf_attribute" = no ; then
-				cat >>confdefs.h <<EOF
+				fi
+				;;
+			scanf) #(vi
+				if test "$cf_scanf_attribute" = no ; then
+					cat >>confdefs.h <<EOF
 #define GCC_SCANFLIKE(fmt,var) /* nothing */
 EOF
-			else
-				cat >>confdefs.h <<EOF
+				else
+					cat >>confdefs.h <<EOF
 #define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
 EOF
-			fi
+				fi
+				;;
+			esac
 		fi
 	done
 else
@@ -746,38 +752,7 @@ int main()
     return 0 ;
  }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_PROG_GCC version: 1 updated: 2008/09/09 19:18:22
-dnl ----------------
-dnl AC_PROG_CC with default -g to cflags
-AC_DEFUN([CF_MAWK_PROG_GCC],
-[AC_BEFORE([$0], [AC_PROG_CPP])dnl
-AC_CHECK_PROG(CC, gcc, gcc, cc)
-dnl
-AC_MSG_CHECKING(whether we are using GNU C)
-AC_CACHE_VAL(ac_cv_prog_gcc,
-[dnl The semicolon is to pacify NeXT's syntax-checking cpp.
-cat > conftest.c <<EOF
-#ifdef __GNUC__
-  yes;
-#endif
-EOF
-if ${CC-cc} -E conftest.c 2>&AC_FD_CC | egrep yes >/dev/null 2>&1; then
-  ac_cv_prog_gcc=yes
-else
-  ac_cv_prog_gcc=no
-fi])dnl
-AC_MSG_RESULT($ac_cv_prog_gcc)
-rm -f conftest*
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_PROG_YACC version: 1 updated: 2008/09/09 19:18:22
-dnl -----------------
-dnl Which yacc.
-AC_DEFUN([CF_MAWK_PROG_YACC],
-[AC_CHECK_PROGS(YACC, byacc bison yacc)
-test "$YACC" = bison && YACC='bison -y'])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 4 updated: 2009/07/23 06:15:09
+dnl CF_MAWK_RUN_FPE_TESTS version: 5 updated: 2009/09/17 20:44:39
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -788,12 +763,12 @@ AC_TYPE_SIGNAL
 [
 echo checking handling of floating point exceptions
 rm -f fpe_check$ac_exeext 
-$CC $CFLAGS -DRETSIGTYPE=$ac_cv_type_signal -o fpe_check fpe_check.c $MATHLIB
+$CC $CFLAGS -DRETSIGTYPE=$ac_cv_type_signal -o fpe_check $srcdir/fpe_check.c $MATHLIB
 if test -f fpe_check$ac_exeext   ; then
    ./fpe_check 2>/dev/null
    status=$?
 else 
-   echo fpe_check.c failed to compile 1>&2
+   echo $srcdir/fpe_check.c failed to compile 1>&2
    status=100
 fi
 
@@ -817,7 +792,7 @@ CF_MAWK_FPE_SIGINFO
 AC_MSG_CHECKING([strtod bug on overflow])
 rm -f fpe_check$ac_exeext 
 $CC $CFLAGS -DRETSIGTYPE=$ac_cv_type_signal -DUSE_IEEEFP_H \
-	    -o fpe_check fpe_check.c $MATHLIB
+	    -o fpe_check $srcdir/fpe_check.c $MATHLIB
 if ./fpe_check phoney_arg phoney_arg 2>/dev/null
 then 
    AC_MSG_RESULT([no bug])
@@ -866,7 +841,7 @@ fi  ;;
 
   *)  # some sort of disaster
 cat 1>&2 <<'EOF'
-The program `fpe_check' compiled from fpe_check.c seems to have
+The program `fpe_check' compiled from $srcdir/fpe_check.c seems to have
 unexpectly blown up.  Please report this to ]CF_MAWK_MAINTAINER.[
 EOF
 # quit or not ???
