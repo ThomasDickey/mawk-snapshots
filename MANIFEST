@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20090820b
+MANIFEST for mawk, version t20090920
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -137,6 +137,7 @@ test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
 test/full-awk.dat               test-data for /dev/full
+test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
@@ -145,6 +146,8 @@ test/mawktest.v7                mawk 1.3.3 (with Debian package)
 test/null-rs.awk                test-script for setting RS to explicit null
 test/null-rs.dat                input-data for null-rs.awk
 test/null-rs.out                reference for null-rs.awk
+test/nulls.out                  output from nulls0.awk
+test/nulls0.awk                 script for testing FS containing nulls
 test/reg-awk.out                reference for testing regular expressions
 test/reg0.awk                   test simple pattern matching
 test/reg1.awk                   test pattern with "|" OR
