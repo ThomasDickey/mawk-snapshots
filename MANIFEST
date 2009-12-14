@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20090920
+MANIFEST for mawk, version t20091213
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -42,13 +42,13 @@ jmp.c                           byte-code jumps/branches
 jmp.h                           byte-code jumps/branches header
 kw.c                            keyword table and lookup functions
 main.c                          main program
+makedeps.sh                     script to regenerate object-dependencies for Makefile.in
 makescan.c                      utility which builds scancode.c
 matherr.c                       catch/report math-errors
 mawk.h                          main header file for mawk
 memory.c                        string-allocation functions
 memory.h                        string-allocation functions header
 missing.c                       replacements for missing system functions
-mkdirs.sh                       configure-script
 nstd.h                          header for missing.c
 packing.list                    mawk 1.3.3 (with Debian package)
 parse.c                         generated C parser
@@ -72,6 +72,7 @@ rexpdb.c                        debugging utilities for regular expressions
 scan.c                          program file-management
 scan.h                          program file-management header
 scancode.c                      mawk 1.3.3 (with Debian package)
+scancode.h                      list of scan-codes for mawk
 sizes.h                         data-type sizes header
 split.c                         functions for splitting field, strings, etc.
 symtype.h                       types related to symbols are defined here
