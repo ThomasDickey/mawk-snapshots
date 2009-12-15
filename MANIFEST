@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20091213b
+MANIFEST for mawk, version t20091213c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -122,7 +122,6 @@ test                            subdirectory
 test/decl-awk.out               reference for test using decl.awk
 test/fpe_test                   scripts to test if fpe handling compiled OK
 test/fpe_test.bat               scripts to test if fpe handling compiled OK
-test/fpe_test.g                 mawk 1.3.3 (with Debian package)
 test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
@@ -131,7 +130,6 @@ test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
-test/mawktest.g                 mawk 1.3.3 (with Debian package)
 test/null-rs.awk                test-script for setting RS to explicit null
 test/null-rs.dat                input-data for null-rs.awk
 test/null-rs.out                reference for null-rs.awk
