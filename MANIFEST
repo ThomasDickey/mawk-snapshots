@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20091213
+MANIFEST for mawk, version t20091213b
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -71,7 +71,6 @@ rexp4.c                         regular expressions utility functions
 rexpdb.c                        debugging utilities for regular expressions
 scan.c                          program file-management
 scan.h                          program file-management header
-scancode.c                      mawk 1.3.3 (with Debian package)
 scancode.h                      list of scan-codes for mawk
 sizes.h                         data-type sizes header
 split.c                         functions for splitting field, strings, etc.
@@ -80,15 +79,6 @@ types.h                         mawk datatypes header
 version.c                       print mawk's version string
 zmalloc.c                       memory allocation functions
 zmalloc.h                       memory allocation functions header
-atarist                         subdirectory
-atarist/README.ST               mawk 1.3.3 (with Debian package)
-config-user                     subdirectory
-config-user/apollo              mawk 1.3.3 (with Debian package)
-config-user/convex              mawk 1.3.3 (with Debian package)
-config-user/cray                mawk 1.3.3 (with Debian package)
-config-user/mips                mawk 1.3.3 (with Debian package)
-config-user/sgi                 mawk 1.3.3 (with Debian package)
-config-user/ultrix-mips         mawk 1.3.3 (with Debian package)
 examples                        subdirectory
 examples/ct_length.awk          change length to length()
 examples/decl.awk               parse a C declaration by recursive descent
@@ -133,7 +123,6 @@ test/decl-awk.out               reference for test using decl.awk
 test/fpe_test                   scripts to test if fpe handling compiled OK
 test/fpe_test.bat               scripts to test if fpe handling compiled OK
 test/fpe_test.g                 mawk 1.3.3 (with Debian package)
-test/fpe_test.v7                mawk 1.3.3 (with Debian package)
 test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
@@ -143,7 +132,6 @@ test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
 test/mawktest.g                 mawk 1.3.3 (with Debian package)
-test/mawktest.v7                mawk 1.3.3 (with Debian package)
 test/null-rs.awk                test-script for setting RS to explicit null
 test/null-rs.dat                input-data for null-rs.awk
 test/null-rs.out                reference for null-rs.awk
@@ -159,9 +147,3 @@ test/wc-awk.out                 reference for wc.awk
 test/wc.awk                     test-script which counts words
 test/wfrq-awk.out               reference for wfrq0.awk
 test/wfrq0.awk                  test-script which counts word-frequencies
-v7                              subdirectory
-v7/Makefile.v7                  mawk 1.3.3 (with Debian package)
-v7/README                       mawk 1.3.3 (with Debian package)
-v7/V7.h                         mawk 1.3.3 (with Debian package)
-v7/V7_notes                     mawk 1.3.3 (with Debian package)
-v7/config.h                     mawk 1.3.3 (with Debian package)

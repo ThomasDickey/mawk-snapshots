@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.17 2009/08/20 21:13:07 tom Exp $
+ * $MawkId: print.c,v 1.19 2009/12/14 01:10:05 tom Exp $
  * @Log: print.c,v @
  * Revision 1.7  1996/09/18 01:04:36  mike
  * Check ferror() after print and printf.
@@ -70,6 +70,7 @@ the GNU General Public License, version 2, 1991.
 #include "field.h"
 #include "scan.h"
 #include "files.h"
+#include "init.h"
 
 static void write_error(void);
 
@@ -359,13 +360,13 @@ static PTR
 puts_sfmt(PTR target,
 	  FILE *fp,
 	  CELL * source,
-	  STRING * single,
+	  STRING * onechr,
 	  int width,
 	  int prec,
 	  int flags)
 {
-    char *src_str = single ? single->str : string(source)->str;
-    int src_len = single ? 1 : (int) string(source)->len;
+    char *src_str = onechr ? onechr->str : string(source)->str;
+    int src_len = onechr ? 1 : (int) string(source)->len;
 
     if (width < 0) {
 	width = -width;
@@ -454,7 +455,7 @@ do_printf(
     const char *who;		/*ditto */
     int pf_type = 0;		/* conversion type */
     PRINTER printer;		/* pts at fprintf() or sprintf() */
-    STRING single;
+    STRING onechr;
 
 #ifdef	 SHORT_INTS
     char xbuff[256];		/* splice in l qualifier here */
@@ -598,8 +599,8 @@ do_printf(
 	    default:
 		bozo("printf %c");
 	    }
-	    single.len = 1;
-	    single.str[0] = (char) Ival;
+	    onechr.len = 1;
+	    onechr.str[0] = (char) Ival;
 
 	    pf_type = PF_C;
 	    break;
@@ -666,7 +667,7 @@ do_printf(
 	}
 #endif
 
-#define PUTS_C_ARGS target, fp, 0,  &single, sfmt_width, sfmt_prec, sfmt_flags
+#define PUTS_C_ARGS target, fp, 0,  &onechr, sfmt_width, sfmt_prec, sfmt_flags
 #define PUTS_S_ARGS target, fp, cp, 0,       sfmt_width, sfmt_prec, sfmt_flags
 
 	/* ready to call printf() */
