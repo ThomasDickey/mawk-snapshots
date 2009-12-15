@@ -3,7 +3,7 @@
 */
 
 /*
- * $MawkId: fpe_check.c,v 1.5 2009/07/27 15:13:02 tom Exp $
+ * $MawkId: fpe_check.c,v 1.11 2009/12/15 01:53:45 tom Exp $
  * @Log: fpe_check.c,v @
  * Revision 1.7  1996/08/30 00:07:14  mike
  * Modifications to the test and implementation of the bug fix for
@@ -30,7 +30,20 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <string.h>
 #include <math.h>
+
+#ifdef HAVE_SIGINFO_H
+#include <siginfo.h>
+#endif
+
+#ifdef HAVE_SIGACTION
+#define FPE_ARGS int sig, siginfo_t *sip, void *data
+#define FPE_DECL int why = sip->si_code
+#else
+#define FPE_ARGS int sig, int why
+#define FPE_DECL /* nothing */
+#endif
 
 /* Sets up NetBSD 1.0A for ieee floating point */
 #if defined(_LIB_VERSION_TYPE) && defined(_LIB_VERSION) && defined(_IEEE_)
@@ -51,10 +64,10 @@ int may_be_safe_to_look_at_why = 0;
 int why_v;
 int checking_for_strtod_ovf_bug = 0;
 
+static void catch_FPEs(void);
 static RETSIGTYPE fpe_catch();
 static int is_nan(double);
 static void check_strtod_ovf(void);
-extern double strtod();
 
 static double
 div_by(double x, double y)
@@ -85,7 +98,7 @@ check_fpe_traps(void)
     } else {
 	traps = 1;
 	message("division by zero generates an exception");
-	signal(SIGFPE, fpe_catch);	/* set again if sysV */
+	catch_FPEs();		/* set again if sysV */
     }
 
     if (setjmp(jbuff) == 0) {
@@ -94,7 +107,7 @@ check_fpe_traps(void)
     } else {
 	traps |= 2;
 	message("overflow generates an exception");
-	signal(SIGFPE, fpe_catch);
+	catch_FPEs();
     }
 
     if (traps == 0) {
@@ -142,14 +155,14 @@ get_fpe_codes(void)
 	div_by(1000.0, 0.0);
     else {
 	divz = why_v;
-	signal(SIGFPE, fpe_catch);
+	catch_FPEs();
     }
 
     if (setjmp(jbuff) == 0)
 	overflow(1000.0);
     else {
 	ovf = why_v;
-	signal(SIGFPE, fpe_catch);
+	catch_FPEs();
     }
 
     /* make some guesses if sane values */
@@ -165,7 +178,7 @@ int
 main(int argc, char *argv[])
 {
 
-    signal(SIGFPE, fpe_catch);
+    catch_FPEs();
     switch (argc) {
     case 1:
 	check_fpe_traps();
@@ -185,15 +198,33 @@ main(int argc, char *argv[])
    may have seen a prototype without 2nd argument */
 
 static RETSIGTYPE
-fpe_catch(sig, why)
-     int sig;
-     int why;
+fpe_catch(FPE_ARGS)
 {
+    FPE_DECL;
+
     if (checking_for_strtod_ovf_bug)
 	exit(1);
     if (may_be_safe_to_look_at_why)
 	why_v = why;
     longjmp(jbuff, 1);
+}
+
+static void
+catch_FPEs(void)
+{
+#if defined(HAVE_SIGACTION)
+    {
+	struct sigaction x;
+
+	memset(&x, 0, sizeof(x));
+	x.sa_handler = fpe_catch;
+	x.sa_flags = SA_SIGINFO;
+
+	sigaction(SIGFPE, &x, (struct sigaction *) 0);
+    }
+#else
+    signal(SIGFPE, fpe_catch);
+#endif
 }
 
 char longstr[] =

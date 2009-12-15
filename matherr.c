@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: matherr.c,v 1.12 2009/12/13 19:36:20 Jonathan.Nieder Exp $
+ * $MawkId: matherr.c,v 1.17 2009/12/15 01:54:23 tom Exp $
  * @Log: matherr.c,v @
  * Revision 1.9  1996/09/01 16:54:35  mike
  * Third try at bug fix for solaris strtod.
@@ -46,6 +46,14 @@ the GNU General Public License, version 2, 1991.
 
 #include  <math.h>
 
+#ifdef HAVE_SIGACTION
+#define FPE_ARGS int sig, siginfo_t *sip, void *data
+#define FPE_DECL int why = sip->si_code
+#else
+#define FPE_ARGS int sig, int why
+#define FPE_DECL /* nothing */
+#endif
+
 /* Sets up NetBSD 1.0A for ieee floating point */
 #if defined(_LIB_VERSION_TYPE) && defined(_LIB_VERSION) && defined(_IEEE_)
 #ifdef _CONST
@@ -70,7 +78,7 @@ static fp_except working_mask;
 #define	 TURN_ON_FPE_TRAPS	/* nothing */
 #endif
 
-#ifdef  MAWK_SV_SIGINFO
+#ifdef  HAVE_SIGINFO_H
 #include <siginfo.h>
 #define  FPE_ZERODIVIDE  FPE_FLTDIV
 #define  FPE_OVERFLOW    FPE_FLTOVF
@@ -81,18 +89,10 @@ static fp_except working_mask;
 
 /* machine dependent changes might be needed here */
 
-#ifdef   MAWK_SV_SIGINFO
 static void
-fpe_catch(int signal, siginfo_t * sip)
+fpe_catch(FPE_ARGS)
 {
-    int why = sip->si_code;
-
-#else
-
-static void
-fpe_catch(int signal, int why)
-{
-#endif /* MAWK_SV_SIGINFO  */
+    FPE_DECL;
 
 #ifdef NOINFO_SIGFPE
     rt_error("floating point exception, probably overflow");
@@ -117,10 +117,7 @@ fpe_init(void)
 {
     TURN_ON_FPE_TRAPS;
 
-#ifndef  MAWK_SV_SIGINFO
-    signal(SIGFPE, fpe_catch);
-
-#else
+#ifdef HAVE_SIGACTION
     {
 	struct sigaction x;
 
@@ -130,9 +127,11 @@ fpe_init(void)
 
 	sigaction(SIGFPE, &x, (struct sigaction *) 0);
     }
+#else
+    signal(SIGFPE, fpe_catch);
 #endif
 
-#ifdef  HAVE_STRTOD_OVF_BUG
+#ifdef HAVE_STRTOD_OVF_BUG
     /* we've already turned the traps on */
     working_mask = fpgetmask();
     entry_mask = working_mask & ~FP_X_DZ & ~FP_X_OFL;
@@ -169,7 +168,7 @@ matherr(struct exception *e)
 int
 matherr(struct exception *e)
 {
-    char *error;
+    char *error = "?";
 
     switch (e->type) {
     case DOMAIN:

@@ -1,6 +1,19 @@
--- $MawkId: CHANGES,v 1.71 2009/12/13 21:20:11 tom Exp $
+-- $MawkId: CHANGES,v 1.76 2009/12/15 01:59:31 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20091214
+	+ drop obsolete config-user, v7 and atarist subdirectories
+
+	+ improve configure checks for sigaction, making the definitions used
+	  in fpe_check.c consistent with matherr.c
+
+	+ build fixes for AIX, Tru64.
+
+	+ add configure check for 'environ'.
+
+	+ remove redundant setlocale() calls; only LC_CTYPE and LC_NUMERIC
+	  are used.
 
 20091213
 	+ add makedeps.sh script to aid in updating object dependencies in

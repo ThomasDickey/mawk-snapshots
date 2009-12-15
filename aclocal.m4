@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.32 2009/12/13 18:19:27 Jonathan.Nieder Exp $
+dnl $MawkId: aclocal.m4,v 1.36 2009/12/15 01:33:25 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -226,6 +226,60 @@ if test ".$system_name" != ".$cf_cv_system_name" ; then
 	AC_MSG_RESULT(Cached system name ($system_name) does not agree with actual ($cf_cv_system_name))
 	AC_MSG_ERROR("Please remove config.cache and try again.")
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_ENVIRON version: 2 updated: 2008/08/22 16:34:45
+dnl ----------------
+dnl Check for data that is usually declared in <unistd.h>, e.g., the 'environ'
+dnl variable.  Define a DECL_xxx symbol if we must declare it ourselves.
+dnl
+dnl $1 = the name to check
+dnl $2 = the assumed type
+AC_DEFUN([CF_CHECK_ENVIRON],
+[
+AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
+    AC_TRY_COMPILE([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <unistd.h> ],
+    ifelse($2,,int,$2) x = (ifelse($2,,int,$2)) $1,
+    [cf_cv_dcl_$1=yes],
+    [cf_cv_dcl_$1=no])
+])
+
+if test "$cf_cv_dcl_$1" = no ; then
+    CF_UPPER(cf_result,decl_$1)
+    AC_DEFINE_UNQUOTED($cf_result)
+fi
+
+# It's possible (for near-UNIX clones) that the data doesn't exist
+CF_CHECK_EXTERN_DATA($1,ifelse($2,,int,$2))
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_EXTERN_DATA version: 3 updated: 2001/12/30 18:03:23
+dnl --------------------
+dnl Check for existence of external data in the current set of libraries.  If
+dnl we can modify it, it's real enough.
+dnl $1 = the name to check
+dnl $2 = its type
+AC_DEFUN([CF_CHECK_EXTERN_DATA],
+[
+AC_CACHE_CHECK(if external $1 exists, cf_cv_have_$1,[
+    AC_TRY_LINK([
+#undef $1
+extern $2 $1;
+],
+    [$1 = 2],
+    [cf_cv_have_$1=yes],
+    [cf_cv_have_$1=no])
+])
+
+if test "$cf_cv_have_$1" = yes ; then
+    CF_UPPER(cf_result,have_$1)
+    AC_DEFINE_UNQUOTED($cf_result)
+fi
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_DISABLE_ECHO version: 11 updated: 2009/12/13 13:16:57
@@ -572,12 +626,12 @@ AC_MSG_RESULT($cf_cv_locale)
 test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_FUNC version: 4 updated: 2009/07/23 05:15:39
+dnl CF_MAWK_CHECK_FUNC version: 5 updated: 2009/12/14 04:19:08
 dnl ------------------
 AC_DEFUN([CF_MAWK_CHECK_FUNC],[
     AC_CHECK_FUNC($1,,[
         CF_UPPER(cf_check_func,NO_$1)
-        AC_DEFINE($cf_check_func)])
+        AC_DEFINE_UNQUOTED($cf_check_func)])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_CHECK_FUNCS version: 3 updated: 2008/09/09 20:32:43
@@ -688,18 +742,19 @@ AC_DEFUN([CF_MAWK_FIND_SIZE_T],
 [CF_MAWK_CHECK_SIZE_T(stddef.h,SIZE_T_STDDEF_H)
 CF_MAWK_CHECK_SIZE_T(sys/types.h,SIZE_T_TYPES_H)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FPE_SIGINFO version: 3 updated: 2009/07/23 05:15:39
+dnl CF_MAWK_FPE_SIGINFO version: 5 updated: 2009/12/14 20:32:04
 dnl -------------------
 dnl SYSv and Solaris FPE checks
 AC_DEFUN([CF_MAWK_FPE_SIGINFO],
-[AC_CHECK_FUNC(sigaction, sigaction=1)
-AC_CHECK_HEADER(siginfo.h,siginfo_h=1)
-if test "$sigaction" = 1 && test "$siginfo_h" = 1 ; then
-   AC_DEFINE(MAWK_SV_SIGINFO)
-else
+[
+if test "x$cf_cv_use_sv_siginfo" = "xno"
+then
    AC_CHECK_FUNC(sigvec,sigvec=1)
-   if test "$sigvec" = 1 && ./fpe_check$ac_exeext  phoney_arg >> defines.out ; then :
-   else AC_DEFINE(NOINFO_SIGFPE)
+   # 1:check_fpe_traps
+   if test "$sigvec" = 1 && ./fpe_check$ac_exeext  phoney_arg >> defines.out ; then
+	   :
+   else
+	   AC_DEFINE(NOINFO_SIGFPE)
    fi
 fi])
 dnl ---------------------------------------------------------------------------
@@ -752,19 +807,38 @@ int main()
     return 0 ;
  }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 5 updated: 2009/09/17 20:44:39
+dnl CF_MAWK_RUN_FPE_TESTS version: 7 updated: 2009/12/14 20:32:04
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
-[if echo "$USER_DEFINES" | grep FPE_TRAPS_ON >/dev/null
-then echo skipping fpe tests based on '$'USER_DEFINES
-else
-AC_TYPE_SIGNAL
 [
+AC_CHECK_FUNC(sigaction)
+test "$ac_cv_func_sigaction" = yes && sigaction=1
+
+AC_CHECK_HEADER(siginfo.h)
+test "$ac_cv_header_siginfo_h" = yes && siginfo_h=1
+
+AC_CACHE_CHECK(if we should use siginfo,cf_cv_use_sv_siginfo,[
+if test "$sigaction" = 1 && test "$siginfo_h" = 1 ; then
+	cf_cv_use_sv_siginfo=yes
+else
+	cf_cv_use_sv_siginfo=no
+fi
+])
+
+AC_TYPE_SIGNAL
+
+cf_FPE_DEFS="$CPPFLAGS -DRETSIGTYPE=$ac_cv_type_signal"
+test "$ac_cv_func_sigaction" = yes && cf_FPE_DEFS="$cf_FPE_DEFS -DHAVE_SIGACTION"
+test "$ac_cv_header_siginfo_h" = yes && cf_FPE_DEFS="$cf_FPE_DEFS -DHAVE_SIGINFO_H"
+
 echo checking handling of floating point exceptions
+
 rm -f fpe_check$ac_exeext 
-$CC $CFLAGS -DRETSIGTYPE=$ac_cv_type_signal -o fpe_check $srcdir/fpe_check.c $MATHLIB
+$CC $CFLAGS $cf_FPE_DEFS -o fpe_check $srcdir/fpe_check.c $MATHLIB 2>&AC_FD_CC
+
 if test -f fpe_check$ac_exeext   ; then
+	# 0:check_strtod_ovf
    ./fpe_check 2>/dev/null
    status=$?
 else 
@@ -774,7 +848,7 @@ fi
 
 case $status in
    0)  ;;  # good news do nothing
-   3)      # reasonably good news]
+   3)      # reasonably good news
 AC_DEFINE(FPE_TRAPS_ON)
 CF_MAWK_FPE_SIGINFO ;;
 
@@ -787,12 +861,16 @@ AC_DEFINE(FPE_TRAPS_ON)
 AC_DEFINE(USE_IEEEFP_H)
 AC_DEFINE_UNQUOTED([TURN_ON_FPE_TRAPS],
 [fpsetmask(fpgetmask()|FP_X_DZ|FP_X_OFL)])
+
 CF_MAWK_FPE_SIGINFO 
+
 # look for strtod overflow bug
 AC_MSG_CHECKING([strtod bug on overflow])
+
 rm -f fpe_check$ac_exeext 
-$CC $CFLAGS -DRETSIGTYPE=$ac_cv_type_signal -DUSE_IEEEFP_H \
-	    -o fpe_check $srcdir/fpe_check.c $MATHLIB
+$CC $CFLAGS $cf_FPE_DEFS -DUSE_IEEEFP_H -o fpe_check $srcdir/fpe_check.c $MATHLIB 2>&AC_FD_CC
+
+# 2:get_fpe_codes
 if ./fpe_check phoney_arg phoney_arg 2>/dev/null
 then 
    AC_MSG_RESULT([no bug])
@@ -847,8 +925,9 @@ EOF
 # quit or not ???
 ;;
 esac 
+
 rm -f fpe_check$ac_exeext   # whew!!]
-fi])
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_MSG_LOG version: 4 updated: 2007/07/29 09:55:12
 dnl ----------
