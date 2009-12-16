@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20091213c
+MANIFEST for mawk, version t20091213d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -50,7 +50,6 @@ memory.c                        string-allocation functions
 memory.h                        string-allocation functions header
 missing.c                       replacements for missing system functions
 nstd.h                          header for missing.c
-packing.list                    mawk 1.3.3 (with Debian package)
 parse.c                         generated C parser
 parse.h                         generated C parser header
 parse.y                         mawk grammar
