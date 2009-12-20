@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.40 2009/12/19 18:19:46 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.43 2009/12/20 17:51:48 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -838,12 +838,12 @@ int main()
     return 0 ;
  }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 10 updated: 2009/12/19 13:18:53
+dnl CF_MAWK_RUN_FPE_TESTS version: 11 updated: 2009/12/20 12:50:49
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
 [
-AC_CHECK_FUNCS(isnan nanf sigaction)
+AC_CHECK_FUNCS(isnan sigaction)
 test "$ac_cv_func_sigaction" = yes && sigaction=1
 
 AC_CHECK_HEADERS(siginfo.h)
@@ -930,6 +930,11 @@ case $cf_status in
 
 	rm -f conftest$ac_exeext
 	CPPFLAGS="$CPPFLAGS -DUSE_IEEEFP_H"
+
+	cat >conftest.$ac_ext <<CF_EOF
+#include <$cf_FPE_SRCS>
+CF_EOF
+
 	if AC_TRY_EVAL(ac_link); then
 	    echo "FPE_CHECK 3:check_strtod_ovf" >&AC_FD_CC
 	    if ./conftest phoney_arg phoney_arg 2>/dev/null
@@ -939,6 +944,8 @@ case $cf_status in
 	       AC_MSG_RESULT([buggy -- will use work around])
 	       AC_DEFINE_UNQUOTED([HAVE_STRTOD_OVF_BUG],1)
 	    fi
+	else
+		AC_MSG_RESULT([$cf_FPE_SRCS failed to compile])
 	fi
     else
 	if test $cf_status != 4 ; then
