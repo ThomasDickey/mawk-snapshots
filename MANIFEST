@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20100124n5
+MANIFEST for mawk, version t20100124n7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -70,6 +70,7 @@ rexp4.c                         regular expressions utility functions
 rexpdb.c                        debugging utilities for regular expressions
 scan.c                          program file-management
 scan.h                          program file-management header
+scancode.c                      mawk 1.3.3 (with Debian package)
 scancode.h                      list of scan-codes for mawk
 sizes.h                         data-type sizes header
 split.c                         functions for splitting field, strings, etc.
@@ -140,6 +141,7 @@ test/reg1.awk                   test pattern with "|" OR
 test/reg2.awk                   test pattern with ranges
 test/reg4.awk                   test-case for square-brackets and embedded "/" or "]"
 test/reg5.awk                   test-case for character-classes
+test/reg6.awk                   testcase for J2C machine state
 test/wc-awk.out                 reference for wc.awk
 test/wc.awk                     test-script which counts words
 test/wfrq-awk.out               reference for wfrq0.awk
