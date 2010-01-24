@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.11 2009/12/15 09:09:23 tom Exp $
+ * $MawkId: rexp.h,v 1.14 2010/01/24 16:39:52 Jonathan.Nieder Exp $
  * @Log: rexp.h,v @
  * Revision 1.2  1993/07/23  13:21:35  mike
  * cleanup rexp code
@@ -60,16 +60,16 @@ PTR RE_realloc(void *, unsigned);
 
 /*  finite machine  state types  */
 
-#define  M_STR     	0
-#define  M_CLASS   	1
-#define  M_ANY     	2
-#define  M_START   	3
-#define  M_END     	4
-#define  M_U       	5
-#define  M_1J      	6
-#define  M_2JA     	7
-#define  M_2JB     	8
-#define  M_ACCEPT  	9
+#define  M_STR     	0	/* matching a literal string */
+#define  M_CLASS   	1	/* character class */
+#define  M_ANY     	2	/* arbitrary character (.) */
+#define  M_START   	3	/* start of string (^) */
+#define  M_END     	4	/* end of string ($) */
+#define  M_U       	5	/* arbitrary string (.*) */
+#define  M_1J      	6	/* mandatory jump */
+#define  M_2JA     	7	/* optional (undesirable) jump */
+#define  M_2JB     	8	/* optional (desirable) jump */
+#define  M_ACCEPT  	9	/* end of match */
 #define  U_ON      	10
 
 #define  U_OFF     0
@@ -137,6 +137,19 @@ typedef struct {
     char *ss;			/* save the match start -- only used by REmatch */
 } RT_STATE;			/* run time state */
 
+/* entry for the position stack */
+typedef struct {
+    /* if we have not advanced beyond this character,
+     * do not bother trying another round.
+     */
+    const char *pos;
+
+    /* run time stack frame responsible for removing this node */
+    int owner;
+    /* previous node is this - this->prev_offset.  See RE_pos_pop() */
+    int prev_offset;
+} RT_POS_ENTRY;
+
 /*  error  trap   */
 extern int REerrno;
 void RE_error_trap(int);
@@ -165,6 +178,55 @@ char *str_str(char *, unsigned, char *, unsigned);
 void RE_lex_init(char *, size_t);
 int RE_lex(MACHINE *);
 void RE_run_stack_init(void);
+void RE_pos_stack_init(void);
 RT_STATE *RE_new_run_stack(void);
+RT_POS_ENTRY *RE_new_pos_stack(void);
+
+extern RT_STATE *RE_run_stack_base;
+extern RT_STATE *RE_run_stack_limit;
+extern RT_STATE *RE_run_stack_empty;
+
+extern RT_POS_ENTRY *RE_pos_stack_base;
+extern RT_POS_ENTRY *RE_pos_stack_limit;
+extern RT_POS_ENTRY *RE_pos_stack_empty;
+
+static /* inline */ RT_POS_ENTRY *
+RE_pos_push(RT_POS_ENTRY *head, const RT_STATE *owner, const char *s)
+{
+    head->pos = s;
+    head->owner = owner - RE_run_stack_base;
+
+    if (++head == RE_pos_stack_limit)
+	head = RE_new_pos_stack();
+    head->prev_offset = 1;
+    return head;
+}
+
+static /* inline */ const char *
+RE_pos_peek(const RT_POS_ENTRY *head)
+{
+    const RT_POS_ENTRY *prev = head - head->prev_offset;
+
+    /* peeking below the bottom node can be useful when debugging,
+     * so we allow it.  See RE_pos_stack_init().
+     */
+    return prev->pos;
+}
+
+static /* inline */ const char *
+RE_pos_pop(RT_POS_ENTRY **head, const RT_STATE *current)
+{
+    RT_POS_ENTRY *prev = *head - (*head)->prev_offset;
+
+    if (prev->owner == current - RE_run_stack_base) /* likely */
+	/* no need to preserve intervening nodes */
+	*head = prev;
+    else if (*head == prev)
+	RE_panic("unbalanced M_SAVE_POS and M_2JC");
+    else
+	(*head)->prev_offset += prev->prev_offset;
+
+    return prev->pos;
+}
 
 #endif /* REXP_H  */
