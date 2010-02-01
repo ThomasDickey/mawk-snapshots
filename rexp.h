@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.16 2010/01/24 17:16:36 Jonathan.Nieder Exp $
+ * $MawkId: rexp.h,v 1.18 2010/01/31 22:13:38 tom Exp $
  * @Log: rexp.h,v @
  * Revision 1.2  1993/07/23  13:21:35  mike
  * cleanup rexp code
@@ -194,7 +194,7 @@ extern RT_POS_ENTRY *RE_pos_stack_limit;
 extern RT_POS_ENTRY *RE_pos_stack_empty;
 
 static /* inline */ RT_POS_ENTRY *
-RE_pos_push(RT_POS_ENTRY *head, const RT_STATE *owner, const char *s)
+RE_pos_push(RT_POS_ENTRY * head, const RT_STATE * owner, const char *s)
 {
     head->pos = s;
     head->owner = owner - RE_run_stack_base;
@@ -205,8 +205,9 @@ RE_pos_push(RT_POS_ENTRY *head, const RT_STATE *owner, const char *s)
     return head;
 }
 
+#if 0
 static /* inline */ const char *
-RE_pos_peek(const RT_POS_ENTRY *head)
+RE_pos_peek(const RT_POS_ENTRY * head)
 {
     const RT_POS_ENTRY *prev = head - head->prev_offset;
 
@@ -215,13 +216,14 @@ RE_pos_peek(const RT_POS_ENTRY *head)
      */
     return prev->pos;
 }
+#endif
 
 static /* inline */ const char *
-RE_pos_pop(RT_POS_ENTRY **head, const RT_STATE *current)
+RE_pos_pop(RT_POS_ENTRY ** head, const RT_STATE * current)
 {
     RT_POS_ENTRY *prev = *head - (*head)->prev_offset;
 
-    if (prev->owner == current - RE_run_stack_base) /* likely */
+    if (prev->owner == current - RE_run_stack_base)	/* likely */
 	/* no need to preserve intervening nodes */
 	*head = prev;
     else if (*head == prev)
