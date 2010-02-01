@@ -1,8 +1,13 @@
--- $MawkId: CHANGES,v 1.94 2010/01/29 20:03:43 Jan.Psota Exp $
+-- $MawkId: CHANGES,v 1.97 2010/02/01 00:54:04 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20100129
+20100131
+	+ modify parsing of -W option to use comma-separated values, e.g.,
+	  "-Wi,e" for "-Winteractive" and "-Werror".
+
+	+ add timestamp to scancode.c, to help manage revisions.
+
 	+ improve configure macro CF_XOPEN_SOURCE, making it remove possibly
 	  conflicting definitions before adding new ones.
 
@@ -13,7 +18,9 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 	+ improve buffering for -Winteractive option.
 
 	+ allow multiple single-character flags after -W, e.g., "-Wie" for
-	  "-Winteractive" and "-Werror".
+	  "-Winteractive" and "-Werror" to permit these to be passed on a
+	  "#"-line of a shell script, e.g.,
+	  	#!/usr/bin/mawk -Wie
 
 	> patches by Jonathan Nieder:
 
@@ -41,6 +48,9 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 
 	+ prevent do_class() from scanning past the end, e.g., if the
 	  terminating zero byte was escaped.
+
+	+ fix regular-expression parsing when a right parenthesis ")" is
+	  found without a preceding left parenthesis.
 
 20091220
 	+ bump version to 1.3.4
