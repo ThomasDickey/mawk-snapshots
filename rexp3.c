@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.17 2010/01/24 19:15:32 Jonathan.Nieder Exp $
+ * $MawkId: rexp3.c,v 1.19 2010/02/17 11:38:24 Jonathan.Nieder Exp $
  * @Log: rexp3.c,v @
  * Revision 1.3  1993/07/24  17:55:15  mike
  * more cleanup
@@ -55,6 +55,7 @@ the GNU General Public License, version 2, 1991.
 	stackp->m = (mx); \
 	stackp->s = (sx); \
 	stackp->sp = (px) - RE_pos_stack_base; \
+	stackp->tp = (px)->prev_offset; \
 	stackp->ss = (ssx); \
 	stackp->u = (ux); \
 } while(0)
@@ -109,16 +110,17 @@ REmatch(char *str,		/* string to test */
     s = (stackp--)->s;
     if (cb_ss) {		/* does new state start too late ? */
 	if (ss) {
-	    if (cb_ss < ss) {
+	    if (cb_ss < ss || (cb_ss == ss && cb_e == str_end)) {
 		goto refill;
 	    }
-	} else if (cb_ss < s) {
+	} else if (cb_ss < s || (cb_ss == s && cb_e == str_end)) {
 	    goto refill;
 	}
     }
 
     m = (stackp + 1)->m;
     sp = RE_pos_stack_base + (stackp + 1)->sp;
+    sp->prev_offset = (stackp + 1)->tp;
     u_flag = (stackp + 1)->u;
 
   reswitch:
