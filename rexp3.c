@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.19 2010/02/17 11:38:24 Jonathan.Nieder Exp $
+ * $MawkId: rexp3.c,v 1.22 2010/02/21 02:05:44 tom Exp $
  * @Log: rexp3.c,v @
  * Revision 1.3  1993/07/24  17:55:15  mike
  * more cleanup
@@ -157,7 +157,10 @@ REmatch(char *str,		/* string to test */
 	goto reswitch;
 
     case M_STR + U_ON + END_OFF:
-	if (!(s = str_str(s, str_len, m->s_data.str, m->s_len))) {
+	if (s >= str_end) {
+	    goto refill;
+	}
+	if (!(s = str_str(s, (unsigned) (str_end - s), m->s_data.str, m->s_len))) {
 	    goto refill;
 	}
 	if (s >= str + strlen(str)) {
@@ -236,6 +239,9 @@ REmatch(char *str,		/* string to test */
 	    } else {
 		s++;
 	    }
+	}
+	if (s >= str_end) {
+	    goto refill;
 	}
 	s++;
 	push(m, s, sp, ss, U_ON);

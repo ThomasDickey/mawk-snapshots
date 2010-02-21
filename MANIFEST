@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20100217
+MANIFEST for mawk, version t20100220
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -90,6 +90,7 @@ examples/nocomment.awk          remove C comments  from a list of files
 examples/primes.awk             find all primes between 2 and STOP (parameter)
 examples/qsort.awk              qsort text files
 man                             subdirectory
+man/Makefile                    makefile for alternate doc-formats
 man/TODO                        to-do list (update to conform with POSIX-1003.1-2004)
 man/mawk.1                      troff source for unix style man pages
 man/mawk.doc                    ascii man pages
@@ -139,6 +140,7 @@ test/reg-awk.out                reference for testing regular expressions
 test/reg0.awk                   test simple pattern matching
 test/reg1.awk                   test pattern with "|" OR
 test/reg2.awk                   test pattern with ranges
+test/reg3.awk                   testcase for pattern
 test/reg4.awk                   test-case for square-brackets and embedded "/" or "]"
 test/reg5.awk                   test-case for character-classes
 test/reg6.awk                   testcase for J2C machine state
