@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawktest,v 1.27 2010/02/21 01:06:26 tom Exp $
+# $MawkId: mawktest,v 1.29 2010/02/21 20:33:20 tom Exp $
 
 # This is a simple test that a new made mawk seems to
 # be working OK.
@@ -49,7 +49,10 @@ Summary() {
 	fi
 }
 
-PROG=mawk
+PROG="${MAWK:-../mawk}"
+
+PATH=/bin:/usr/bin
+export PATH
 
 MAWKBINMODE=7
 export MAWKBINMODE
@@ -70,8 +73,6 @@ STDERR=${TMPDIR-/tmp}/mawk-err$$
 #ulimit -v 25000
 
 trap 'echo mawk_test failed ; rm -f $STDOUT $STDERR; exit 1'  0
-
-PATH=.:$PATH
 
 # find out which mawk we're testing
 $PROG -W version
@@ -146,9 +147,9 @@ backslashes="$backslashes$backslashes$backslashes$backslashes"
 backslashes="$backslashes$backslashes$backslashes$backslashes"
 ( set +e; LC_ALL=C $PROG "/a$backslashes/" $dat 2> $STDERR ; test $? = 2 ) || Fail "buffer-overflow"
 
-# To be uncommented when they stop taking so long to run.
 echo "''Italics with an apostrophe' embedded''" |
 	LC_ALL=C $PROG -f noloop.awk || Fail "noloop2 test"
+# To be uncommented when this stops taking so long to run.
 #echo "''Italics with an apostrophe'' embedded''" |
 #	LC_ALL=C $PROG -f noloop.awk || Fail "noloop1 test"
 

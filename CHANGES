@@ -1,8 +1,29 @@
--- $MawkId: CHANGES,v 1.102 2010/02/21 00:19:40 tom Exp $
+-- $MawkId: CHANGES,v 1.109 2010/02/21 23:03:20 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20100220
+20100221
+	+ modify check in collect_RE() to show the actual limit value, e.g.,
+	  MIN_SPRINTF-2 used for built-in regular expressions.
+
+	+ increase MIN_SPRINTF, used as limit on regular-expression size, to
+	  match the MAX_SPLIT value, i.e., slightly more than doubling the size
+	  (report by Markus Gnam).
+
+	+ further modify makefile to build outside the source-tree.
+
+	+ modify makefile and mawktest to use relative path again, since the
+	  existing script did not work with openSUSE's build (patch by Guido
+	  Berhoerster).
+
+	+ fix makefile's .c.i rule, which lacked CPP definition.
+
+	+ update mawktest.bat script to more/less correspond with mawktest,
+	  for Win32 console except where echo command does not handle the
+	  required quoting syntax.
+
+	+ add vs6.mak, for Visual Studio 6.
+
 	+ modify mawktest script to report results from all tests, rather than
 	  halting on the first failure.
 
@@ -62,7 +83,7 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 
 	+ fix resetting of position stack when backtracking.
 
-	+ modify regular-expression enginge to avoid exponential running time
+	+ modify regular-expression engine to avoid exponential running time
 	  for some regular expression matches in which the first match mawk
 	  finds extends to the end of the string.  This is a new fix for the
 	  gawk noloop2 test, added here for regression testing.

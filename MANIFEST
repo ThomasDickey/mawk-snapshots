@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20100220
+MANIFEST for mawk, version t20100221
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -117,6 +117,8 @@ msdos/makefile.ztc              makefile for ZTC
 msdos/mawk.def                  linker file
 msdos/msc.h                     definitions for MSC
 msdos/tcc.h                     definitions for TCC
+msdos/vs6.h                     use Visual Studio 6 to build console-mawk
+msdos/vs6.mak                   makefile for Visual Studio 6 (not MS-DOS anymore)
 msdos/ztc.h                     definitions for ZTC
 test                            subdirectory
 test/decl-awk.out               reference for test using decl.awk
