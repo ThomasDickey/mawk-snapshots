@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.33 2009/12/17 23:14:20 tom Exp $
+# $MawkId: Makefile.in,v 1.36 2010/02/21 20:30:35 tom Exp $
 # Makefile-template for MAWK
 
 SHELL=/bin/sh
@@ -22,6 +22,7 @@ bindir		= @bindir@
 mandir		= @mandir@/man$(manext)
 
 CC              = @CC@
+CPP             = @CPP@
 
 CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
@@ -67,13 +68,13 @@ check :  mawk_test fpe_test
 $(PROG) : $(OBJS)
 	@ECHO_LD@$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-TESTPATH= PATH=`pwd`:`cd $(srcdir);pwd`/test:/bin:/usr/bin; export PATH
+CHECK	= MAWK=`pwd`/$(PROG); export MAWK; cd $(srcdir)/test; echo "** $@"
 
 mawk_test :  $(PROG)  # test that we have a sane mawk
-	@sh -c '$(TESTPATH); SRCDIR=`cd $(srcdir);pwd`; cd $(srcdir)/test ; echo "** mawktest $$SRCDIR"; mawktest $$SRCDIR'
+	@sh -c '$(CHECK); ./mawktest'
 
 fpe_test :  $(PROG) # test FPEs are handled OK
-	@sh -c '$(TESTPATH); cd $(srcdir)/test ; echo "** fpe_test"; fpe_test'
+	@sh -c '$(CHECK); ./fpe_test'
 
 parse.c  : parse.y
 	@echo  expect 4 shift/reduce conflicts
@@ -93,8 +94,8 @@ array.h : array.w
 	-@rm -f $@
 	notangle -R'"array.h"' array.w | $(NOIDENT) | cpif array.h
 
-scancode.c :  makescan.c  scancode.h nstd.h config.h
-	@ECHO_LD@$(CC) $(CFLAGS) $(CPPFLAGS) -o makescan.exe  makescan.c
+scancode.c :  $(srcdir)/makescan.c  scancode.h nstd.h config.h
+	@ECHO_LD@$(CC) $(CFLAGS) $(CPPFLAGS) -o makescan.exe $(srcdir)/makescan.c
 	rm -f scancode.c
 	./makescan.exe > scancode.c
 	rm makescan.exe
