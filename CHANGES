@@ -1,11 +1,23 @@
--- $MawkId: CHANGES,v 1.113 2010/04/18 22:06:15 tom Exp $
+-- $MawkId: CHANGES,v 1.115 2010/04/19 09:05:58 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20100418
+20100419
+	+ modify split() to handle embedded nulls in the string to split, e.g.,
+		BEGIN{s="a\0b"; print length(s); n = split(s,f,""); print n}
+	  (report by Morris Lee).
+
+	+ modify array.w to update table pointers in the special case where
+	  an array is known to have string-indices, but is later indexed via
+	  integers.  The problem occurs when the array grows large enough to
+	  rehash it, e.g.,
+		BEGIN{a["n"];for(i=1;i<1000;++i)printf "%d\n", a[i]; }
+	  (report by Morris Lee).
+
 	+ increase size of reference-count for strings to unsigned.  It was an
-	  unsigned short, which prevented using arrays larger than 64k (report
-	  by Morris Lee).
+	  unsigned short, which prevented using arrays larger than 64k, e.g.,
+		BEGIN{for(i = 1; i <= 65550; ++i){if(i >= 65534 && i<= 65537) print i; s[i] = "a"}; delete s;}
+	  (report by Morris Lee).
 
 	+ add special case for Solaris 10 (and up) to configure check
 	  CF_XOPEN_SOURCE
