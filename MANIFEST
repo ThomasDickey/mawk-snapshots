@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20100418
+MANIFEST for mawk, version t20100419
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -76,6 +76,7 @@ split.c                         functions for splitting field, strings, etc.
 symtype.h                       types related to symbols are defined here
 types.h                         mawk datatypes header
 version.c                       print mawk's version string
+vs6.mak                         makefile for Visual Studio 6
 zmalloc.c                       memory allocation functions
 zmalloc.h                       memory allocation functions header
 examples                        subdirectory
