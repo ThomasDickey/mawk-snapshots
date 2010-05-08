@@ -1,5 +1,5 @@
 /*
- * $MawkId: regexp_system.c,v 1.10 2009/12/14 09:26:50 tom Exp $
+ * $MawkId: regexp_system.c,v 1.13 2010/05/07 22:15:27 tom Exp $
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -146,14 +146,14 @@ REcompile(char *regexp, size_t len)
  * is a null-terminated string.
  */
 int
-REtest(char *str, unsigned str_len GCC_UNUSED, PTR q)
+REtest(char *str, size_t str_len GCC_UNUSED, PTR q)
 {
     mawk_re_t *re = (mawk_re_t *) q;
     /* fprintf (stderr, "REtest:  \"%s\" ~ /%s/", str, re -> regexp); */
 
     last_used_regexp = re;
 
-    if (regexec(&re->re, str, 0, NULL, 0)) {
+    if (regexec(&re->re, str, (size_t) 0, NULL, 0)) {
 	/* fprintf (stderr, "=1\n"); */
 	return 0;
     } else {
@@ -165,7 +165,7 @@ REtest(char *str, unsigned str_len GCC_UNUSED, PTR q)
 #define MAX_MATCHES 100
 
 char *
-REmatch(char *str, unsigned str_len GCC_UNUSED, PTR q, unsigned *lenp)
+REmatch(char *str, size_t str_len GCC_UNUSED, PTR q, size_t *lenp)
 {
     mawk_re_t *re = (mawk_re_t *) q;
     regmatch_t match[MAX_MATCHES];
@@ -173,8 +173,8 @@ REmatch(char *str, unsigned str_len GCC_UNUSED, PTR q, unsigned *lenp)
 
     last_used_regexp = re;
 
-    if (!regexec(&re->re, str, MAX_MATCHES, match, 0)) {
-	*lenp = match[0].rm_eo - match[0].rm_so;
+    if (!regexec(&re->re, str, (size_t) MAX_MATCHES, match, 0)) {
+	*lenp = (size_t) (match[0].rm_eo - match[0].rm_so);
 	/* fprintf (stderr, "=%i/%i\n", match [0].rm_so, *lenp); */
 	return str + match[0].rm_so;
     } else {

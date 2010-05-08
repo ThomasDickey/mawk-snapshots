@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.12 2010/01/31 22:58:42 tom Exp $
+ * $MawkId: execute.c,v 1.16 2010/05/07 22:03:19 tom Exp $
  * @Log: execute.c,v @
  * Revision 1.13  1996/02/01  04:39:40  mike
  * dynamic array scheme
@@ -394,9 +394,11 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field, replace expr
 	       with  array[expr]
 	     */
-	    cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
-	    cell_destroy(sp);
-	    cellcpy(sp, cp);
+	    if (fp != 0) {
+		cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
+		cell_destroy(sp);
+		cellcpy(sp, cp);
+	    }
 	    break;
 
 	case LAE_PUSHA:
@@ -405,9 +407,11 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field, replace expr
 	       with  & array[expr]
 	     */
-	    cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
-	    cell_destroy(sp);
-	    sp->ptr = (PTR) cp;
+	    if (fp != 0) {
+		cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
+		cell_destroy(sp);
+		sp->ptr = (PTR) cp;
+	    }
 	    break;
 
 	case LA_PUSHA:
@@ -415,18 +419,19 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field. Push this ARRAY
 	       on the eval stack
 	     */
-	    inc_sp();
-	    sp->ptr = fp[(cdp++)->op].ptr;
+	    if (fp != 0) {
+		inc_sp();
+		sp->ptr = fp[(cdp++)->op].ptr;
+	    }
 	    break;
 
 	case SET_ALOOP:
 	    {
 		ALOOP_STATE *ap = ZMALLOC(ALOOP_STATE);
-		unsigned vector_size;
+		size_t vector_size;
 
 		ap->var = (CELL *) sp[-1].ptr;
-		ap->base = ap->ptr = array_loop_vector(
-							  (ARRAY) sp->ptr, &vector_size);
+		ap->base = ap->ptr = array_loop_vector((ARRAY) sp->ptr, &vector_size);
 		ap->limit = ap->base + vector_size;
 		sp -= 2;
 
@@ -440,13 +445,14 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case ALOOP:
 	    {
 		ALOOP_STATE *ap = aloop_state;
-		if (ap->ptr < ap->limit) {
+		if (ap != 0 && (ap->ptr < ap->limit)) {
 		    cell_destroy(ap->var);
 		    ap->var->type = C_STRING;
 		    ap->var->ptr = (PTR) * ap->ptr++;
 		    cdp += cdp->op;
-		} else
+		} else {
 		    cdp++;
+		}
 	    }
 	    break;
 
@@ -454,17 +460,19 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    {
 		/* finish up an array loop */
 		ALOOP_STATE *ap = aloop_state;
-		aloop_state = ap->link;
-		while (ap->ptr < ap->limit) {
-		    free_STRING(*ap->ptr);
-		    ap->ptr++;
+		if (ap != 0) {
+		    aloop_state = ap->link;
+		    while (ap->ptr < ap->limit) {
+			free_STRING(*ap->ptr);
+			ap->ptr++;
+		    }
+		    if (ap->base < ap->limit) {
+			zfree(ap->base,
+			      ((unsigned) (ap->limit - ap->base)
+			       * sizeof(STRING *)));
+		    }
+		    ZFREE(ap);
 		}
-		if (ap->base < ap->limit) {
-		    zfree(ap->base,
-			  ((unsigned) (ap->limit - ap->base)
-			   * sizeof(STRING *)));
-		}
-		ZFREE(ap);
 	    }
 	    break;
 
@@ -843,7 +851,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	case _CAT:
 	    {
-		unsigned len1, len2;
+		size_t len1, len2;
 		char *str1, *str2;
 		STRING *b;
 
@@ -1154,7 +1162,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case OL_GL:
 	    {
 		char *p;
-		unsigned len;
+		size_t len;
 
 		if (!(p = FINgets(main_fin, &len))) {
 		    if (!end_start)
@@ -1177,7 +1185,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case OL_GL_NR:
 	    {
 		char *p;
-		unsigned len;
+		size_t len;
 
 		if (!(p = FINgets(main_fin, &len))) {
 		    if (!end_start)
@@ -1296,7 +1304,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 		/* cleanup the callee's arguments */
 		/* putting return value at top of eval stack */
-		if (sp >= nfp) {
+		if ((type_p != 0) && (sp >= nfp)) {
 		    cp = sp + 1;	/* cp -> the function return */
 
 		    do {
@@ -1305,8 +1313,9 @@ execute(INST * cdp,		/* code ptr, start execution here */
 				array_clear(sp->ptr);
 				ZFREE((ARRAY) sp->ptr);
 			    }
-			} else
+			} else {
 			    cell_destroy(sp);
+			}
 
 			type_p--;
 			sp--;

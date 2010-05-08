@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.16 2010/02/17 10:52:07 Jonathan.Nieder Exp $
+ * $MawkId: rexp2.c,v 1.18 2010/05/07 22:08:36 tom Exp $
  * @Log: rexp2.c,v @
  * Revision 1.3  1993/07/24  17:55:12  mike
  * more cleanup
@@ -110,8 +110,8 @@ RE_pos_stack_init(void)
 RT_STATE *
 RE_new_run_stack(void)
 {
-    unsigned oldsize = (unsigned) (RE_run_stack_limit - RE_run_stack_base);
-    unsigned newsize = oldsize + STACKGROWTH;
+    size_t oldsize = (size_t) (RE_run_stack_limit - RE_run_stack_base);
+    size_t newsize = oldsize + STACKGROWTH;
 
 #ifdef	LMDOS			/* large model DOS */
     /* have to worry about overflow on multiplication (ugh) */
@@ -141,8 +141,8 @@ RE_new_run_stack(void)
 RT_POS_ENTRY *
 RE_new_pos_stack(void)
 {
-    unsigned oldsize = (unsigned) (RE_pos_stack_limit - RE_pos_stack_base);
-    unsigned newsize = oldsize + STACKGROWTH;
+    size_t oldsize = (size_t) (RE_pos_stack_limit - RE_pos_stack_base);
+    size_t newsize = oldsize + STACKGROWTH;
 
     /* FIXME: handle overflow on multiplication for large model DOS
      * (see RE_new_run_stack()).
@@ -205,7 +205,7 @@ slow_push(
  */
 int
 REtest(char *str,		/* string to test */
-       unsigned len,		/* ...its length */
+       size_t len,		/* ...its length */
        PTR machine)		/* compiled regular-expression */
 {
     register STATE *m = (STATE *) machine;
@@ -219,7 +219,7 @@ REtest(char *str,		/* string to test */
 
     /* handle the easy case quickly */
     if ((m + 1)->s_type == M_ACCEPT && m->s_type == M_STR) {
-	return str_str(s, len, m->s_data.str, m->s_len) != (char *) 0;
+	return str_str(s, len, m->s_data.str, (size_t) m->s_len) != (char *) 0;
     } else {
 	u_flag = U_ON;
 	stackp = RE_run_stack_empty;
@@ -240,7 +240,7 @@ REtest(char *str,		/* string to test */
 
     switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
-	if (strncmp(s, m->s_data.str, m->s_len))
+	if (strncmp(s, m->s_data.str, (size_t) m->s_len))
 	    goto refill;
 	s += m->s_len;
 	m++;
@@ -254,7 +254,7 @@ REtest(char *str,		/* string to test */
 	goto reswitch;
 
     case M_STR + U_ON + END_OFF:
-	if (!(s = str_str(s, (unsigned) (str_end - s), m->s_data.str, m->s_len)))
+	if (!(s = str_str(s, (size_t) (str_end - s), m->s_data.str, (size_t) m->s_len)))
 	    goto refill;
 	push(m, s + 1, sp, U_ON);
 	s += m->s_len;
@@ -264,7 +264,7 @@ REtest(char *str,		/* string to test */
 
     case M_STR + U_ON + END_ON:
 	t = (str_end - s) - m->s_len;
-	if (t < 0 || memcmp(s + t, m->s_data.str, m->s_len))
+	if (t < 0 || memcmp(s + t, m->s_data.str, (size_t) m->s_len))
 	    goto refill;
 	s = str_end;
 	m++;

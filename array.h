@@ -1,7 +1,7 @@
 /*
 array.h
 
-@MawkId: array.w,v 1.9 2010/04/19 00:20:19 tom Exp @
+@MawkId: array.w,v 1.13 2010/05/07 22:20:12 tom Exp @
 
 copyright 1991-96, Michael D. Brennan
 
@@ -31,8 +31,8 @@ It's easiest to read or modify this file by working with array.w.
 
 typedef struct array {
    PTR ptr ;  /* What this points to depends on the type */
-   unsigned size ; /* number of elts in the table */
-   unsigned limit ; /* Meaning depends on type */
+   size_t size ; /* number of elts in the table */
+   size_t limit ; /* Meaning depends on type */
    unsigned hmask ; /* bitwise and with hash value to get table index */
    short type ;  /* values in AY_NULL .. AY_SPLIT */
 } *ARRAY ;
@@ -49,9 +49,9 @@ typedef struct array {
 
 CELL* array_find(ARRAY, CELL*, int);
 void  array_delete(ARRAY, CELL*);
-void  array_load(ARRAY, int);
+void  array_load(ARRAY, size_t);
 void  array_clear(ARRAY);
-STRING** array_loop_vector(ARRAY, unsigned*);
+STRING** array_loop_vector(ARRAY, size_t*);
 CELL* array_cat(CELL*, int);
 
 #endif /* ARRAY_H */
