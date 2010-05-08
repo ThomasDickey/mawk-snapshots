@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.10 2009/07/23 22:42:18 tom Exp $
+ * $MawkId: zmalloc.c,v 1.12 2010/05/07 22:11:34 tom Exp $
  * @Log: zmalloc.c,v @
  * Revision 1.6  1995/06/06  00:18:35  mike
  * change mawk_exit(1) to mawk_exit(2)
@@ -100,7 +100,7 @@ typedef union zblock {
 static ZBLOCK *pool[POOLSZ];
 
 PTR
-zmalloc(unsigned size)
+zmalloc(size_t size)
 {
     unsigned blocks = BytesToBlocks(size);
     register ZBLOCK *p;
@@ -108,7 +108,7 @@ zmalloc(unsigned size)
     static ZBLOCK *avail;
 
     if (blocks > POOLSZ) {
-	p = (ZBLOCK *) malloc(BlocksToBytes(blocks));
+	p = (ZBLOCK *) malloc((size_t) BlocksToBytes(blocks));
 	if (!p)
 	    out_of_mem();
     } else {
@@ -124,10 +124,10 @@ zmalloc(unsigned size)
 		    pool[amt_avail] = avail;
 		}
 
-		if (!(avail = (ZBLOCK *) malloc(CHUNK * ZBLOCKSZ))) {
+		if (!(avail = (ZBLOCK *) malloc((size_t) (CHUNK * ZBLOCKSZ)))) {
 		    /* if we get here, almost out of memory */
 		    amt_avail = 0;
-		    p = (ZBLOCK *) malloc(BlocksToBytes(blocks));
+		    p = (ZBLOCK *) malloc((size_t) BlocksToBytes(blocks));
 		    if (!p)
 			out_of_mem();
 		    return (PTR) p;
@@ -145,7 +145,7 @@ zmalloc(unsigned size)
 }
 
 void
-zfree(PTR p, unsigned size)
+zfree(PTR p, size_t size)
 {
     unsigned blocks = BytesToBlocks(size);
 
@@ -158,7 +158,7 @@ zfree(PTR p, unsigned size)
 }
 
 PTR
-zrealloc(PTR p, unsigned old_size, unsigned new_size)
+zrealloc(PTR p, size_t old_size, size_t new_size)
 {
     register PTR q;
 
@@ -173,14 +173,3 @@ zrealloc(PTR p, unsigned old_size, unsigned new_size)
     }
     return q;
 }
-
-#ifndef	 __GNUC__
-/* pacifier for Bison , this is really dead code */
-PTR
-alloca(unsigned sz)
-{
-    /* hell just froze over */
-    exit(100);
-    return (PTR) 0;
-}
-#endif

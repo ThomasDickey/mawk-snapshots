@@ -1,6 +1,20 @@
--- $MawkId: CHANGES,v 1.115 2010/04/19 09:05:58 tom Exp $
+-- $MawkId: CHANGES,v 1.120 2010/05/07 11:01:14 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20100507
+	+ cleanup gcc warnings for 64-bit platform, e.g., use size_t rather
+	  than unsigned, etc.
+	+ fix warnings from clang --analyze
+	+ update/improve configure script
+	  + modify CF_GCC_VERSION to ignore stderr, e.g., from c89 alias
+	  + modify CF_GCC_WARNINGS, moving -W and -Wall into the list to check,
+	    since c89 alias for gcc complains about these options.
+	  + add --disable-leaks and related options, for testing.
+	  + add lint rule to makefile.
+	  + add configure-check for ctags to work with pkgsrc.
+	+ amend change of array.w, fixes a regression in "delete" (report by
+	  Heiner Marxen).
 
 20100419
 	+ modify split() to handle embedded nulls in the string to split, e.g.,
@@ -22,7 +36,7 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 	+ add special case for Solaris 10 (and up) to configure check
 	  CF_XOPEN_SOURCE
 
-	+ refactored configure check CF_REGEX 
+	+ refactored configure check CF_REGEX
 
 20100224
 	+ add a configure check for large files (report by Sean Kumar).

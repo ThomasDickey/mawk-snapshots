@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.h,v 1.2 2009/07/24 00:04:06 tom Exp $
+ * $MawkId: code.h,v 1.4 2010/05/07 09:49:46 tom Exp $
  * @Log: code.h,v @
  * Revision 1.5  1995/06/18  19:42:15  mike
  * Remove some redundant declarations and add some prototypes
@@ -63,16 +63,18 @@ extern CODEBLOCK active_code;
 extern CODEBLOCK *main_code_p, *begin_code_p, *end_code_p;
 
 extern INST *main_start, *begin_start, *end_start;
-extern unsigned main_size, begin_size;
+extern size_t main_size, begin_size;
 extern INST *execution_start;
 extern INST *next_label;	/* next statements jump to here */
 extern int dump_code_flag;
+
+#define CodeOffset(base) (int)(code_ptr - (base))
 
 #define code_ptr  active_code.ptr
 #define code_base active_code.base
 #define code_warn active_code.warn
 #define code_limit active_code.limit
-#define code_offset (code_ptr-code_base)
+#define code_offset CodeOffset(code_base)
 
 #define INST_BYTES(x) (sizeof(INST)*(unsigned)(x))
 
@@ -85,7 +87,7 @@ extern int exit_code;
 
 void xcode2(int, PTR);
 void code2op(int, int);
-INST *code_shrink(CODEBLOCK *, unsigned *);
+INST *code_shrink(CODEBLOCK *, size_t *);
 void code_grow(void);
 void set_code(void);
 void be_setup(int);
