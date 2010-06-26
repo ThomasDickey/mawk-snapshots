@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20100618
+MANIFEST for mawk, version t20100625
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -121,6 +121,22 @@ msdos/tcc.h                     definitions for TCC
 msdos/vs6.h                     use Visual Studio 6 to build console-mawk
 msdos/vs6.mak                   makefile for Visual Studio 6 (not MS-DOS anymore)
 msdos/ztc.h                     definitions for ZTC
+package/debian                  subdirectory
+package/debian/changelog        start working on debian package
+package/debian/compat           debian build-script
+package/debian/control          debian build-script
+package/debian/copyright        debian build-script
+package/debian/docs             debian build-script
+package/debian/postinst         debian build-script
+package/debian/preinst          debian build script
+package/debian/prerm            debian build-script
+package/debian/rules            debian build-script
+package/debian/source           subdirectory
+package/debian/source/format    debian build script
+package/debian                  subdirectory
+package/debian/watch            debian build-script
+package                         subdirectory
+package/mawk.spec               RPM script for mawk
 test                            subdirectory
 test/decl-awk.out               reference for test using decl.awk
 test/fpe_test                   scripts to test if fpe handling compiled OK
