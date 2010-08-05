@@ -1,6 +1,20 @@
--- $MawkId: CHANGES,v 1.127 2010/06/25 09:43:31 tom Exp $
+-- $MawkId: CHANGES,v 1.134 2010/07/24 11:59:10 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20100718
+	+ add configure --enable-trace, to consolidate various debugging
+	  traces which were written to stderr.  This writes to Trace.out.
+	+ modify zmalloc.c to make it simpler to use the --disable-leaks
+	  configure script option to analyze memory leaks.  The memory pool
+	  which interferes with analysis can be disabled by defining
+	  DEBUG_ZMALLOC.
+	+ (IN-PROGRESS) convert gsub() function from recursive, to
+	  non-recursive to lessen use of program stack (Debian #158481).
+	+ escape some dashes in manpage, to work with groff.
+	+ change section for Debian package to "interpreters" (Debian #442071).
+	+ fix printable token value for SC_MATCH in scan.c (report by Heiner
+	  Marxen).
 
 20100625
 	+ correct translation of octal and hex escapes for system regular

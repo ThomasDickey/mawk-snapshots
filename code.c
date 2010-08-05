@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.5 2010/05/07 09:47:06 tom Exp $
+ * $MawkId: code.c,v 1.26 2010/08/05 00:17:08 tom Exp $
  * @Log: code.c,v @
  * Revision 1.6  1995/06/18  19:42:13  mike
  * Remove some redundant declarations and add some prototypes
@@ -53,6 +53,11 @@ the GNU General Public License, version 2, 1991.
 #include "jmp.h"
 #include "field.h"
 
+#ifdef NO_LEAKS
+#include "repl.h"
+#include "scan.h"
+#endif
+
 static CODEBLOCK *new_code(void);
 
 CODEBLOCK active_code;
@@ -60,7 +65,7 @@ CODEBLOCK active_code;
 CODEBLOCK *main_code_p, *begin_code_p, *end_code_p;
 
 INST *begin_start, *main_start, *end_start;
-size_t begin_size, main_size;
+size_t begin_size, main_size, end_size;
 
 INST *execution_start = 0;
 
@@ -95,6 +100,7 @@ code_shrink(CODEBLOCK * p, size_t *sizep)
     *sizep = newsize;
 
     retval = (INST *) zrealloc(p->base, oldsize, newsize);
+    TRACE(("code_shrink old %p %lu, new %p %lu\n", p->base, oldsize, retval, newsize));
     ZFREE(p);
     return retval;
 }
@@ -160,17 +166,16 @@ set_code(void)
 	execution_start = main_start;
     } else {			/* only BEGIN */
 	zfree(code_base, INST_BYTES(PAGESZ));
+	code_base = 0;
 	ZFREE(main_code_p);
     }
 
     /* set the END code */
     if (end_code_p) {
-	size_t dummy;
-
 	active_code = *end_code_p;
 	code2op(_EXIT0, _HALT);
 	*end_code_p = active_code;
-	end_start = code_shrink(end_code_p, &dummy);
+	end_start = code_shrink(end_code_p, &end_size);
     }
 
     /* set the BEGIN code */
@@ -242,3 +247,199 @@ be_setup(int scope)
 	active_code = *end_code_p;
     }
 }
+
+#ifdef NO_LEAKS
+void
+free_cell_data(CELL * cp)
+{
+    switch (cp->type) {
+    case C_RE:
+	TRACE(("\t... C_RE\n"));
+	re_destroy(cp->ptr);
+	zfree(cp, sizeof(CELL));
+	break;
+    case C_REPL:
+	TRACE(("\t... C_REPL\n"));
+	repl_destroy(cp);
+	zfree(cp, sizeof(CELL));
+	break;
+    case C_REPLV:
+	TRACE(("\t... C_REPLV\n"));
+	repl_destroy(cp);
+	zfree(cp, sizeof(CELL));
+	break;
+    case C_MBSTRN:
+    case C_STRING:
+    case C_STRNUM:
+	if (cp >= (field + (nf < 1 ? 1 : nf)) || (cp < field)) {
+	    cell_destroy(cp);
+	}
+	break;
+    }
+}
+
+void
+free_codes(const char *tag, INST * base, size_t size)
+{
+    INST *cdp;
+    INST *last = base + (size / sizeof(*last));
+    CELL *cp;
+
+    TRACE(("free_codes(%s) base %p, size %lu\n", tag, base, size));
+    for (cdp = base; cdp < last; ++cdp) {
+	TRACE(("code %03d:%s (%d %#x)\n",
+	       (int) (cdp - base),
+	       da_op_name(cdp),
+	       cdp->op,
+	       cdp->op));
+
+	switch ((MAWK_OPCODES) (cdp->op)) {
+	case AE_PUSHA:
+	case AE_PUSHI:
+	case A_CAT:
+	case LAE_PUSHA:
+	case _MATCH0:
+	case _MATCH1:
+	    ++cdp;		/* skip pointer */
+	    cp = (CELL *) (cdp->ptr);
+	    if (cp != 0) {
+		TRACE(("\tparam %p type %d\n", cp, cp->type));
+		free_cell_data(cp);
+	    } else {
+		TRACE(("\tparam %p type ??\n", cp));
+	    }
+	    break;
+	case A_PUSHA:
+	case L_PUSHA:
+	case L_PUSHI:
+	case LA_PUSHA:
+	case _BUILTIN:
+	case _PRINT:
+	case _PUSHA:
+	case _PUSHI:
+	case _PUSHINT:
+	    ++cdp;		/* skip value */
+	    TRACE(("\tparam %p\n", cdp->ptr));
+	    break;
+	case _PUSHD:
+	    ++cdp;		/* skip value */
+	    TRACE(("\tparam %p\n", cdp->ptr));
+	    if (cdp->ptr != &double_one && cdp->ptr != &double_zero)
+		zfree(cdp->ptr, sizeof(double));
+	    break;
+	case F_PUSHI:
+	    ++cdp;		/* skip pointer */
+	    cp = (CELL *) (cdp->ptr);
+	    TRACE(("\tparam %p type %d\n", cp, cp->type));
+	    ++cdp;		/* skip integer */
+	    break;
+	case _PUSHS:
+	    ++cdp;		/* skip value */
+	    TRACE(("\tparam %p\n", cdp->ptr));
+	    free_STRING((STRING *) (cdp->ptr));
+	    break;
+	case _RANGE:
+	    cdp += 4;		/* PAT1 */
+	    break;
+	case _CALL:
+	    TRACE(("\tskipping %d\n", 1 + cdp[2].op));
+	    cdp += 1 + cdp[2].op;
+	    break;
+	case A_DEL:
+	case A_TEST:
+	case DEL_A:
+	case FE_PUSHA:
+	case FE_PUSHI:
+	case F_ADD_ASG:
+	case F_ASSIGN:
+	case F_DIV_ASG:
+	case F_MOD_ASG:
+	case F_MUL_ASG:
+	case F_POST_DEC:
+	case F_POST_INC:
+	case F_POW_ASG:
+	case F_PRE_DEC:
+	case F_PRE_INC:
+	case F_PUSHA:
+	case F_SUB_ASG:
+	case NF_PUSHI:
+	case OL_GL:
+	case OL_GL_NR:
+	case POP_AL:
+	case _ADD:
+	case _ADD_ASG:
+	case _ASSIGN:
+	case _CAT:
+	case _DIV:
+	case _DIV_ASG:
+	case _EQ:
+	case _EXIT0:		/* this does free memory... */
+	case _EXIT:
+	case _GT:
+	case _GTE:
+	case _HALT:
+	case _JMAIN:
+	case _LT:
+	case _LTE:
+	case _MATCH2:
+	case _MOD:
+	case _MOD_ASG:
+	case _MUL:
+	case _MUL_ASG:
+	case _NEQ:
+	case _NEXT:
+	case _NOT:
+	case _OMAIN:
+	case _POP:
+	case _POST_DEC:
+	case _POST_INC:
+	case _POW:
+	case _POW_ASG:
+	case _PRE_DEC:
+	case _PRE_INC:
+	case _RET0:
+	case _RET:
+	case _STOP:
+	case _SUB:
+	case _SUB_ASG:
+	case _TEST:
+	case _UMINUS:
+	case _UPLUS:
+	    break;
+	case _JNZ:
+	case _JZ:
+	case _LJZ:
+	case _LJNZ:
+	case _JMP:
+	case _PUSHC:
+	case ALOOP:
+	case LAE_PUSHI:
+	case SET_ALOOP:
+	    ++cdp;		/* cdp->op is literal param */
+	    break;
+	}
+    }
+    zfree(base, size);
+}
+
+void
+code_leaks(void)
+{
+    TRACE(("code_leaks\n"));
+    if (begin_start != 0) {
+	free_codes("BEGIN", begin_start, begin_size);
+	begin_start = 0;
+	begin_size = 0;
+    }
+    if (end_start != 0) {
+	free_codes("END", end_start, end_size);
+	end_start = 0;
+	end_size = 0;
+    }
+    if (main_start != 0) {
+	free_codes("MAIN", main_start, main_size);
+	main_start = 0;
+	main_size = 0;
+    }
+}
+#endif

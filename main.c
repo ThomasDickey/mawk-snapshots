@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: main.c,v 1.8 2009/12/14 00:23:56 tom Exp $
+ * $MawkId: main.c,v 1.20 2010/08/03 00:50:24 tom Exp $
  * @Log: main.c,v @
  * Revision 1.4  1995/06/09  22:57:19  mike
  * parse() no longer returns on error
@@ -44,6 +44,7 @@ the GNU General Public License, version 2, 1991.
 /*  main.c  */
 
 #include "mawk.h"
+#include "bi_vars.h"
 #include "init.h"
 #include "code.h"
 #include "files.h"
@@ -86,6 +87,21 @@ mawk_exit(int x)
 #else
 #ifdef  HAVE_FAKE_PIPES
     close_fake_pipes();
+#endif
+#endif
+
+#ifdef NO_LEAKS
+    code_leaks();
+    scan_leaks();
+    rexp_leaks();
+    bi_vars_leaks();
+    hash_leaks();
+    array_leaks();
+    files_leaks();
+    field_leaks();
+    zmalloc_leaks();
+#if OPT_TRACE > 0
+    trace_leaks();
 #endif
 #endif
 

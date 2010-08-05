@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.7 2010/05/07 08:18:41 tom Exp $
+ * $MawkId: symtype.h,v 1.11 2010/08/02 09:16:19 tom Exp $
  * @Log: symtype.h,v @
  * Revision 1.6  1996/02/01  04:39:43  mike
  * dynamic array scheme
@@ -80,7 +80,7 @@ typedef struct al_state {
     ANODE *ptr;
 } ALOOP_STATE;
 
-int inc_aloop_state(ALOOP_STATE *);
+extern int inc_aloop_state(ALOOP_STATE *);
 #endif
 
 /* for parsing  (i,j) in A  */
@@ -96,12 +96,13 @@ typedef struct {
 typedef struct fblock {
     const char *name;
     INST *code;
+    size_t size;
     unsigned short nargs;
     char *typev;		/* array of size nargs holding types */
 } FBLOCK;			/* function block */
 
-void add_to_fdump_list(FBLOCK *);
-void fdump(void);
+extern void add_to_fdump_list(FBLOCK *);
+extern void fdump(void);
 
 /*-------------------------
   elements of the symbol table
@@ -171,21 +172,27 @@ typedef struct fcall {
 
 extern FCALL_REC *resolve_list;
 
-void resolve_fcalls(void);
-void check_fcall(FBLOCK *callee, int call_scope, int move_level,
-                 FBLOCK *call, CA_REC *arg_list);
-void relocate_resolve_list(int, int, FBLOCK *, int, unsigned, int);
+extern void resolve_fcalls(void);
+extern void check_fcall(FBLOCK * callee, int call_scope, int move_level,
+			FBLOCK * call, CA_REC * arg_list);
+extern void relocate_resolve_list(int, int, FBLOCK *, int, unsigned, int);
 
 /* hash.c */
-unsigned hash(const char *);
-unsigned hash2(const char *, size_t);
-SYMTAB *insert(const char *);
-SYMTAB *find(const char *);
-const char *reverse_find(int, PTR);
-SYMTAB *save_id(const char *);
-void restore_ids(void);
+extern unsigned hash(const char *);
+extern unsigned hash2(const char *, size_t);
+extern SYMTAB *insert(const char *);
+extern SYMTAB *find(const char *);
+extern const char *reverse_find(int, PTR);
+extern SYMTAB *save_id(const char *);
+extern void restore_ids(void);
 
 /* error.c */
-void type_error(SYMTAB *);
+extern void type_error(SYMTAB *);
+
+#ifdef NO_LEAKS
+extern void no_leaks_array(ARRAY);
+#else
+#define no_leaks_array(a)	/* nothing */
+#endif
 
 #endif /* SYMTYPE_H */

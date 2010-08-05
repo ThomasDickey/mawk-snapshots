@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.10 2010/05/07 08:15:08 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.16 2010/08/04 09:17:25 tom Exp $
  * @Log: re_cmpl.c,v @
  * Revision 1.6  1994/12/13  00:14:58  mike
  * \\ -> \ on second replacement scan
@@ -47,8 +47,8 @@ the GNU General Public License, version 2, 1991.
 #include "repl.h"
 
 typedef struct re_node {
+    RE_DATA re;			/* keep this first, for re_destroy() */
     STRING *sval;
-    RE_DATA re;
     struct re_node *link;
 } RE_NODE;
 
@@ -134,6 +134,29 @@ re_uncompile(PTR m)
 #endif
 }
 
+void
+re_destroy(PTR m)
+{
+    RE_NODE *p = (RE_NODE *) m;
+    RE_NODE *q;
+    RE_NODE *r;
+
+    if (p != 0) {
+	free_STRING(p->sval);
+	REdestroy(p->re.compiled);
+	for (q = re_list, r = 0; q != 0; r = q, q = q->link) {
+	    if (q == p) {
+		if (r != 0)
+		    r->link = q->link;
+		else
+		    re_list = q->link;
+		free(q);
+		break;
+	    }
+	}
+    }
+}
+
 /*=================================================*/
 /*  replacement	 operations   */
 
@@ -197,13 +220,16 @@ REPL_compile(STRING * sval)
     if (count == 1 && split_buff[0]) {
 	cp->type = C_REPL;
 	cp->ptr = (PTR) split_buff[0];
+	USED_SPLIT_BUFF(0);
     } else {
 	STRING **sp = (STRING **)
 	(cp->ptr = zmalloc(sizeof(STRING *) * count));
 	VCount j = 0;
 
-	while (j < count)
+	while (j < count) {
 	    *sp++ = split_buff[j++];
+	    USED_SPLIT_BUFF(j - 1);
+	}
 
 	cp->type = C_REPLV;
 	cp->vcnt = count;
@@ -220,9 +246,9 @@ repl_destroy(CELL * cp)
     register STRING **p;
     VCount cnt;
 
-    if (cp->type == C_REPL)
+    if (cp->type == C_REPL) {
 	free_STRING(string(cp));
-    else {			/* an C_REPLV           */
+    } else {			/* an C_REPLV           */
 	p = (STRING **) cp->ptr;
 	for (cnt = cp->vcnt; cnt; cnt--) {
 	    if (*p) {
