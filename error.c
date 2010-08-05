@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.11 2009/12/17 00:05:10 tom Exp $
+ * $MawkId: error.c,v 1.14 2010/07/28 23:05:21 tom Exp $
  * @Log: error.c,v @
  * Revision 1.6  1995/06/06  00:18:22  mike
  * change mawk_exit(1) to mawk_exit(2)
@@ -143,7 +143,7 @@ missing(int c, const char *n, unsigned ln)
    off our back.
 */
 void
-yyerror(char *s GCC_UNUSED)
+yyerror(const char *s GCC_UNUSED)
 {
     const char *ss = 0;
     struct token_str *p;
@@ -420,3 +420,34 @@ simple_vfprintf(FILE *fp, char *format, va_list argp)
 }
 
 #endif /* USE_SIMPLE_VFPRINTF */
+
+#if OPT_TRACE > 0
+static FILE *trace_fp;
+
+void
+Trace(const char *format,...)
+{
+    va_list args;
+
+    if (trace_fp == 0)
+	trace_fp = fopen("Trace.out", "w");
+
+    if (trace_fp == 0)
+	rt_error("cannot open Trace.out");
+
+    va_start(args, format);
+    vfprintf(trace_fp, format, args);
+    va_end(args);
+}
+
+#ifdef NO_LEAKS
+void
+trace_leaks(void)
+{
+    if (trace_fp != 0) {
+	fclose(trace_fp);
+	trace_fp = 0;
+    }
+}
+#endif
+#endif

@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.22 2010/06/25 22:34:36 tom Exp $
+ * $MawkId: scan.c,v 1.29 2010/08/01 20:12:39 tom Exp $
  * @Log: scan.c,v @
  * Revision 1.8  1996/07/28 21:47:05  mike
  * gnuish patch
@@ -75,6 +75,9 @@ the GNU General Public License, version 2, 1991.
 #endif
 
 #include  "files.h"
+
+double double_zero = 0.0;
+double double_one = 1.0;
 
 /* static functions */
 static void scan_fillbuff(void);
@@ -146,7 +149,7 @@ scan_cleanup(void)
 {
     if (program_fd >= 0)
 	zfree(buffer, (size_t) (BUFFSZ + 1));
-    else
+    if (program_string)
 	free_STRING(program_string);
 
     if (program_fd > 0)
@@ -314,6 +317,10 @@ yylex(void)
 
     token_lineno = lineno;
 
+#ifdef NO_LEAKS
+    memset(&yylval, 0, sizeof(yylval));
+#endif
+
   reswitch:
 
     switch (scan_code[c = next()]) {
@@ -448,7 +455,7 @@ yylex(void)
 	ct_ret(RBOX);
 
     case SC_MATCH:
-	string_buff[0] = '~';
+	string_buff[1] = '~';
 	string_buff[0] = 0;
 	yylval.ival = 1;
 	ct_ret(MATCH);
@@ -568,8 +575,6 @@ yylex(void)
 	{
 	    double d;
 	    int flag;
-	    static double double_zero = 0.0;
-	    static double double_one = 1.0;
 
 	    if ((d = collect_decimal(c, &flag)) == 0.0) {
 		if (flag)
@@ -644,6 +649,7 @@ yylex(void)
 			zmalloc(sizeof(FBLOCK));
 		    stp->stval.fbp->name = stp->name;
 		    stp->stval.fbp->code = (INST *) 0;
+		    stp->stval.fbp->size = 0;
 		    yylval.fbp = stp->stval.fbp;
 		    current_token = FUNCT_ID;
 		} else {
@@ -960,7 +966,7 @@ collect_string(void)
 	case 0:		/* unterminated string */
 	    compile_error(
 			     "runaway string constant \"%.10s ...",
-			     string_buff, token_lineno);
+			     string_buff);
 	    mawk_exit(2);
 
 	case SC_ESCAPE:
@@ -1066,7 +1072,7 @@ collect_RE(void)
 	case 0:		/* unterminated re */
 	    compile_error(
 			     "runaway regular expression /%.10s ...",
-			     string_buff, token_lineno);
+			     string_buff);
 	    mawk_exit(2);
 
 	case SC_ESCAPE:
@@ -1098,3 +1104,15 @@ collect_RE(void)
     free_STRING(sval);
     return RE;
 }
+
+#ifdef NO_LEAKS
+void
+scan_leaks(void)
+{
+    TRACE(("scan_leaks\n"));
+    if (yylval.ptr) {
+	free(yylval.ptr);
+	yylval.ptr = 0;
+    }
+}
+#endif

@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.h,v 1.4 2010/05/07 00:39:08 tom Exp $
+ * $MawkId: zmalloc.h,v 1.6 2010/07/24 14:32:48 tom Exp $
  * @Log: zmalloc.h,v @
  * Revision 1.2  1993/07/04  12:52:22  mike
  * start on autoconfig changes
@@ -30,12 +30,11 @@ the GNU General Public License, version 2, 1991.
 
 #include "nstd.h"
 
-PTR  zmalloc(size_t);
-void zfree(PTR, size_t);
-PTR  zrealloc(PTR, size_t, size_t);
+extern PTR zmalloc(size_t);
+extern void zfree(PTR, size_t);
+extern PTR zrealloc(PTR, size_t, size_t);
 
 #define ZMALLOC(type)  ((type*)zmalloc(sizeof(type)))
 #define ZFREE(p)	zfree(p,sizeof(*(p)))
 
-
-#endif  /* ZMALLOC_H */
+#endif /* ZMALLOC_H */
