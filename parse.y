@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.11 2010/08/02 08:56:20 tom Exp $
+ * $MawkId: parse.y,v 1.13 2010/08/13 00:00:56 tom Exp $
  * @Log: parse.y,v @
  * Revision 1.11  1995/06/11  22:40:09  mike
  * change if(dump_code) -> if(dump_code_flag)
@@ -344,6 +344,7 @@ expr  :   cat_expr
                  cp->type = C_STRING ;
                  cp->ptr = p3[1].ptr ;
                  cast_to_RE(cp) ;
+		 no_leaks_re_ptr(cp->ptr) ;
                  code_ptr -= 2 ;
                  code2(_MATCH1, cp->ptr) ;
                  ZFREE(cp) ;
@@ -398,7 +399,10 @@ p_expr  :   DOUBLE
       ;
 
 p_expr  :   RE
-            { $$ = code_offset ; code2(_MATCH0, $1) ; }
+            { $$ = code_offset ;
+	      code2(_MATCH0, $1) ;
+	      no_leaks_re_ptr($1);
+	    }
         ;
 
 p_expr  :   p_expr  PLUS   p_expr { code1(_ADD) ; }
@@ -852,6 +856,7 @@ split_back  :   RPAREN
                       cast_for_split(cp) ;
                       code_ptr[-2].op = _PUSHC ;
                       code_ptr[-1].ptr = (PTR) cp ;
+		      no_leaks_cell(cp);
                     }
                   }
                 }
@@ -884,6 +889,7 @@ re_arg   :   expr
                    cast_to_RE(cp) ;
                    p1->op = _PUSHC ;
                    p1[1].ptr = (PTR) cp ;
+		   no_leaks_cell(cp);
                  }
                }
              }
@@ -966,6 +972,7 @@ p_expr  :  sub_or_gsub LPAREN re_arg COMMA  expr  sub_back
                cast_to_REPL(cp) ;
                p5->op = _PUSHC ;
                p5[1].ptr = (PTR) cp ;
+	       no_leaks_cell(cp);
              }
              code2(_BUILTIN, $1) ;
              $$ = $3 ;
@@ -1339,6 +1346,7 @@ static void RE_as_arg(void)
     cp->type = C_RE ;
     cp->ptr = code_ptr[1].ptr ;
     code2(_PUSHC, cp) ;
+    no_leaks_cell_ptr(cp);
 }
 
 /* reset the active_code back to the MAIN block */

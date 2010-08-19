@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.10 2010/05/07 00:57:28 tom Exp $
+ * $MawkId: cast.c,v 1.14 2010/08/13 22:21:50 tom Exp $
  * @Log: cast.c,v @
  * Revision 1.6  1996/08/11 22:07:50  mike
  * Fix small bozo in rt_error("overflow converting ...")
@@ -293,6 +293,7 @@ cast_to_RE(CELL * cp)
 	cast1_to_s(cp);
 
     p = re_compile(string(cp));
+    no_leaks_re_ptr(p);
     free_STRING(string(cp));
     cp->type = C_RE;
     cp->ptr = p;
@@ -442,3 +443,52 @@ d_to_U(double d)
 	return (UInt) d;
     return 0;
 }
+
+#ifdef NO_LEAKS
+typedef struct _all_cells {
+    struct _all_cells *next;
+    char ptr;
+    CELL *cp;
+} ALL_CELLS;
+
+static ALL_CELLS *all_cells;
+/*
+ * Some regular expressions are parsed, and the pointer stored in the byte-code
+ * where we cannot distinguish it from other constants.  Keep a list here, to
+ * free on exit for auditing.
+ */
+void
+no_leaks_cell(CELL * cp)
+{
+    ALL_CELLS *p = calloc(1, sizeof(ALL_CELLS));
+    p->next = all_cells;
+    p->cp = cp;
+    p->ptr = 0;
+    all_cells = p;
+}
+
+void
+no_leaks_cell_ptr(CELL * cp)
+{
+    ALL_CELLS *p = calloc(1, sizeof(ALL_CELLS));
+    p->next = all_cells;
+    p->cp = cp;
+    p->ptr = 1;
+    all_cells = p;
+}
+
+void
+cell_leaks(void)
+{
+    while (all_cells != 0) {
+	ALL_CELLS *next = all_cells->next;
+	if (all_cells->ptr) {
+	    zfree(all_cells->cp, sizeof(CELL));
+	} else {
+	    free_cell_data(all_cells->cp);
+	}
+	free(all_cells);
+	all_cells = next;
+    }
+}
+#endif
