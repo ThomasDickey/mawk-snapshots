@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.16 2010/08/04 09:17:25 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.21 2010/08/18 18:00:53 tom Exp $
  * @Log: re_cmpl.c,v @
  * Revision 1.6  1994/12/13  00:14:58  mike
  * \\ -> \ on second replacement scan
@@ -95,6 +95,8 @@ re_compile(STRING * sval)
     sval->ref_cnt++;
     p->re.anchored = (*s == '^');
     if (!(p->re.compiled = REcompile(s, sval->len))) {
+	ZFREE(p);
+	sval->ref_cnt--;
 	if (mawk_state == EXECUTION)
 	    rt_error(efmt, REerror(), s);
 	else {			/* compiling */
@@ -112,7 +114,7 @@ re_compile(STRING * sval)
 
 #ifdef DEBUG
     if (dump_RE)
-	REmprint(refRE_DATA(p->re), stderr);
+	REmprint(p->re.compiled, stderr);
 #endif
     return refRE_DATA(p->re);
 }
@@ -142,10 +144,10 @@ re_destroy(PTR m)
     RE_NODE *r;
 
     if (p != 0) {
-	free_STRING(p->sval);
-	REdestroy(p->re.compiled);
 	for (q = re_list, r = 0; q != 0; r = q, q = q->link) {
 	    if (q == p) {
+		free_STRING(p->sval);
+		REdestroy(p->re.compiled);
 		if (r != 0)
 		    r->link = q->link;
 		else
@@ -419,3 +421,44 @@ replv_to_repl(CELL * cp, STRING * sval)
     zfree(sblock, vcnt * sizeof(STRING *));
     return cp;
 }
+
+#ifdef NO_LEAKS
+typedef struct _all_ptrs {
+    struct _all_ptrs *next;
+    PTR m;
+} ALL_PTRS;
+
+static ALL_PTRS *all_ptrs;
+/*
+ * Some regular expressions are parsed, and the pointer stored in the byte-code
+ * where we cannot distinguish it from other constants.  Keep a list here, to
+ * free on exit for auditing.
+ */
+void
+no_leaks_re_ptr(PTR m)
+{
+    ALL_PTRS *p = calloc(1, sizeof(ALL_PTRS));
+    p->next = all_ptrs;
+    p->m = m;
+    all_ptrs = p;
+}
+
+void
+re_leaks(void)
+{
+    while (all_ptrs != 0) {
+	ALL_PTRS *next = all_ptrs->next;
+	re_destroy(all_ptrs->m);
+	free(all_ptrs);
+	all_ptrs = next;
+    }
+
+    while (repl_list != 0) {
+	REPL_NODE *p = repl_list->link;
+	free_STRING(repl_list->sval);
+	free_cell_data(repl_list->cp);
+	ZFREE(repl_list);
+	repl_list = p;
+    }
+}
+#endif

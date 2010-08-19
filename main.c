@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: main.c,v 1.20 2010/08/03 00:50:24 tom Exp $
+ * $MawkId: main.c,v 1.22 2010/08/08 23:15:32 tom Exp $
  * @Log: main.c,v @
  * Revision 1.4  1995/06/09  22:57:19  mike
  * parse() no longer returns on error
@@ -93,11 +93,14 @@ mawk_exit(int x)
 #ifdef NO_LEAKS
     code_leaks();
     scan_leaks();
+    cell_leaks();
+    re_leaks();
     rexp_leaks();
     bi_vars_leaks();
     hash_leaks();
     array_leaks();
     files_leaks();
+    fin_leaks();
     field_leaks();
     zmalloc_leaks();
 #if OPT_TRACE > 0
