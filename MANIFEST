@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20101210
+MANIFEST for mawk, version t20120627
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -149,6 +149,8 @@ test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
+test/nextfile.awk               script for testing nextfile
+test/nextfile.out               reference data for nextfile test
 test/noloop.awk                 test-script from gawk
 test/null-rs.awk                test-script for setting RS to explicit null
 test/null-rs.dat                input-data for null-rs.awk

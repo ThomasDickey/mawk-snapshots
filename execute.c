@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2009,2010, Thomas E. Dickey
+copyright 2008-2010,2012, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.24 2010/12/10 17:00:00 tom Exp $
+ * $MawkId: execute.c,v 1.26 2012/06/27 17:15:52 tom Exp $
  * @Log: execute.c,v @
  * Revision 1.13  1996/02/01  04:39:40  mike
  * dynamic array scheme
@@ -92,6 +92,7 @@ the GNU General Public License, version 2, 1991.
 */
 
 #include "mawk.h"
+#include "files.h"
 #include "code.h"
 #include "memory.h"
 #include "symtype.h"
@@ -1168,6 +1169,13 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    cdp = next_label;
 	    break;
 
+	case _NEXTFILE:
+	    /* nextfile might be inside an aloop -- clear stack */
+	    CLEAR_ALOOP_STACK();
+	    FINsemi_close(main_fin);
+	    cdp = next_label;
+	    break;
+
 	case OL_GL:
 	    {
 		char *p;
@@ -1230,13 +1238,13 @@ execute(INST * cdp,		/* code ptr, start execution here */
        cdp[4] -- start of pat1 code
 */
 
-#define FLAG	cdp[0].op
-#define PAT2	cdp[1].op
-#define ACTION	  cdp[2].op
-#define FOLLOW	  cdp[3].op
-#define PAT1	  4
+#define FLAG      cdp[0].op
+#define PAT2      cdp[1].op
+#define ACTION    cdp[2].op
+#define FOLLOW    cdp[3].op
+#define PAT1      4
 
-	    if (FLAG)		/* test again pat1 */
+	    if (FLAG)		/* test against pat1 */
 	    {
 		execute(cdp + PAT1, sp, fp);
 		t = test(sp + 1);
@@ -1379,26 +1387,31 @@ test(CELL * cp)
 static int
 compare(CELL * cp)
 {
-    int k;
+    int result;
 
   reswitch:
+    result = 0;
 
     switch (TEST2(cp)) {
     case TWO_NOINITS:
-	return 0;
+	break;
 
     case TWO_DOUBLES:
       two_d:
-	return cp->dval > (cp + 1)->dval ? 1 :
-	    cp->dval < (cp + 1)->dval ? -1 : 0;
+	result = ((cp->dval > (cp + 1)->dval)
+		  ? 1
+		  : ((cp->dval < (cp + 1)->dval)
+		     ? -1
+		     : 0));
+	break;
 
     case TWO_STRINGS:
     case STRING_AND_STRNUM:
       two_s:
-	k = strcmp(string(cp)->str, string(cp + 1)->str);
+	result = strcmp(string(cp)->str, string(cp + 1)->str);
 	free_STRING(string(cp));
 	free_STRING(string(cp + 1));
-	return k;
+	break;
 
     case NOINIT_AND_DOUBLE:
     case NOINIT_AND_STRNUM:
@@ -1424,8 +1437,9 @@ compare(CELL * cp)
 
     default:			/* there are no default cases */
 	bozo("bad cell type passed to compare");
+	break;
     }
-    return 0;			/* shut up */
+    return result;
 }
 
 /* does not assume target was a cell, if so
