@@ -176,8 +176,8 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
        To evaluate, _e_x_p_r1 rreell--oopp _e_x_p_r2, if both operands are numeric or number
        and string then the comparison is numeric; if both operands are  string
-       the  comparison is string; if one operand is string, the non-string op-
-       erand is converted  and  the  comparison  is  string.   The  result  is
+       the  comparison  is  string;  if  one operand is string, the non-string
+       operand is converted and the  comparison  is  string.   The  result  is
        numeric, 1 or 0.
 
        In boolean contexts such as, iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t, a string expression
@@ -327,8 +327,8 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
               _f_i_e_l_d               $
 
        Assignment, conditional and exponentiation associate right to left; the
-       other operators associate left to right.  Any expression can be  paren-
-       thesized.
+       other operators  associate  left  to  right.   Any  expression  can  be
+       parenthesized.
 
    66.. AArrrraayyss
        Awk  provides  one-dimensional arrays.  Array elements are expressed as
@@ -506,10 +506,17 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        command by appending > _f_i_l_e, >> _f_i_l_e or | _c_o_m_m_a_n_d to  the  end  of  the
        print  statement.   Redirection opens _f_i_l_e or _c_o_m_m_a_n_d only once, subse-
        quent redirections append to the already open stream.   By  convention,
-       mmaawwkk  associates  the  filename  "/dev/stderr" with stderr which allows
-       print and printf to be redirected to stderr.  mmaawwkk also associates  "-"
-       and  "/dev/stdout"  with stdin and stdout which allows these streams to
-       be passed to functions.
+       mmaawwkk associates the filename
+
+          +o   "/dev/stderr" with stderr,
+
+          +o   "/dev/stdout" with stdout,
+
+          +o   "-" and "/dev/stdin" with stdin.
+
+       The  association  with  stderr  is  especially useful because it allows
+       print and printf to be redirected to stderr.  These names can  also  be
+       passed to functions.
 
        The input function ggeettlliinnee has the following variations.
 
@@ -526,7 +533,7 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
                      reads the next record of _f_i_l_e into _v_a_r.
 
                _c_o_m_m_a_n_d | getline
-                     pipes a record from  _c_o_m_m_a_n_d  into  $$00  and  updates  the
+                     pipes  a  record  from  _c_o_m_m_a_n_d  into  $$00 and updates the
                      fields and NNFF.
 
                _c_o_m_m_a_n_d | getline _v_a_r
@@ -536,18 +543,18 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
        Commands on the end of pipes are executed by /bin/sh.
 
-       The  function cclloossee(_e_x_p_r) closes the file or pipe associated with _e_x_p_r.
-       Close returns 0 if _e_x_p_r is an open file, the exit status if _e_x_p_r  is  a
-       piped  command,  and  -1  otherwise.  Close is used to reread a file or
-       command, make sure the other end of an output pipe is finished or  con-
+       The function cclloossee(_e_x_p_r) closes the file or pipe associated with  _e_x_p_r.
+       Close  returns  0 if _e_x_p_r is an open file, the exit status if _e_x_p_r is a
+       piped command, and -1 otherwise.  Close is used to  reread  a  file  or
+       command,  make sure the other end of an output pipe is finished or con-
        serve file resources.
 
-       The  function  fffflluusshh(_e_x_p_r)  flushes the output file or pipe associated
-       with _e_x_p_r.  Fflush returns 0 if _e_x_p_r is an open output stream else  -1.
-       Fflush  without an argument flushes stdout.  Fflush with an empty argu-
+       The function fffflluusshh(_e_x_p_r) flushes the output file  or  pipe  associated
+       with  _e_x_p_r.  Fflush returns 0 if _e_x_p_r is an open output stream else -1.
+       Fflush without an argument flushes stdout.  Fflush with an empty  argu-
        ment ("") flushes all open output.
 
-       The function ssyysstteemm(_e_x_p_r) uses /bin/sh to execute _e_x_p_r and returns  the
+       The  function ssyysstteemm(_e_x_p_r) uses /bin/sh to execute _e_x_p_r and returns the
        exit status of the command _e_x_p_r.  Changes made to the EENNVVIIRROONN array are
        not passed to commands executed with ssyysstteemm or pipes.
 
@@ -560,10 +567,10 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
             rreettuurrnn _o_p_t___e_x_p_r
 
-       A return statement is not required.  Function calls may  be  nested  or
-       recursive.   Functions  are  passed  expressions by value and arrays by
-       reference.  Extra arguments serve as local variables and  are  initial-
-       ized  to  _n_u_l_l.  For example, csplit(_s_,_A) puts each character of _s into
+       A  return  statement  is not required.  Function calls may be nested or
+       recursive.  Functions are passed expressions by  value  and  arrays  by
+       reference.   Extra  arguments serve as local variables and are initial-
+       ized to _n_u_l_l.  For example, csplit(_s_,_A) puts each character of  _s  into
        array _A and returns the length of _s.
 
             function csplit(s, A,    n, i)
@@ -573,69 +580,67 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
               return n
             }
 
-       Putting extra space between passed arguments  and  local  variables  is
+       Putting  extra  space  between  passed arguments and local variables is
        conventional.  Functions can be referenced before they are defined, but
        the function name and the '(' of the arguments must touch to avoid con-
        fusion with concatenation.
 
    1111.. SSpplliittttiinngg ssttrriinnggss,, rreeccoorrddss aanndd ffiilleess
-       Awk  programs  use the same algorithm to split strings into arrays with
+       Awk programs use the same algorithm to split strings into  arrays  with
        split(), and records into fields on FFSS.  mmaawwkk uses essentially the same
        algorithm to split files into records on RRSS.
 
        Split(_e_x_p_r_,_A_,_s_e_p) works as follows:
 
-              (1)    If  _s_e_p  is omitted, it is replaced by FFSS.  _S_e_p can be an
-                     expression or regular expression.  If it is an expression
-                     of non-string type, it is converted to string.
+          (1)  If _s_e_p is omitted, it is replaced by FFSS.  _S_e_p can be an expres-
+               sion  or  regular  expression.   If it is an expression of non-
+               string type, it is converted to string.
 
-              (2)    If  _s_e_p  =  " " (a single space), then <SPACE> is trimmed
-                     from the front and back of _e_x_p_r, and _s_e_p becomes <SPACE>.
-                     mmaawwkk   defines   <SPACE>   as   the   regular  expression
-                     /[ \t\n]+/.   Otherwise  _s_e_p  is  treated  as  a  regular
-                     expression, except that meta-characters are ignored for a
-                     string of length 1, e.g., split(x, A, "*")  and  split(x,
-                     A, /\*/) are the same.
+          (2)  If _s_e_p = " " (a single space), then <SPACE> is trimmed from the
+               front  and back of _e_x_p_r, and _s_e_p becomes <SPACE>.  mmaawwkk defines
+               <SPACE> as the regular expression /[ \t\n]+/.  Otherwise _s_e_p is
+               treated  as  a  regular expression, except that meta-characters
+               are ignored for a string of length 1, e.g.,  split(x,  A,  "*")
+               and split(x, A, /\*/) are the same.
 
-              (3)    If  _e_x_p_r  is  not  string, it is converted to string.  If
-                     _e_x_p_r is then the empty string "", split() returns 0 and _A
-                     is  set  empty.  Otherwise, all non-overlapping, non-null
-                     and longest matches of _s_e_p in _e_x_p_r,  separate  _e_x_p_r  into
-                     fields which are loaded into _A.  The fields are placed in
-                     A[1], A[2], ..., A[n] and split() returns n,  the  number
-                     of  fields which is the number of matches plus one.  Data
-                     placed in _A  that  looks  numeric  is  typed  number  and
-                     string.
+          (3)  If  _e_x_p_r  is not string, it is converted to string.  If _e_x_p_r is
+               then the empty string "", split() returns 0 and _A is set empty.
+               Otherwise, all non-overlapping, non-null and longest matches of
+               _s_e_p in _e_x_p_r, separate _e_x_p_r into fields which are loaded into _A.
+               The  fields  are  placed  in  A[1], A[2], ..., A[n] and split()
+               returns n, the number of fields which is the number of  matches
+               plus  one.  Data placed in _A that looks numeric is typed number
+               and string.
 
-       Splitting  records  into  fields  works  the same except the pieces are
+       Splitting records into fields works the  same  except  the  pieces  are
        loaded into $$11, $$22,..., $$NNFF.  If $$00 is empty, NNFF is set to 0 and all $$ii
        to "".
 
-       mmaawwkk  splits  files  into  records  by the same algorithm, but with the
-       slight difference that RRSS is really a terminator instead of  a  separa-
+       mmaawwkk splits files into records by the  same  algorithm,  but  with  the
+       slight  difference  that RRSS is really a terminator instead of a separa-
        tor.  (OORRSS is really a terminator too).
 
-              E.g.,  if FFSS = ":+" and $$00 = "a::b:" , then NNFF = 3 and $$11 = "a",
+              E.g., if FFSS = ":+" and $$00 = "a::b:" , then NNFF = 3 and $$11 =  "a",
               $$22 = "b" and $$33 = "", but if "a::b:" is the contents of an input
               file and RRSS = ":+", then there are two records "a" and "b".
 
        RRSS = " " is not special.
 
-       If  FFSS  =  "",  then mmaawwkk breaks the record into individual characters,
-       and, similarly, split(_s_,_A_,"") places the  individual  characters  of  _s
+       If FFSS = "", then mmaawwkk breaks the  record  into  individual  characters,
+       and,  similarly,  split(_s_,_A_,"")  places  the individual characters of _s
        into _A.
 
    1122.. MMuullttii--lliinnee rreeccoorrddss
-       Since  mmaawwkk  interprets  RRSS as a regular expression, multi-line records
+       Since mmaawwkk interprets RRSS as a regular  expression,  multi-line  records
        are easy.  Setting RRSS = "\n\n+", makes one or more blank lines separate
        records.  If FFSS = " " (the default), then single newlines, by the rules
-       for <SPACE> above, become space and single newlines are  field  separa-
+       for  <SPACE>  above, become space and single newlines are field separa-
        tors.
 
-              For  example,  if  a file is "a b\nc\n\n", RRSS = "\n\n+" and FFSS =
-              " ", then there is one record "a b\nc" with  three  fields  "a",
-              "b"  and  "c".   Changing  FFSS = "\n", gives two fields "a b" and
-              "c"; changing FFSS = "", gives one field identical to the record.
+              For example, if a file is "a b\nc\n\n", RRSS = "\n\n+"  and  FFSS  =
+              " ",  then  there  is one record "a b\nc" with three fields "a",
+              "b" and "c".  Changing FFSS = "\n", gives two  fields  "a  b"  and
+              "c";  changing FFSS = "", gives one field identical to the record.
 
        If you want lines with spaces or tabs to be considered blank, set RRSS  =
        "\n([ \t]*\n)+".   For  compatibility  with other awks, setting RRSS = ""
@@ -699,14 +704,23 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        Program flow at the _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} level can be changed with the
 
             nneexxtt
+            nneexxttffiillee
             eexxiitt  _o_p_t___e_x_p_r
 
-       statements.  A nneexxtt statement causes the next input record to  be  read
-       and  pattern testing to restart with the first _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} pair in
-       the program.  An eexxiitt statement causes immediate execution of  the  EENNDD
-       actions  or program termination if there are none or if the eexxiitt occurs
-       in an EENNDD action.  The _o_p_t___e_x_p_r sets the  exit  value  of  the  program
-       unless overridden by a later eexxiitt or subsequent error.
+       statements:
+
+       +o   A nneexxtt statement causes the next input record to be read  and  pat-
+           tern testing to restart with the first _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} pair in the
+           program.
+
+       +o   A nneexxttffiillee statement tells mawk  to  stop  processing  the  current
+           input  file.   It  then updates FILENAME to the next file listed on
+           the command line, and resets FNR to 1.
+
+       +o   An eexxiitt statement causes immediate execution of the EENNDD actions  or
+           program  termination  if there are none or if the eexxiitt occurs in an
+           EENNDD action.  The _o_p_t___e_x_p_r sets the exit value of the program unless
+           overridden by a later eexxiitt or subsequent error.
 
 EEXXAAMMPPLLEESS
        1. emulate cat.
@@ -767,29 +781,29 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
        described in the AWK book with a few extensions that appeared  in  Sys-
        temVR4 nawk. The extensions are:
 
-              New functions: toupper() and tolower().
+          +o   New functions: toupper() and tolower().
 
-              New variables: ENVIRON[] and CONVFMT.
+          +o   New variables: ENVIRON[] and CONVFMT.
 
-              ANSI C conversion specifications for printf() and sprintf().
+          +o   ANSI C conversion specifications for printf() and sprintf().
 
-              New  command  options:   -v  var=value,  multiple -f options and
+          +o   New  command  options:   -v  var=value,  multiple -f options and
               implementation options as arguments to -W.
 
-              For systems (MS-DOS or Windows) which provide  a  _s_e_t_m_o_d_e  func-
+          +o   For systems (MS-DOS or Windows) which provide  a  _s_e_t_m_o_d_e  func-
               tion,  an  environment variable MAWKBINMODE and a built-in vari-
               able BINMODE.  The bits of the BINMODE value tell  _m_a_w_k  how  to
               modify the RRSS and OORRSS variables:
 
-                 0  set  standard input to binary mode, and if BIT-2 is unset,
-                    set RRSS to "\r\n" (CR/LF) rather than "\n" (LF).
+             0  set  standard input to binary mode, and if BIT-2 is unset, set
+                RRSS to "\r\n" (CR/LF) rather than "\n" (LF).
 
-                 1  set standard output to binary mode, and if BIT-2 is unset,
-                    set OORRSS to "\r\n" (CR/LF) rather than "\n" (LF).
+             1  set standard output to binary mode, and if BIT-2 is unset, set
+                OORRSS to "\r\n" (CR/LF) rather than "\n" (LF).
 
-                 2  suppress  the assignment to RRSS and OORRSS of CR/LF, making it
-                    possible to run scripts  and  generate  output  compatible
-                    with Unix line-endings.
+             2  suppress the assignment to RRSS and OORRSS of CR/LF, making it pos-
+                sible to run scripts and generate output compatible with  Unix
+                line-endings.
 
        Posix  AWK is oriented to operate on files a line at a time.  RRSS can be
        changed from "\n" to another single character, but it is hard  to  find
@@ -856,30 +870,34 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
        Aggregate deletion with ddeelleettee _a_r_r_a_y is not part of the posix standard.
 
        Posix explicitly leaves the behavior of FFSS = "" undefined, and mentions
-       splitting the record into characters as a possible interpretation,  but
+       splitting  the record into characters as a possible interpretation, but
        currently this use is not portable across implementations.
+
+       NNeexxttffiillee is a ggaawwkk extension (also implemented by BWK awk), is not part
+       of the posix standard.
 
        Finally,  here  is  how mmaawwkk handles exceptional cases not discussed in
        the AWK book or the Posix draft.  It is unsafe  to  assume  consistency
        across awks and safe to skip to the next section.
 
-              substr(s,  i, n) returns the characters of s in the intersection
+
+          +o   substr(s,  i, n) returns the characters of s in the intersection
               of the closed interval [1, length(s)] and the half-open interval
               [i,  i+n).  When this intersection is empty, the empty string is
               returned; so substr("ABC", 1, 0) = "" and substr("ABC", -4, 6) =
               "A".
 
-              Every  string,  including  the  empty  string, matches the empty
+          +o   Every  string,  including  the  empty  string, matches the empty
               string at the front so, s ~ // and s ~ "", are always  1  as  is
               match(s, //) and match(s, "").  The last two set RRLLEENNGGTTHH to 0.
 
-              index(s,  t)  is always the same as match(s, t1) where t1 is the
+          +o   index(s,  t)  is always the same as match(s, t1) where t1 is the
               same as t with metacharacters escaped.  Hence  consistency  with
               match  requires  that  index(s,  "") always returns 1.  Also the
               condition, index(s,t) != 0 if and only t is a  substring  of  s,
               requires index("","") = 1.
 
-              If  getline  encounters  end  of  file,  getline var, leaves var
+          +o   If  getline  encounters  end  of  file,  getline var, leaves var
               unchanged.  Similarly, on entry to  the  EENNDD  actions,  $$00,  the
               fields and NNFF have their value unaltered from the last record.
 
