@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20120627
+MANIFEST for mawk, version t20120901
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -90,6 +90,10 @@ examples/hical                  calendar program by Bob Stockler
 examples/nocomment.awk          remove C comments  from a list of files
 examples/primes.awk             find all primes between 2 and STOP (parameter)
 examples/qsort.awk              qsort text files
+icons                           subdirectory
+icons/mawk144.png               artwork for my webpage
+icons/mawk48.png                artwork for my webpage
+icons/mawk48.svg                a suitable icon for mawk
 man                             subdirectory
 man/Makefile                    makefile for alternate doc-formats
 man/TODO                        to-do list (update to conform with POSIX-1003.1-2004)
