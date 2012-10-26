@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.56 2012/06/16 18:55:39 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.60 2012/10/26 01:00:28 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -32,6 +32,31 @@ dnl sale, use or other dealings in this Software without prior written
 dnl authorization.
 dnl
 dnl ---------------------------------------------------------------------------
+dnl ---------------------------------------------------------------------------
+dnl CF_ACVERSION_CHECK version: 3 updated: 2012/10/03 18:39:53
+dnl ------------------
+dnl Conditionally generate script according to whether we're using a given autoconf.
+dnl
+dnl $1 = version to compare against
+dnl $2 = code to use if AC_ACVERSION is at least as high as $1.
+dnl $3 = code to use if AC_ACVERSION is older than $1.
+define([CF_ACVERSION_CHECK],
+[
+ifdef([m4_version_compare],
+[m4_if(m4_version_compare(m4_defn([AC_ACVERSION]), [$1]), -1, [$3], [$2])],
+[CF_ACVERSION_COMPARE(
+AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])),
+AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)), AC_ACVERSION, [$2], [$3])])])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ACVERSION_COMPARE version: 3 updated: 2012/10/03 18:39:53
+dnl --------------------
+dnl CF_ACVERSION_COMPARE(MAJOR1, MINOR1, TERNARY1,
+dnl                      MAJOR2, MINOR2, TERNARY2,
+dnl                      PRINTABLE2, not FOUND, FOUND)
+define([CF_ACVERSION_COMPARE],
+[ifelse(builtin([eval], [$2 < $5]), 1,
+[ifelse([$8], , ,[$8])],
+[ifelse([$9], , ,[$9])])])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_ADD_CFLAGS version: 10 updated: 2010/05/26 05:38:42
 dnl -------------
@@ -137,97 +162,6 @@ dnl $1 = libraries to add, with the "-l", etc.
 dnl $2 = variable to update (default $LIBS)
 AC_DEFUN([CF_ADD_LIBS],[ifelse($2,,LIBS,[$2])="$1 [$]ifelse($2,,LIBS,[$2])"])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ANSI_CC_CHECK version: 11 updated: 2011/07/01 19:47:45
-dnl ----------------
-dnl This was originally adapted from the macros 'fp_PROG_CC_STDC' and
-dnl 'fp_C_PROTOTYPES' in the sharutils 4.2 distribution.
-AC_DEFUN([CF_ANSI_CC_CHECK],
-[
-# This should have been defined by AC_PROG_CC
-: ${CC:=cc}
-
-# Check for user's environment-breakage by stuffing CFLAGS/CPPFLAGS content
-# into CC.  This will not help with broken scripts that wrap the compiler with
-# options, but eliminates a more common category of user confusion.
-AC_MSG_CHECKING(\$CC variable)
-case "$CC" in #(vi
-*[[\ \	]]-[[IUD]]*)
-	AC_MSG_RESULT(broken)
-	AC_MSG_WARN(your environment misuses the CC variable to hold CFLAGS/CPPFLAGS options)
-	# humor him...
-	cf_flags=`echo "$CC" | sed -e 's/^[[^ 	]]*[[ 	]]//'`
-	CC=`echo "$CC" | sed -e 's/[[ 	]].*//'`
-	CF_ADD_CFLAGS($cf_flags)
-	;;
-*)
-	AC_MSG_RESULT(ok)
-	;;
-esac
-
-AC_CACHE_CHECK(for ${CC:-cc} option to accept ANSI C, cf_cv_ansi_cc,[
-cf_cv_ansi_cc=no
-cf_save_CFLAGS="$CFLAGS"
-cf_save_CPPFLAGS="$CPPFLAGS"
-# Don't try gcc -ansi; that turns off useful extensions and
-# breaks some systems' header files.
-# AIX			-qlanglvl=ansi
-# Ultrix and OSF/1	-std1
-# HP-UX			-Aa -D_HPUX_SOURCE
-# SVR4			-Xc
-# UnixWare 1.2		(cannot use -Xc, since ANSI/POSIX clashes)
-for cf_arg in "-DCC_HAS_PROTOS" \
-	"" \
-	-qlanglvl=ansi \
-	-std1 \
-	-Ae \
-	"-Aa -D_HPUX_SOURCE" \
-	-Xc
-do
-	CF_ADD_CFLAGS($cf_arg)
-	AC_TRY_COMPILE(
-[
-#ifndef CC_HAS_PROTOS
-#if !defined(__STDC__) || (__STDC__ != 1)
-choke me
-#endif
-#endif
-],[
-	int test (int i, double x);
-	struct s1 {int (*f) (int a);};
-	struct s2 {int (*f) (double a);};],
-	[cf_cv_ansi_cc="$cf_arg"; break])
-done
-CFLAGS="$cf_save_CFLAGS"
-CPPFLAGS="$cf_save_CPPFLAGS"
-])
-
-if test "$cf_cv_ansi_cc" != "no"; then
-if test ".$cf_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
-	CF_ADD_CFLAGS($cf_cv_ansi_cc)
-else
-	AC_DEFINE(CC_HAS_PROTOS)
-fi
-fi
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_ANSI_CC_REQD version: 4 updated: 2008/03/23 14:48:54
-dnl ---------------
-dnl For programs that must use an ANSI compiler, obtain compiler options that
-dnl will make it recognize prototypes.  We'll do preprocessor checks in other
-dnl macros, since tools such as unproto can fake prototypes, but only part of
-dnl the preprocessor.
-AC_DEFUN([CF_ANSI_CC_REQD],
-[AC_REQUIRE([CF_ANSI_CC_CHECK])
-if test "$cf_cv_ansi_cc" = "no"; then
-	AC_MSG_ERROR(
-[Your compiler does not appear to recognize prototypes.
-You have the following choices:
-	a. adjust your compiler options
-	b. get an up-to-date compiler
-	c. use a wrapper such as unproto])
-fi
-])dnl
-dnl ---------------------------------------------------------------------------
 dnl CF_ARG_DISABLE version: 3 updated: 1999/03/30 17:24:31
 dnl --------------
 dnl Allow user to disable a normally-on option.
@@ -263,7 +197,33 @@ ifelse([$3],,[    :]dnl
 ])dnl
   ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_CACHE version: 11 updated: 2008/03/23 14:45:59
+dnl CF_CC_ENV_FLAGS version: 1 updated: 2012/10/03 05:25:49
+dnl ---------------
+dnl Check for user's environment-breakage by stuffing CFLAGS/CPPFLAGS content
+dnl into CC.  This will not help with broken scripts that wrap the compiler with
+dnl options, but eliminates a more common category of user confusion.
+AC_DEFUN([CF_CC_ENV_FLAGS],
+[
+# This should have been defined by AC_PROG_CC
+: ${CC:=cc}
+
+AC_MSG_CHECKING(\$CC variable)
+case "$CC" in #(vi
+*[[\ \	]]-[[IUD]]*)
+	AC_MSG_RESULT(broken)
+	AC_MSG_WARN(your environment misuses the CC variable to hold CFLAGS/CPPFLAGS options)
+	# humor him...
+	cf_flags=`echo "$CC" | sed -e 's/^[[^ 	]]*[[ 	]]//'`
+	CC=`echo "$CC" | sed -e 's/[[ 	]].*//'`
+	CF_ADD_CFLAGS($cf_flags)
+	;;
+*)
+	AC_MSG_RESULT(ok)
+	;;
+esac
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_CACHE version: 12 updated: 2012/10/02 20:55:03
 dnl --------------
 dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
@@ -286,7 +246,7 @@ else
 		system_name="`(hostname) 2>/dev/null`"
 	fi
 fi
-test -n "$system_name" && AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
+test -n "$system_name" && AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name",[Define to the system name.])
 AC_CACHE_VAL(cf_cv_system_name,[cf_cv_system_name="$system_name"])
 
 test -z "$system_name" && system_name="$cf_cv_system_name"
@@ -385,7 +345,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -Qunused-arguments"
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_DISABLE_ECHO version: 11 updated: 2009/12/13 13:16:57
+dnl CF_DISABLE_ECHO version: 12 updated: 2012/10/06 16:30:28
 dnl ---------------
 dnl You can always use "make -n" to see the actual options, but it's hard to
 dnl pick out/analyze warning messages when the compile-line is long.
@@ -400,7 +360,7 @@ dnl
 AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
-	[  --disable-echo          display "compiling" commands],
+	[  --disable-echo          do not display "compiling" commands],
 	[
     ECHO_LT='--silent'
     ECHO_LD='@echo linking [$]@;'
@@ -422,7 +382,7 @@ AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DISABLE_LEAKS version: 6 updated: 2010/07/23 04:14:32
+dnl CF_DISABLE_LEAKS version: 7 updated: 2012/10/02 20:55:03
 dnl ----------------
 dnl Combine no-leak checks with the libraries or tools that are used for the
 dnl checks.
@@ -440,12 +400,12 @@ AC_ARG_ENABLE(leaks,
 AC_MSG_RESULT($with_no_leaks)
 
 if test "$with_no_leaks" = yes ; then
-	AC_DEFINE(NO_LEAKS)
-	AC_DEFINE(YY_NO_LEAKS)
+	AC_DEFINE(NO_LEAKS,1,[Define to 1 if you want to perform memory-leak testing.])
+	AC_DEFINE(YY_NO_LEAKS,1,[Define to 1 if you want to perform memory-leak testing.])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ENABLE_TRACE version: 2 updated: 2010/11/28 16:26:20
+dnl CF_ENABLE_TRACE version: 3 updated: 2012/10/04 05:24:07
 dnl ---------------
 AC_DEFUN([CF_ENABLE_TRACE],[
 AC_MSG_CHECKING(if you want to enable debugging trace)
@@ -456,7 +416,7 @@ CF_ARG_ENABLE(trace,
 AC_MSG_RESULT($with_trace)
 if test "$with_trace" = "yes"
 then
-	AC_DEFINE(OPT_TRACE)
+	AC_DEFINE(OPT_TRACE,1,[Define to 1 if you want to enable debugging trace])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -480,7 +440,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_ATTRIBUTES version: 14 updated: 2010/10/23 15:52:32
+dnl CF_GCC_ATTRIBUTES version: 16 updated: 2012/10/02 20:55:03
 dnl -----------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary
@@ -558,27 +518,27 @@ EOF
 			test -n "$verbose" && AC_MSG_RESULT(... $cf_attribute)
 			cat conftest.h >>confdefs.h
 			case $cf_attribute in #(vi
+			noreturn) #(vi
+				AC_DEFINE_UNQUOTED(GCC_NORETURN,$cf_directive,[Define to noreturn-attribute for gcc])
+				;;
 			printf) #(vi
-				if test "$cf_printf_attribute" = no ; then
-					cat >>confdefs.h <<EOF
-#define GCC_PRINTFLIKE(fmt,var) /* nothing */
-EOF
-				else
-					cat >>confdefs.h <<EOF
-#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
-EOF
+				cf_value='/* nothing */'
+				if test "$cf_printf_attribute" != no ; then
+					cf_value='__attribute__((format(printf,fmt,var)))'
+					AC_DEFINE(GCC_PRINTF,1,[Define to 1 if the compiler supports gcc-like printf attribute.])
 				fi
+				AC_DEFINE_UNQUOTED(GCC_PRINTFLIKE(fmt,var),$cf_value,[Define to printf-attribute for gcc])
 				;;
 			scanf) #(vi
-				if test "$cf_scanf_attribute" = no ; then
-					cat >>confdefs.h <<EOF
-#define GCC_SCANFLIKE(fmt,var) /* nothing */
-EOF
-				else
-					cat >>confdefs.h <<EOF
-#define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
-EOF
+				cf_value='/* nothing */'
+				if test "$cf_scanf_attribute" != no ; then
+					cf_value='__attribute__((format(scanf,fmt,var)))'
+					AC_DEFINE(GCC_SCANF,1,[Define to 1 if the compiler supports gcc-like scanf attribute.])
 				fi
+				AC_DEFINE_UNQUOTED(GCC_SCANFLIKE(fmt,var),$cf_value,[Define to sscanf-attribute for gcc])
+				;;
+			unused) #(vi
+				AC_DEFINE_UNQUOTED(GCC_UNUSED,$cf_directive,[Define to unused-attribute for gcc])
 				;;
 			esac
 		fi
@@ -590,7 +550,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 5 updated: 2010/04/24 11:02:31
+dnl CF_GCC_VERSION version: 7 updated: 2012/10/18 06:46:33
 dnl --------------
 dnl Find version of gcc
 AC_DEFUN([CF_GCC_VERSION],[
@@ -598,7 +558,7 @@ AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	AC_MSG_CHECKING(version of $CC)
-	GCC_VERSION="`${CC} --version 2>/dev/null | sed -e '2,$d' -e 's/^.*(GCC) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	GCC_VERSION="`${CC} --version 2>/dev/null | sed -e '2,$d' -e 's/^.*(GCC[[^)]]*) //' -e 's/^.*(Debian[[^)]]*) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
@@ -788,7 +748,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147 -no-gcc"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LARGEFILE version: 7 updated: 2007/06/02 11:58:50
+dnl CF_LARGEFILE version: 8 updated: 2012/10/06 08:57:51
 dnl ------------
 dnl Add checks for large file support.
 AC_DEFUN([CF_LARGEFILE],[
@@ -822,12 +782,12 @@ ifdef([AC_FUNC_FSEEKO],[
 		[cf_cv_struct_dirent64=yes],
 		[cf_cv_struct_dirent64=no])
 	])
-	test "$cf_cv_struct_dirent64" = yes && AC_DEFINE(HAVE_STRUCT_DIRENT64)
+	test "$cf_cv_struct_dirent64" = yes && AC_DEFINE(HAVE_STRUCT_DIRENT64,1,[Define to 1 if we have struct dirent64])
     fi
 ])
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_LOCALE version: 4 updated: 2003/02/16 08:16:04
+dnl CF_LOCALE version: 5 updated: 2012/10/06 11:17:15
 dnl ---------
 dnl Check if we have setlocale() and its header, <locale.h>
 dnl The optional parameter $1 tells what to do if we do have locale support.
@@ -841,7 +801,7 @@ AC_TRY_LINK([#include <locale.h>],
 	[cf_cv_locale=no])
 	])
 AC_MSG_RESULT($cf_cv_locale)
-test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE),[$1]) }
+test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE,1,[Define to 1 if we have locale support]),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAKE_TAGS version: 6 updated: 2010/10/23 15:52:32
@@ -921,7 +881,7 @@ AC_DEFUN([CF_MAWK_CHECK_LIMITS_MSG],
 [AC_MSG_ERROR(C program to compute maxint and maxlong failed.
 Please send bug report to CF_MAWK_MAINTAINER.)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_SIZE_T version: 2 updated: 2009/07/23 05:15:39
+dnl CF_MAWK_CHECK_SIZE_T version: 3 updated: 2012/10/25 20:41:47
 dnl --------------------
 dnl Check if size_t is found in the given header file, unless we have already
 dnl found it.
@@ -941,7 +901,7 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 	fi
 ])
 	if test "x$cf_cv_size_t_$2" = xyes ; then
-		AC_DEFINE_UNQUOTED($2,1)
+		AC_DEFINE_UNQUOTED($2,1,[Define to 1 if we have $1 header])
 		cf_mawk_check_size_t=yes
 	fi
 fi
@@ -997,7 +957,7 @@ AC_DEFUN([CF_MAWK_FIND_SIZE_T],
 [CF_MAWK_CHECK_SIZE_T(stddef.h,SIZE_T_STDDEF_H)
 CF_MAWK_CHECK_SIZE_T(sys/types.h,SIZE_T_TYPES_H)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FPE_SIGINFO version: 7 updated: 2009/12/18 05:50:47
+dnl CF_MAWK_FPE_SIGINFO version: 8 updated: 2012/10/25 20:41:47
 dnl -------------------
 dnl SYSv and Solaris FPE checks
 AC_DEFUN([CF_MAWK_FPE_SIGINFO],
@@ -1010,7 +970,7 @@ then
 	:
     else
 	dnl FIXME - look for sigprocmask if we have sigaction
-	AC_DEFINE(NOINFO_SIGFPE)
+	AC_DEFINE(NOINFO_SIGFPE,1,[Define to 1 if we cannot use SYSv siginfo])
    fi
 fi])
 dnl ---------------------------------------------------------------------------
@@ -1063,7 +1023,7 @@ int main()
     return 0 ;
  }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 11 updated: 2009/12/20 12:50:49
+dnl CF_MAWK_RUN_FPE_TESTS version: 12 updated: 2012/10/25 20:41:47
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -1096,7 +1056,7 @@ then
 fi
 ])
 
-test "$cf_cv_use_sa_sigaction" = yes && AC_DEFINE(HAVE_SIGACTION_SA_SIGACTION)
+test "$cf_cv_use_sa_sigaction" = yes && AC_DEFINE(HAVE_SIGACTION_SA_SIGACTION,1,[Define to 1 if we should use sigaction.sa_sigaction,cf_cv_use_sa_sigaction])
 
 cf_FPE_DEFS="$CPPFLAGS"
 cf_FPE_LIBS="$LIBS"
@@ -1132,7 +1092,7 @@ echo "FPE_CHECK status=$cf_status" >&AC_FD_CC
 case $cf_status in
    0)  ;;  # good news do nothing
    3)      # reasonably good news
-    AC_DEFINE(FPE_TRAPS_ON)
+    AC_DEFINE(FPE_TRAPS_ON,1,[Define to 1 if floating-point exception traps are enabled])
     CF_MAWK_FPE_SIGINFO ;;
 
    1|2|4)   # bad news have to turn off traps
@@ -1142,11 +1102,13 @@ case $cf_status in
 
     if test "$cf_have_ieeefp_h" = 1 && test "$cf_have_fpsetmask" = 1 ; then
 	AC_DEFINE(FPE_TRAPS_ON)
-	AC_DEFINE(USE_IEEEFP_H)
+	AC_DEFINE(USE_IEEEFP_H,1,[Define to 1 we should include ieeefp.h])
 	AC_DEFINE_UNQUOTED([TURN_ON_FPE_TRAPS],
-	    [fpsetmask(fpgetmask() | (FP_X_DZ|FP_X_OFL))])
+	    [fpsetmask(fpgetmask() | (FP_X_DZ|FP_X_OFL))],
+		[Define to expression for turning on FPE traps])
 	AC_DEFINE_UNQUOTED([TURN_OFF_FPE_TRAPS],
-	    [fpsetmask(fpgetmask() & ~(FP_X_DZ|FP_X_OFL))])
+	    [fpsetmask(fpgetmask() & ~(FP_X_DZ|FP_X_OFL))],
+		[Define to expression for turning off FPE traps])
 
 	CF_MAWK_FPE_SIGINFO
 
@@ -1167,7 +1129,7 @@ CF_EOF
 	       AC_MSG_RESULT([no bug])
 	    else
 	       AC_MSG_RESULT([buggy -- will use work around])
-	       AC_DEFINE_UNQUOTED([HAVE_STRTOD_OVF_BUG],1)
+	       AC_DEFINE_UNQUOTED(HAVE_STRTOD_OVF_BUG,1,[Define to 1 if strtod has overflow bug])
 	    fi
 	else
 		AC_MSG_RESULT([$cf_FPE_SRCS failed to compile])
@@ -1226,7 +1188,7 @@ LIBS="$cf_FPE_LIBS"
 rm -f conftest.$ac_ext fpe_check$ac_exeext   # whew!!
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_MIXEDCASE_FILENAMES version: 3 updated: 2003/09/20 17:07:55
+dnl CF_MIXEDCASE_FILENAMES version: 4 updated: 2012/10/02 20:55:03
 dnl ----------------------
 dnl Check if the file-system supports mixed-case filenames.  If we're able to
 dnl create a lowercase name and see it as uppercase, it doesn't support that.
@@ -1253,7 +1215,7 @@ else
 	rm -f conftest CONFTEST
 fi
 ])
-test "$cf_cv_mixedcase" = yes && AC_DEFINE(MIXEDCASE_FILENAMES)
+test "$cf_cv_mixedcase" = yes && AC_DEFINE(MIXEDCASE_FILENAMES,1,[Define to 1 if filesystem supports mixed-case filenames.])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MSG_LOG version: 5 updated: 2010/10/23 15:52:32
@@ -1264,14 +1226,14 @@ AC_DEFUN([CF_MSG_LOG],[
 echo "${as_me:-configure}:__oline__: testing $* ..." 1>&AC_FD_CC
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NO_LEAKS_OPTION version: 4 updated: 2006/12/16 14:24:05
+dnl CF_NO_LEAKS_OPTION version: 5 updated: 2012/10/02 20:55:03
 dnl ------------------
 dnl see CF_WITH_NO_LEAKS
 AC_DEFUN([CF_NO_LEAKS_OPTION],[
 AC_MSG_CHECKING(if you want to use $1 for testing)
 AC_ARG_WITH($1,
 	[$2],
-	[AC_DEFINE($3)ifelse([$4],,[
+	[AC_DEFINE_UNQUOTED($3,1,"Define to 1 if you want to use $1 for testing.")ifelse([$4],,[
 	 $4
 ])
 	: ${with_cflags:=-g}
@@ -1366,6 +1328,19 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_PROG_CC version: 3 updated: 2012/10/06 15:31:55
+dnl ----------
+dnl standard check for CC, plus followup sanity checks
+dnl $1 = optional parameter to pass to AC_PROG_CC to specify compiler name
+AC_DEFUN([CF_PROG_CC],[
+ifelse($1,,[AC_PROG_CC],[AC_PROG_CC($1)])
+CF_GCC_VERSION
+CF_ACVERSION_CHECK(2.52,
+	[AC_PROG_CC_STDC],
+	[CF_ANSI_CC_REQD])
+CF_CC_ENV_FLAGS 
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_PROG_LINT version: 2 updated: 2009/08/12 04:43:14
 dnl ------------
 AC_DEFUN([CF_PROG_LINT],
@@ -1374,7 +1349,7 @@ AC_CHECK_PROGS(LINT, tdlint lint alint splint lclint)
 AC_SUBST(LINT_OPTS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_REGEX version: 9 updated: 2012/01/07 15:08:24
+dnl CF_REGEX version: 10 updated: 2012/10/04 20:12:20
 dnl --------
 dnl Attempt to determine if we've got one of the flavors of regular-expression
 dnl code that we can support.
@@ -1448,9 +1423,9 @@ esac
 
 case $cf_cv_regex_hdrs in #(vi
     no)	       AC_MSG_WARN(no regular expression header found) ;; #(vi
-    regex.h)   AC_DEFINE(HAVE_REGEX_H_FUNCS) ;; #(vi
-    regexp.h)  AC_DEFINE(HAVE_REGEXP_H_FUNCS) ;; #(vi
-    regexpr.h) AC_DEFINE(HAVE_REGEXPR_H_FUNCS) ;;
+    regex.h)   AC_DEFINE(HAVE_REGEX_H_FUNCS,1,[Define to 1 to include regex.h for regular expressions]) ;; #(vi
+    regexp.h)  AC_DEFINE(HAVE_REGEXP_H_FUNCS,1,[Define to 1 to include regexp.h for regular expressions]) ;; #(vi
+    regexpr.h) AC_DEFINE(HAVE_REGEXPR_H_FUNCS,1,[Define to 1 to include regexpr.h for regular expressions]) ;;
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1555,16 +1530,6 @@ if test "$with_dmalloc" = yes ; then
 	AC_CHECK_HEADER(dmalloc.h,
 		[AC_CHECK_LIB(dmalloc,[dmalloc_debug]ifelse([$1],,[],[,$1]))])
 fi
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PURIFY version: 2 updated: 2006/12/14 18:43:43
-dnl --------------
-AC_DEFUN([CF_WITH_PURIFY],[
-CF_NO_LEAKS_OPTION(purify,
-	[  --with-purify           test: use Purify],
-	[USE_PURIFY],
-	[LINK_PREFIX="$LINK_PREFIX purify"])
-AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_VALGRIND version: 1 updated: 2006/12/14 18:00:21
