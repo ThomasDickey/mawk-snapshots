@@ -1,8 +1,8 @@
 Summary: mawk - pattern scanning and text processing language
 %define AppProgram mawk
 %define AppVersion 1.3.4
-%define AppRelease 20121026
-# $MawkId: mawk.spec,v 1.10 2012/10/27 00:04:06 tom Exp $
+%define AppRelease 20121027
+# $MawkId: mawk.spec,v 1.12 2012/10/27 13:55:00 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppRelease}
@@ -19,6 +19,7 @@ prototyping and experimenting with algorithms.
 
 %prep
 
+%define debug_package %{nil}
 %setup -q -n %{AppProgram}-%{AppVersion}-%{AppRelease}
 
 %build
@@ -50,6 +51,9 @@ strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Oct 27 2012 Thomas Dickey
+- cancel any debug-rpm
 
 * Sun Jun 21 2010 Thomas Dickey
 - initial version

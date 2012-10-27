@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20121026
+MANIFEST for mawk, version t20121026a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -48,7 +48,6 @@ matherr.c                       catch/report math-errors
 mawk.h                          main header file for mawk
 memory.c                        string-allocation functions
 memory.h                        string-allocation functions header
-missing.c                       replacements for missing system functions
 nstd.h                          header for missing.c
 parse.c                         generated C parser
 parse.h                         generated C parser header
@@ -117,14 +116,10 @@ msdos/examples/winexe.awk       sum segment-sizes of exe's in current directory
 msdos/examples/winobj.awk       sum sizes of obj's in current directory
 msdos                           subdirectory
 msdos/makefile.msc              nmake and MSC 6.0A
-msdos/makefile.tcc              for [TB]CC and Borland make
-msdos/makefile.ztc              makefile for ZTC
 msdos/mawk.def                  linker file
 msdos/msc.h                     definitions for MSC
-msdos/tcc.h                     definitions for TCC
 msdos/vs6.h                     use Visual Studio 6 to build console-mawk
 msdos/vs6.mak                   makefile for Visual Studio 6 (not MS-DOS anymore)
-msdos/ztc.h                     definitions for ZTC
 package/debian                  subdirectory
 package/debian/changelog        start working on debian package
 package/debian/compat           debian build-script

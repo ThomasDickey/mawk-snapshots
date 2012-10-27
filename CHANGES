@@ -1,10 +1,24 @@
--- $MawkId: CHANGES,v 1.147 2012/10/26 23:49:41 tom Exp $
+-- $MawkId: CHANGES,v 1.152 2012/10/27 13:43:57 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20121026
+20121027
+	+ when warning about unrecognized options, do not exit with error
+	  on these gawk options:
+		  --lint
+		  --lint-old
+		  --posix
+		  --re-interval
+		  --traditional
+	+ integrate patch by Dominic Letz for strtime function.
 	+ correct logic for "/dev/stdin" special device (GenToo #424137).
 	+ updates for configure script macros:
+	  + modify configure script and makefile to support cross-compiles.
+	  + remove Turbo C++ and Zortech C++ makefiles.
+	  + remove obsolete function-checks: fmod, memcpy, strchr, strerror,
+	    strtod, vfprintf.
+	  + remove obsolete checks for some headers:  math.h, stdarg.h,
+	    stdlib.h, string.h time.h
 	  + support --datarootdir option.
 	  + add 3rd parameter to AC_DEFINE's to allow autoheader to run.
 	  + remove unused macros.
