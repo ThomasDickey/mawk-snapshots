@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20121026a
+MANIFEST for mawk, version t20121030
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -73,6 +73,7 @@ scancode.h                      list of scan-codes for mawk
 sizes.h                         data-type sizes header
 split.c                         functions for splitting field, strings, etc.
 symtype.h                       types related to symbols are defined here
+trace.c                         mawk trace-functions
 types.h                         mawk datatypes header
 version.c                       print mawk's version string
 vs6.mak                         makefile for Visual Studio 6
