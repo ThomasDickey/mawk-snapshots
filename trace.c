@@ -10,11 +10,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.3 2012/10/31 00:14:06 tom Exp $
+ * $MawkId: trace.c,v 1.5 2012/11/02 00:34:37 tom Exp $
  */
 #include <stdarg.h>
 
 #include <mawk.h>
+
+static void TraceString(STRING *);
 
 static FILE *trace_fp;
 
@@ -37,7 +39,7 @@ Trace(const char *format,...)
 void
 TraceCell(CELL * cp)
 {
-    TRACE(("cell %p ", cp));
+    TRACE(("cell %p ", (void *) cp));
     if (cp != 0) {
 	switch ((MAWK_CELL_TYPES) cp->type) {
 	case C_NOINIT:
@@ -50,11 +52,7 @@ TraceCell(CELL * cp)
 	case C_STRNUM:
 	case C_STRING:
 	    TRACE(("string "));
-	    if (string(cp)->len) {
-		TRACE(("'%.*s'", (int) string(cp)->len, string(cp)->str));
-	    } else {
-		TRACE(("''"));
-	    }
+	    TraceString(string(cp));
 	    TRACE((" (%d)\n", string(cp)->ref_cnt));
 	    break;
 	case C_SPACE:
@@ -87,11 +85,55 @@ TraceFunc(const char *name, CELL * sp)
     int nargs = sp->type;
     int n;
 
-    TRACE(("** %s <-%p\n", name, sp));
+    TRACE(("** %s <-%p\n", name, (void *) sp));
     for (n = 0; n < nargs; ++n) {
 	TRACE(("...arg%d: ", n));
 	TraceCell(sp + n - nargs);
     }
+}
+
+static void
+TraceString(STRING * sp)
+{
+    size_t limit = sp->len;
+    size_t n;
+
+    TRACE(("\""));
+    if (limit) {
+	for (n = 0; n < limit; ++n) {
+	    UChar ch = (UChar) sp->str[n];
+	    switch (ch) {
+	    case '\"':
+		TRACE(("\\\""));
+		break;
+	    case '\\':
+		TRACE(("\\\\"));
+		break;
+	    case '\b':
+		TRACE(("\\b"));
+		break;
+	    case '\f':
+		TRACE(("\\f"));
+		break;
+	    case '\n':
+		TRACE(("\\n"));
+		break;
+	    case '\r':
+		TRACE(("\\r"));
+		break;
+	    case '\t':
+		TRACE(("\\t"));
+		break;
+	    default:
+		if (ch < 32 || ch > 126)
+		    TRACE(("\\%03o", ch));
+		else
+		    TRACE(("%c", ch));
+		break;
+	    }
+	}
+    }
+    TRACE(("\""));
 }
 
 #ifdef NO_LEAKS
