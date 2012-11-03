@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.h,v 1.7 2012/06/27 09:18:52 tom Exp $
+ * $MawkId: code.h,v 1.9 2012/11/02 23:21:50 tom Exp $
  * @Log: code.h,v @
  * Revision 1.5  1995/06/18  19:42:15  mike
  * Remove some redundant declarations and add some prototypes
