@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.16 2012/11/05 10:39:14 tom Exp $
+ * $MawkId: parse.y,v 1.19 2012/11/28 10:43:56 tom Exp $
  * @Log: parse.y,v @
  * Revision 1.11  1995/06/11  22:40:09  mike
  * change if(dump_code) -> if(dump_code_flag)
@@ -79,6 +79,7 @@ the GNU General Public License, version 2, 1991.
 
 
 %{
+
 #include <stdio.h>
 #include "mawk.h"
 #include "symtype.h"
@@ -90,22 +91,25 @@ the GNU General Public License, version 2, 1991.
 #include "field.h"
 #include "files.h"
 
-
 #define  YYMAXDEPTH	200
 
+extern void eat_nl(void);
+static SYMTAB *save_arglist(const char *);
+static int init_arglist(void);
+static void RE_as_arg(void);
+static void check_array(SYMTAB *);
+static void check_var(SYMTAB *);
+static void code_array(SYMTAB *);
+static void code_call_id(CA_REC *, SYMTAB *);
+static void field_A2I(void);
+static void free_arglist(void);
+static void improve_arglist(const char *);
+static void resize_fblock(FBLOCK *);
+static void switch_code_to_main(void);
 
-extern void eat_nl (void) ;
-static void resize_fblock (FBLOCK *) ;
-static void switch_code_to_main (void) ;
-static void code_array (SYMTAB *) ;
-static void code_call_id (CA_REC *, SYMTAB *) ;
-static void field_A2I (void) ;
-static void check_var (SYMTAB *) ;
-static void check_array (SYMTAB *) ;
-static void RE_as_arg (void) ;
-
-static int scope ;
-static FBLOCK *active_funct ;
+static int scope;
+static FBLOCK *active_funct;
+static CA_REC *active_arglist;
       /* when scope is SCOPE_FUNCT  */
 
 #define  code_address(x)  if( is_local(x) ) \
@@ -482,6 +486,7 @@ builtin :
             p->name ) ;
           /* if we have length(array), emit a different code */
           if ( p->fp == bi_length && is_array($4) ) {
+            check_array($4) ;
             code_array($4) ;
             { code1(_PUSHINT) ;  code1(1) ; }
             code1(A_LENGTH) ;
@@ -1051,6 +1056,8 @@ funct_start   :  funct_head  LPAREN  f_arglist  RPAREN
                        (INST *) zmalloc(INST_BYTES(PAGESZ));
                    code_limit = code_base + PAGESZ ;
                    code_warn = code_limit - CODEWARN ;
+		   improve_arglist($1->name);
+		   free_arglist();
                  }
               ;
 
@@ -1084,13 +1091,13 @@ funct_head    :  FUNCTION  ID
                  }
               ;
 
-f_arglist  :  /* empty */ { $$ = 0 ; }
+f_arglist  :  /* empty */ { $$ = init_arglist() ; }
            |  f_args
            ;
 
 f_args     :  ID
-              { $1 = save_id($1->name) ;
-                $1->type = ST_LOCAL_NONE ;
+              { init_arglist();
+	        $1 = save_arglist($1->name) ;
                 $1->offset = 0 ;
                 $$ = 1 ;
               }
@@ -1099,8 +1106,7 @@ f_args     :  ID
                   compile_error("%s is duplicated in argument list",
                     $3->name) ;
                 else
-                { $3 = save_id($3->name) ;
-                  $3->type = ST_LOCAL_NONE ;
+                { $3 = save_arglist($3->name) ;
                   $3->offset = (unsigned char) $1 ;
                   $$ = $1 + 1 ;
                 }
@@ -1182,24 +1188,111 @@ ca_back    :  expr   RPAREN
 
 %%
 
+/*
+ * Check for special case where there is a forward reference to a newly
+ * declared function using an array parameter.  Because the parameter
+ * mechanism for arrays uses a different byte code, we would like to know
+ * if this is the case so that the function's contents can handle the array
+ * type.
+ */
+static void
+improve_arglist(const char *name)
+{
+    CA_REC *p, *p2;
+    FCALL_REC *q;
+
+    for (p = active_arglist; p != 0; p = p->link) {
+	if (p->type == ST_LOCAL_NONE) {
+	    for (q = resolve_list; q != 0; q = q->link) {
+		if (!strcmp(q->callee->name, name)) {
+		    for (p2 = q->arg_list; p2 != 0; p2 = p2->link) {
+			if (p2->arg_num == p->arg_num) {
+			    switch (p2->type) {
+			    case ST_NONE:
+			    case ST_LOCAL_NONE:
+				break;
+			    default:
+				p->type = p2->type;
+				p->sym_p->type = (char) p2->type;
+				TRACE(("...set argument %d of %s to %s\n",
+				       p->arg_num,
+				       name,
+				       type_to_str(p->type)));
+				break;
+			    }
+			}
+		    }
+		    if (p->type != ST_LOCAL_NONE)
+			break;
+		}
+	    }
+	    if (p->type != ST_LOCAL_NONE)
+		break;
+	}
+    }
+}
+
+/* maintain data for f_arglist to make it visible in funct_start */
+static int
+init_arglist(void)
+{
+    free_arglist();
+    return 0;
+}
+
+static SYMTAB *
+save_arglist(const char *s)
+{
+    SYMTAB *result = save_id(s);
+    CA_REC *saveit = ZMALLOC(CA_REC);
+    CA_REC *p, *q;
+
+    if (saveit != 0) {
+	int arg_num = 0;
+	for (p = active_arglist, q = 0; p != 0; q = p, p = p->link) {
+	    ++arg_num;
+	}
+	saveit->link = 0;
+	saveit->type = ST_LOCAL_NONE;
+	saveit->arg_num = (short) arg_num;
+	saveit->sym_p = result;
+	if (q != 0) {
+	    q->link = saveit;
+	} else {
+	    active_arglist = saveit;
+	}
+    }
+
+    return result;
+}
+
+static void
+free_arglist(void)
+{
+    while (active_arglist != 0) {
+	CA_REC *next = active_arglist->link;
+	ZFREE(active_arglist);
+	active_arglist = next;
+    }
+}
+
 /* resize the code for a user function */
 
 static void
-resize_fblock(FBLOCK *fbp)
+resize_fblock(FBLOCK * fbp)
 {
-    CODEBLOCK *p = ZMALLOC(CODEBLOCK) ;
+    CODEBLOCK *p = ZMALLOC(CODEBLOCK);
 
-    code2op(_RET0, _HALT) ;
+    code2op(_RET0, _HALT);
     /* make sure there is always a return */
 
-    *p = active_code ;
-    fbp->code = code_shrink(p, &fbp->size) ;
+    *p = active_code;
+    fbp->code = code_shrink(p, &fbp->size);
     /* code_shrink() zfrees p */
 
-    if ( dump_code_flag )
-      add_to_fdump_list(fbp) ;
+    if (dump_code_flag)
+	add_to_fdump_list(fbp);
 }
-
 
 /* convert FE_PUSHA  to  FE_PUSHI
    or F_PUSH to F_PUSHI
@@ -1208,34 +1301,26 @@ resize_fblock(FBLOCK *fbp)
 static void
 field_A2I(void)
 {
-    CELL *cp ;
+    CELL *cp;
 
-    if ( code_ptr[-1].op == FE_PUSHA &&
-	 code_ptr[-1].ptr == (PTR) 0) {
+    if (code_ptr[-1].op == FE_PUSHA &&
+	code_ptr[-1].ptr == (PTR) 0) {
 	/* On most architectures, the two tests are the same; a good
 	   compiler might eliminate one.  On LM_DOS, and possibly other
 	   segmented architectures, they are not */
-	code_ptr[-1].op = FE_PUSHI ;
+	code_ptr[-1].op = FE_PUSHI;
     } else {
-	cp = (CELL *) code_ptr[-1].ptr ;
+	cp = (CELL *) code_ptr[-1].ptr;
 
-	if ( (cp == field)  || (
-
-	#ifdef  MSDOS
-	SAMESEG(cp,field) &&
-	#endif
-	(cp > NF) && (cp <= LAST_PFIELD) ) )
-	{
-	code_ptr[-2].op = _PUSHI  ;
-	}
-	else if ( cp == NF )
-	{ code_ptr[-2].op = NF_PUSHI ; code_ptr-- ; }
-
-	else
-	{
-	code_ptr[-2].op = F_PUSHI ;
-	code_ptr -> op = field_addr_to_index( code_ptr[-1].ptr ) ;
-	code_ptr++ ;
+	if ((cp == field) || ((cp > NF) && (cp <= LAST_PFIELD))) {
+	    code_ptr[-2].op = _PUSHI;
+	} else if (cp == NF) {
+	    code_ptr[-2].op = NF_PUSHI;
+	    code_ptr--;
+	} else {
+	    code_ptr[-2].op = F_PUSHI;
+	    code_ptr->op = field_addr_to_index(code_ptr[-1].ptr);
+	    code_ptr++;
 	}
     }
 }
@@ -1244,137 +1329,133 @@ field_A2I(void)
    check that's consistent with previous usage */
 
 static void
-check_var(SYMTAB *p)
+check_var(SYMTAB * p)
 {
-    switch(p->type)
-    {
-    case ST_NONE : /* new id */
-	p->type = ST_VAR ;
-	p->stval.cp = ZMALLOC(CELL) ;
-	p->stval.cp->type = C_NOINIT ;
-	break ;
+    switch (p->type) {
+    case ST_NONE:		/* new id */
+	p->type = ST_VAR;
+	p->stval.cp = ZMALLOC(CELL);
+	p->stval.cp->type = C_NOINIT;
+	break;
 
-    case ST_LOCAL_NONE :
-	p->type = ST_LOCAL_VAR ;
-	active_funct->typev[p->offset] = ST_LOCAL_VAR ;
-	break ;
+    case ST_LOCAL_NONE:
+	p->type = ST_LOCAL_VAR;
+	active_funct->typev[p->offset] = ST_LOCAL_VAR;
+	break;
 
-    case ST_VAR :
-    case ST_LOCAL_VAR :
-	break ;
+    case ST_VAR:
+    case ST_LOCAL_VAR:
+	break;
 
-    default :
-	type_error(p) ;
-	break ;
+    default:
+	type_error(p);
+	break;
     }
 }
 
 /* we've seen an ID in a context where it should be an ARRAY,
    check that's consistent with previous usage */
 static void
-check_array(SYMTAB *p)
+check_array(SYMTAB * p)
 {
-    switch(p->type)
-    {
-    case ST_NONE :  /* a new array */
-	p->type = ST_ARRAY ;
-	p->stval.array = new_ARRAY() ;
+    switch (p->type) {
+    case ST_NONE:		/* a new array */
+	p->type = ST_ARRAY;
+	p->stval.array = new_ARRAY();
 	no_leaks_array(p->stval.array);
-	break ;
+	break;
 
-    case ST_ARRAY :
-    case ST_LOCAL_ARRAY :
-	break ;
+    case ST_ARRAY:
+    case ST_LOCAL_ARRAY:
+	break;
 
-    case ST_LOCAL_NONE :
-	p->type = ST_LOCAL_ARRAY ;
-	active_funct->typev[p->offset] = ST_LOCAL_ARRAY ;
-	break ;
+    case ST_LOCAL_NONE:
+	p->type = ST_LOCAL_ARRAY;
+	active_funct->typev[p->offset] = ST_LOCAL_ARRAY;
+	break;
 
-    default :
-	type_error(p) ;
-	break ;
+    default:
+	type_error(p);
+	break;
     }
 }
 
 static void
-code_array(SYMTAB *p)
+code_array(SYMTAB * p)
 {
-    if ( is_local(p) )
-	code2op(LA_PUSHA, p->offset) ;
+    if (is_local(p))
+	code2op(LA_PUSHA, p->offset);
     else
-	code2(A_PUSHA, p->stval.array) ;
+	code2(A_PUSHA, p->stval.array);
 }
-
 
 /* we've seen an ID as an argument to a user defined function */
 
 static void
-code_call_id(CA_REC *p, SYMTAB *ip)
+code_call_id(CA_REC * p, SYMTAB * ip)
 {
-    static CELL dummy ;
+    static CELL dummy;
 
-    p->call_offset = code_offset ;
+    p->call_offset = code_offset;
     /* This always get set now.  So that fcall:relocate_arglist
-    works. */
+       works. */
 
-    switch( ip->type )
-    {
-	case ST_VAR :
-	    p->type = CA_EXPR ;
-	    code2(_PUSHI, ip->stval.cp) ;
-	    break ;
+    switch (ip->type) {
+    case ST_VAR:
+	p->type = CA_EXPR;
+	code2(_PUSHI, ip->stval.cp);
+	break;
 
-	case ST_LOCAL_VAR :
-	    p->type = CA_EXPR ;
-	    code2op(L_PUSHI, ip->offset) ;
-	    break ;
+    case ST_LOCAL_VAR:
+	p->type = CA_EXPR;
+	code2op(L_PUSHI, ip->offset);
+	break;
 
-	case ST_ARRAY :
-	    p->type = CA_ARRAY ;
-	    code2(A_PUSHA, ip->stval.array) ;
-	    break ;
+    case ST_ARRAY:
+	p->type = CA_ARRAY;
+	code2(A_PUSHA, ip->stval.array);
+	break;
 
-	case ST_LOCAL_ARRAY :
-	    p->type = CA_ARRAY ;
-	    code2op(LA_PUSHA, ip->offset) ;
-	    break ;
+    case ST_LOCAL_ARRAY:
+	p->type = CA_ARRAY;
+	code2op(LA_PUSHA, ip->offset);
+	break;
 
 	/* not enough info to code it now; it will have to
-	be patched later */
+	   be patched later */
 
-	case ST_NONE :
-	    p->type = ST_NONE ;
-	    p->sym_p = ip ;
-	    code2(_PUSHI, &dummy) ;
-	    break ;
+    case ST_NONE:
+	p->type = ST_NONE;
+	p->sym_p = ip;
+	code2(_PUSHI, &dummy);
+	break;
 
-	case ST_LOCAL_NONE :
-	    p->type = ST_LOCAL_NONE ;
-	    p->type_p = & active_funct->typev[ip->offset] ;
-	    code2op(L_PUSHI, ip->offset) ;
-	    break ;
-
+    case ST_LOCAL_NONE:
+	p->type = ST_LOCAL_NONE;
+	p->type_p = &active_funct->typev[ip->offset];
+	code2op(L_PUSHI, ip->offset);
+	break;
 
 #ifdef DEBUG
-	default :
-	    bozo("code_call_id") ;
+    default:
+	bozo("code_call_id");
 #endif
 
-	}
+    }
 }
 
 /* an RE by itself was coded as _MATCH0 , change to
    push as an expression */
 
-static void RE_as_arg(void)
+static void
+RE_as_arg(void)
 {
-    CELL *cp = ZMALLOC(CELL) ;
+    CELL *cp = ZMALLOC(CELL);
 
-    code_ptr -= 2 ;
-    cp->type = C_RE ;
-    cp->ptr = code_ptr[1].ptr ;
-    code2(_PUSHC, cp) ;
+    code_ptr -= 2;
+    cp->type = C_RE;
+    cp->ptr = code_ptr[1].ptr;
+    code2(_PUSHC, cp);
     no_leaks_cell_ptr(cp);
 }
 
@@ -1382,40 +1463,44 @@ static void RE_as_arg(void)
 static void
 switch_code_to_main(void)
 {
-   switch(scope)
-   {
-     case SCOPE_BEGIN :
-	*begin_code_p = active_code ;
-	active_code = *main_code_p ;
-	break ;
+    switch (scope) {
+    case SCOPE_BEGIN:
+	*begin_code_p = active_code;
+	active_code = *main_code_p;
+	break;
 
-     case SCOPE_END :
-	*end_code_p = active_code ;
-	active_code = *main_code_p ;
-	break ;
+    case SCOPE_END:
+	*end_code_p = active_code;
+	active_code = *main_code_p;
+	break;
 
-     case SCOPE_FUNCT :
-	active_code = *main_code_p ;
-	break ;
+    case SCOPE_FUNCT:
+	active_code = *main_code_p;
+	break;
 
-     case SCOPE_MAIN :
-	break ;
-   }
-   active_funct = (FBLOCK*) 0 ;
-   scope = SCOPE_MAIN ;
+    case SCOPE_MAIN:
+	break;
+    }
+    active_funct = (FBLOCK *) 0;
+    scope = SCOPE_MAIN;
 }
-
 
 void
 parse(void)
 {
-   if ( yyparse() || compile_error_count != 0 ) mawk_exit(2) ;
+    if (yyparse() || compile_error_count != 0)
+	mawk_exit(2);
 
-   scan_cleanup() ;
-   set_code() ;
-   /* code must be set before call to resolve_fcalls() */
-   if ( resolve_list )  resolve_fcalls() ;
+    scan_cleanup();
+    set_code();
+    /* code must be set before call to resolve_fcalls() */
+    if (resolve_list)
+	resolve_fcalls();
 
-   if ( compile_error_count != 0 ) mawk_exit(2) ;
-   if ( dump_code_flag ) { dump_code() ; mawk_exit(0) ; }
+    if (compile_error_count != 0)
+	mawk_exit(2);
+    if (dump_code_flag) {
+	dump_code();
+	mawk_exit(0);
+    }
 }
