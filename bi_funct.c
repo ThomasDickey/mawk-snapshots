@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.59 2012/11/02 00:39:20 tom Exp $
+ * $MawkId: bi_funct.c,v 1.61 2012/11/29 09:32:21 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -490,7 +490,7 @@ bi_strftime(CELL * sp)
     const char *format = "%c";
     time_t rawtime;
     struct tm *ptm;
-    int n_args, len;
+    int n_args;
     int utc;
     STRING *sval = 0;		/* strftime(sval->str, timestamp, utc) */
     char buff[128];
@@ -507,7 +507,7 @@ bi_strftime(CELL * sp)
 	/* don't use < C_STRING shortcut */
 	sval = string(sp);
 
-	if ((len = (int) sval->len) != 0)	/* strftime on valid format */
+	if ((int) sval->len != 0)	/* strftime on valid format */
 	    format = sval->str;
     } else {
 	sp->type = C_STRING;
@@ -1239,7 +1239,7 @@ old_gsub(PTR re, int level)
 		xbuff[0] = *ThisTarget;
 		xbuff[1] = 0;
 		ThisReplace.type = C_REPL;
-		ThisReplace.ptr = (PTR) new_STRING1(xbuff, 1);
+		ThisReplace.ptr = (PTR) new_STRING1(xbuff, (size_t) 1);
 
 		NextTarget = ThisTarget + 1;
 		NextTargetLen = ThisTargetLen - 1;
@@ -1341,7 +1341,7 @@ new_gsub(PTR re, int level)
 		xbuff[0] = *ThisTarget;
 		xbuff[1] = 0;
 		ThisReplace.type = C_REPL;
-		ThisReplace.ptr = (PTR) new_STRING1(xbuff, 1);
+		ThisReplace.ptr = (PTR) new_STRING1(xbuff, (size_t) 1);
 
 		NextTarget = ThisTarget + 1;
 		NextTargetLen = ThisTargetLen - 1;
