@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.24 2012/11/29 00:44:53 tom Exp $
+ * $MawkId: files.c,v 1.29 2012/12/07 11:44:38 tom Exp $
  *
  * @Log: files.c,v @
  * Revision 1.9  1996/01/14  17:14:10  mike
@@ -217,20 +217,18 @@ file_find(STRING * sval, int type)
     }
 
     /* put p at the front of the list */
-    if (p != 0) {
-	if (p->ptr == 0) {
-	    free_filenode(p);
-	} else {
-	    if (p != file_list) {
-		p->link = file_list;
-		file_list = p;
-	    }
-	    /* successful open */
-	    p->name = sval;
-	    sval->ref_cnt++;
-	    TRACE(("-> %p\n", p->ptr));
-	    result = p->ptr;
+    if (p->ptr == 0) {
+	free_filenode(p);
+    } else {
+	if (p != file_list) {
+	    p->link = file_list;
+	    file_list = p;
 	}
+	/* successful open */
+	p->name = sval;
+	sval->ref_cnt++;
+	TRACE(("-> %p\n", p->ptr));
+	result = p->ptr;
     }
     return result;
 }
@@ -243,14 +241,13 @@ file_find(STRING * sval, int type)
 int
 file_close(STRING * sval)
 {
-    FILE_NODE dummy;
     FILE_NODE *p;
-    FILE_NODE *q = &dummy;	/* trails p */
+    FILE_NODE *q = 0;		/* trails p */
     FILE_NODE *hold;
     char *name = sval->str;
     int retval = -1;
 
-    dummy.link = p = file_list;
+    p = file_list;
     while (p) {
 	if (strcmp(name, p->name->str) == 0) {
 	    /* found */
@@ -261,8 +258,10 @@ file_close(STRING * sval)
 	       Note that we don't have to consider the list corruption
 	       caused by a recursive call because it will never return. */
 
-	    q->link = p->link;
-	    file_list = dummy.link;	/* maybe it was the first file */
+	    if (q == 0)
+		file_list = p->link;
+	    else
+		q->link = p->link;
 
 	    switch (p->type) {
 	    case F_TRUNC:
@@ -457,8 +456,14 @@ get_pipe(char *name, int type, int *pid_ptr)
 
     if (pipe(the_pipe) == -1)
 	return (PTR) 0;
+
+    /*
+     * If this is an input-pipe then local_fd is reader, remote_fd is writer
+     * If this is an output-pipe then local_fd is writer, remote_fd is reader
+     */
     local_fd = the_pipe[type == PIPE_OUT];
     remote_fd = the_pipe[type == PIPE_IN];
+
     /* to keep output ordered correctly */
     fflush(stdout);
     fflush(stderr);
@@ -470,9 +475,18 @@ get_pipe(char *name, int type, int *pid_ptr)
 	return (PTR) 0;
 
     case 0:
+	/*
+	 * This is the child process.  Close the unused end of the pipe, i.e,
+	 * (local_fd) and then close the input/output file descriptor that
+	 * corresponds to the direction we want to read/write.
+	 *
+	 * The dup() call uses the first unused file descriptor, which happens
+	 * to be the one that we just closed, e.g., 0 or 1 for stdin and stdout
+	 * respectively.
+	 */
 	close(local_fd);
 	close(type == PIPE_IN);
-	dup(remote_fd);
+	IGNORE_RC(dup(remote_fd));
 	close(remote_fd);
 	execl(shell, shell, "-c", name, (char *) 0);
 	errmsg(errno, "failed to exec %s -c %s", shell, name);
@@ -483,7 +497,7 @@ get_pipe(char *name, int type, int *pid_ptr)
 	close(remote_fd);
 	/* we could deadlock if future child inherit the local fd ,
 	   set close on exec flag */
-	CLOSE_ON_EXEC(local_fd);
+	(void) CLOSE_ON_EXEC(local_fd);
 	break;
     }
 

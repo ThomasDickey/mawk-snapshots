@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.61 2012/11/29 09:32:21 tom Exp $
+ * $MawkId: bi_funct.c,v 1.64 2012/12/07 10:14:17 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -285,15 +285,24 @@ bi_substr(CELL * sp)
     }
 
     if (n_args == 2) {
-	n = MAX__INT;
-	if (sp[1].type != C_DOUBLE)
+	n = len;
+	if (sp[1].type != C_DOUBLE) {
 	    cast1_to_d(sp + 1);
+	}
     } else {
 	if (TEST2(sp + 1) != TWO_DOUBLES)
 	    cast2_to_d(sp + 1);
 	n = d_to_i(sp[2].dval);
     }
     i = d_to_i(sp[1].dval) - 1;	/* i now indexes into string */
+
+    /*
+     * If the starting index is past the end of the string, there is nothing
+     * to extract other than an empty string.
+     */
+    if (i > len) {
+	n = 0;
+    }
 
     /*
      * Workaround in case someone's written a script that does substr(0,last-1)
@@ -303,6 +312,10 @@ bi_substr(CELL * sp)
 	n -= i + 1;
 	i = 0;
     }
+
+    /*
+     * Keep 'n' from extending past the end of the string. 
+     */
     if (n > len - i) {
 	n = len - i;
     }
