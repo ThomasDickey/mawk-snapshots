@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2010,2012, Thomas E. Dickey
+copyright 2008-2012,2013, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1995,1996, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.34 2012/12/09 23:26:47 tom Exp $
+ * $MawkId: scan.c,v 1.38 2013/08/03 13:28:13 tom Exp $
  * @Log: scan.c,v @
  * Revision 1.8  1996/07/28 21:47:05  mike
  * gnuish patch
@@ -103,6 +103,20 @@ static UChar *buffp;
  /* unsigned so it works with 8 bit chars */
 static int program_fd;
 static int eof_flag;
+
+/* use unsigned chars for index into scan_code[] */
+#define NextUChar(c) (UChar)(c = (char) next())
+
+static void
+string_too_long(void)
+{
+    compile_error("string too long \"%.10s ...", string_buff);
+    mawk_exit(2);
+}
+
+#define CheckStringSize(ptr) \
+	if (((ptr) - string_buff) >= MIN_SPRINTF) \
+	    string_too_long()
 
 void
 scan_init(char *cmdline_program)
@@ -237,7 +251,7 @@ eat_comment(void)
 {
     register int c;
 
-    while ((c = next()) != '\n' && scan_code[c]) {
+    while (scan_code[NextUChar(c)] && (c != '\n')) {
 	;			/* empty */
     }
     un_next();
@@ -256,7 +270,7 @@ eat_semi_colon(void)
 {
     register int c;
 
-    while (scan_code[c = next()] == SC_SPACE) {
+    while (scan_code[NextUChar(c)] == SC_SPACE) {
 	;			/* empty */
     }
     if (c != ';')
@@ -266,8 +280,8 @@ eat_semi_colon(void)
 void
 eat_nl(void)			/* eat all space including newlines */
 {
-    while (1)
-	switch (scan_code[next()]) {
+    while (1) {
+	switch (scan_code[(UChar) next()]) {
 	case SC_COMMENT:
 	    eat_comment();
 	    break;
@@ -284,9 +298,9 @@ eat_nl(void)			/* eat all space including newlines */
 	       a csh user with backslash dyslexia.(Not a joke)
 	     */
 	    {
-		unsigned c;
+		int c;
 
-		while (scan_code[c = (unsigned) next()] == SC_SPACE) {
+		while (scan_code[NextUChar(c)] == SC_SPACE) {
 		    ;		/* empty */
 		}
 		if (c == '\n')
@@ -310,6 +324,7 @@ eat_nl(void)			/* eat all space including newlines */
 	    un_next();
 	    return;
 	}
+    }
 }
 
 int
@@ -325,7 +340,7 @@ yylex(void)
 
   reswitch:
 
-    switch (scan_code[c = next()]) {
+    switch (scan_code[NextUChar(c)]) {
     case 0:
 	ct_ret(EOF);
 
@@ -342,7 +357,7 @@ yylex(void)
 	ct_ret(NL);
 
     case SC_ESCAPE:
-	while (scan_code[c = next()] == SC_SPACE) {
+	while (scan_code[NextUChar(c)] == SC_SPACE) {
 	    ;			/* empty */
 	};
 	if (c == '\n') {
@@ -597,7 +612,7 @@ yylex(void)
 	    double d;
 	    int flag;
 
-	    while (scan_code[c = next()] == SC_SPACE) {
+	    while (scan_code[NextUChar(c)] == SC_SPACE) {
 		;		/* empty */
 	    };
 	    if (scan_code[c] != SC_DIGIT &&
@@ -628,16 +643,17 @@ yylex(void)
 
     case SC_IDCHAR:		/* collect an identifier */
 	{
-	    UChar *p =
-	    (UChar *) string_buff + 1;
+	    char *p = string_buff + 1;
 	    SYMTAB *stp;
 
 	    string_buff[0] = (char) c;
 
-	    while ((c = scan_code[*p++ = (UChar) next()]) == SC_IDCHAR ||
-		   c == SC_DIGIT) {
-		;		/* empty */
-	    };
+	    while (1) {
+		CheckStringSize(p);
+		c = scan_code[NextUChar(*p++)];
+		if (c != SC_IDCHAR && c != SC_DIGIT)
+		    break;
+	    }
 
 	    un_next();
 	    *--p = 0;
@@ -707,7 +723,7 @@ yylex(void)
 
 		/* check for length alone, this is an ugly
 		   hack */
-		while (scan_code[c = next()] == SC_SPACE) {
+		while (scan_code[NextUChar(c)] == SC_SPACE) {
 		    ;		/* empty */
 		};
 		un_next();
@@ -739,10 +755,10 @@ yylex(void)
 static double
 collect_decimal(int c, int *flag)
 {
-    register UChar *p = (UChar *) string_buff + 1;
-    UChar *endp;
+    register char *p = string_buff + 1;
+    char *endp;
     char *temp;
-    UChar *last_decimal = 0;
+    char *last_decimal = 0;
     double d;
 
     *flag = 0;
@@ -750,14 +766,18 @@ collect_decimal(int c, int *flag)
 
     if (c == '.') {
 	last_decimal = p - 1;
-	if (scan_code[*p++ = (UChar) next()] != SC_DIGIT) {
+	CheckStringSize(p);
+	if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
 	    *flag = UNEXPECTED;
 	    yylval.ival = '.';
 	    return 0.0;
 	}
     } else {
-	while (scan_code[*p++ = (UChar) next()] == SC_DIGIT) {
-	    ;			/* empty */
+	while (1) {
+	    CheckStringSize(p);
+	    if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+		break;
+	    }
 	};
 	if (p[-1] == '.') {
 	    last_decimal = p - 1;
@@ -767,16 +787,19 @@ collect_decimal(int c, int *flag)
 	}
     }
     /* get rest of digits after decimal point */
-    while (scan_code[*p++ = (UChar) next()] == SC_DIGIT) {
-	;			/* empty */
-    };
+    while (1) {
+	CheckStringSize(p);
+	if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+	    break;
+	}
+    }
 
     /* check for exponent */
     if (p[-1] != 'e' && p[-1] != 'E') {
 	un_next();
 	*--p = 0;
     } else {			/* get the exponent */
-	if (scan_code[*p = (UChar) next()] != SC_DIGIT &&
+	if (scan_code[NextUChar(*p)] != SC_DIGIT &&
 	    *p != '-' && *p != '+') {
 	    /* if we can, undo and try again */
 	    if (buffp - buffer >= 2) {
@@ -790,9 +813,12 @@ collect_decimal(int c, int *flag)
 	    }
 	} else {		/* get the rest of the exponent */
 	    p++;
-	    while (scan_code[*p++ = (UChar) next()] == SC_DIGIT) {
-		;		/* empty */
-	    };
+	    while (1) {
+		CheckStringSize(p);
+		if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+		    break;
+		}
+	    }
 	    un_next();
 	    *--p = 0;
 	}
@@ -800,13 +826,13 @@ collect_decimal(int c, int *flag)
 
 #ifdef LOCALE
     if (last_decimal && decimal_dot) {
-	*last_decimal = (UChar) decimal_dot;
+	*last_decimal = decimal_dot;
     }
 #endif
 
     errno = 0;			/* check for overflow/underflow */
     d = strtod(string_buff, &temp);
-    endp = (UChar *) temp;
+    endp = temp;
 
 #ifndef	 STRTOD_UNDERFLOW_ON_ZERO_BUG
     if (errno)
@@ -960,13 +986,14 @@ rm_escape(char *s, size_t *lenp)
 static int
 collect_string(void)
 {
-    register UChar *p = (UChar *) string_buff;
+    register char *p = string_buff;
     int c;
     int e_flag = 0;		/* on if have an escape char */
     size_t len_buff;
 
-    while (1)
-	switch (scan_code[*p++ = (UChar) next()]) {
+    while (1) {
+	CheckStringSize(p);
+	switch (scan_code[NextUChar(*p++)]) {
 	case SC_DQUOTE:	/* done */
 	    *--p = 0;
 	    goto out;
@@ -988,7 +1015,7 @@ collect_string(void)
 	    } else if (c == 0)
 		un_next();
 	    else {
-		*p++ = (UChar) c;
+		*p++ = (char) c;
 		e_flag = 1;
 	    }
 
@@ -997,6 +1024,7 @@ collect_string(void)
 	default:
 	    break;
 	}
+    }
 
   out:
     if (e_flag)
@@ -1026,8 +1054,8 @@ collect_RE(void)
 			     limit);
 	    mawk_exit(2);
 	}
-	c = (UChar) (*p++ = (char) next());
-	switch (scan_code[c]) {
+	CheckStringSize(p);
+	switch (scan_code[NextUChar(c = *p++)]) {
 	case SC_POW:
 	    /* Handle [^]] and [^^] correctly. */
 	    if ((p - 1) == first && first != 0 && first[-1] == '[') {
