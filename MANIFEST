@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20140803
+MANIFEST for mawk, version t20140806
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -129,6 +129,7 @@ package/debian/control          debian build-script
 package/debian/copyright        debian build-script
 package/debian/docs             debian build-script
 package/debian/postinst         debian build-script
+package/debian/postrm           post-removal script
 package/debian/preinst          debian build script
 package/debian/prerm            debian build-script
 package/debian/rules            debian build-script
