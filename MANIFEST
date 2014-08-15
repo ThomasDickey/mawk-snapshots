@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20140812
+MANIFEST for mawk, version t20140814
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -72,6 +72,7 @@ scan.h                          program file-management header
 scancode.h                      list of scan-codes for mawk
 sizes.h                         data-type sizes header
 split.c                         functions for splitting field, strings, etc.
+split.h                         prototypes for split.c
 symtype.h                       types related to symbols are defined here
 trace.c                         mawk trace-functions
 types.h                         mawk datatypes header
