@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.72 2014/08/13 23:22:24 tom Exp $
+ * $MawkId: bi_funct.c,v 1.78 2014/08/18 00:03:33 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -1192,28 +1192,15 @@ typedef struct {
 #define NextTarget     NextGSUB.target
 #define NextTargetLen  NextGSUB.target_len
 
-#ifdef EXP_UNROLLED_GSUB
-/* #define DEBUG_GSUB 1 */
-
-static size_t gsub_max;
-static GSUB_STK *gsub_stk;
-static unsigned repl_cnt;	/* number of global replacements */
-
-#if OPT_TRACE > 0
-static const char *
-indent(int level)
-{
-    static const char value[] = "-----------------";
-    const char *result;
-    int limit = (int) sizeof(value) - 1;
-
-    if (level < limit)
-	result = value + limit - level;
-    else
-	result = "";
-    return result;
-}
+#if defined(DEBUG_GSUB) || !defined(EXP_UNROLLED_GSUB)
+#define USE_GSUB0
 #endif
+
+#if defined(EXP_UNROLLED_GSUB)
+#define USE_GSUB1
+#endif
+
+static unsigned repl_cnt;	/* number of global replacements */
 
 /* recursive global subsitution
    dealing with empty matches makes this mildly painful
@@ -1222,6 +1209,7 @@ indent(int level)
    empty_ok is set if, match of empty string at front is OK
 */
 
+#ifdef USE_GSUB1
 static size_t
 repl_length(CELL *cp)
 {
@@ -1246,117 +1234,259 @@ repl_length(CELL *cp)
     TRACE(("repl_length -> %d\n", (int) result));
     return result;
 }
+#endif
 
-#ifdef DEBUG_GSUB
+#ifdef USE_GSUB0
+/* recursive global subsitution
+   dealing with empty matches makes this mildly painful
+
+   repl is always of type REPL or REPLV, destroyed by caller
+   flag is set if, match of empty string at front is OK
+*/
+
 static STRING *
-old_gsub(PTR re, int level)
+gsub0(PTR re, CELL *repl, char *target, size_t target_len, int flag)
 {
-    char xbuff[2];
-    char *in_sval;
     char *front = 0, *middle;
     STRING *back;
     size_t front_len, middle_len;
-    size_t repl_len;
+    STRING *ret_val;
+    CELL xrepl;			/* a copy of repl so we can change repl */
 
-    assert(level >= 0);
-    assert(level + 1 < (int) gsub_max);
+    if (!(middle = REmatch(target, target_len, cast_to_re(re), &middle_len)))
+	return new_STRING(target);	/* no match */
 
-    middle = REmatch(ThisTarget, ThisTargetLen, cast_to_re(re), &middle_len);
-    if (middle != 0) {
+    cellcpy(&xrepl, repl);
 
-	if (!ThisEmptyOk && (middle_len == 0) && (middle == ThisTarget)) {
-	    /* match at front that's not allowed */
+    if (!flag && middle_len == 0 && middle == target) {
+	/* match at front that's not allowed */
+
+	if (*target == 0) {	/* target is empty string */
+	    repl_destroy(&xrepl);
+	    null_str.ref_cnt++;
+	    return &null_str;
+	} else if (1 && isAnchored(re)) {
+	    repl_destroy(&xrepl);
+	    return new_STRING1(target, target_len);
+	} else {
+	    char xbuff[2];
 
 	    front_len = 0;
+	    /* make new repl with target[0] */
+	    repl_destroy(repl);
+	    --target_len;
+	    xbuff[0] = *target++;
+	    xbuff[1] = 0;
+	    repl->type = C_REPL;
+	    repl->ptr = (PTR) new_STRING(xbuff);
+	    back = gsub0(re, &xrepl, target, target_len, 1);
+	}
+    } else {			/* a match that counts */
+	repl_cnt++;
 
-	    if (ThisTargetLen == 0) {	/* target is empty string */
-		null_str.ref_cnt++;
-		back = &null_str;
-	    } else if (isAnchored(re)) {
-		back = new_STRING1(ThisTarget, ThisTargetLen);
-	    } else {
-		/* make new repl with target[0] */
-		cellcpy(&NextReplace, &ThisReplace);
-		repl_destroy(&ThisReplace);
-		xbuff[0] = *ThisTarget;
-		xbuff[1] = 0;
-		ThisReplace.type = C_REPL;
-		ThisReplace.ptr = (PTR) new_STRING1(xbuff, (size_t) 1);
+	front = target;
+	front_len = (unsigned) (middle - target);
 
-		NextTarget = ThisTarget + 1;
-		NextTargetLen = ThisTargetLen - 1;
-		NextEmptyOk = 1;
-		NextBranch = btEmpty;
-
-		back = old_gsub(re, level + 1);
-	    }
-	} else {		/* a match that counts */
-	    repl_cnt++;
-
-	    front = ThisTarget;
-	    front_len = (size_t) (middle - ThisTarget);
-
-	    if (front_len == ThisTargetLen) {	/* matched back of target */
-		back = &null_str;
-		null_str.ref_cnt++;
-	    } else {
-		NextTarget = middle + middle_len;
-		NextTargetLen = ThisTargetLen - (front_len + middle_len);
-		NextEmptyOk = 0;
-		NextBranch = btNormal;
-		cellcpy(&NextReplace, &ThisReplace);
-
-		back = old_gsub(re, level + 1);
-	    }
-
-	    /* patch the &'s if needed */
-	    if (ThisReplace.type == C_REPLV) {
-		STRING *sval = new_STRING1(middle, middle_len);
-
-		replv_to_repl(&ThisReplace, sval);
-		free_STRING(sval);
-	    }
+	if (front_len == target_len) {	/* matched back of target */
+	    back = &null_str;
+	    null_str.ref_cnt++;
+	} else {
+	    back = gsub0(re,
+			 &xrepl,
+			 middle + middle_len,
+			 target_len - (front_len + middle_len),
+			 0);
 	}
 
-	/* put the three pieces together */
-	repl_len = repl_length(&ThisReplace);
-	ThisResult = new_STRING0(front_len + repl_len + back->len);
+	/* patch the &'s if needed */
+	if (repl->type == C_REPLV) {
+	    STRING *sval = new_STRING0(middle_len);
 
-	TRACE(("old %s front ", indent(level)));
-	TRACE_STRING2(front, front_len);
-	TRACE((", middle "));
-	TRACE_STRING2(string(&ThisReplace)->str, (int) repl_len);
-	TRACE((", back "));
-	TRACE_STRING2(back->str, (int) back->len);
-	TRACE(("\n"));
-
-	in_sval = ThisResult->str;
-
-	if (front_len) {
-	    memcpy(in_sval, front, front_len);
-	    in_sval += front_len;
+	    memcpy(sval->str, middle, middle_len);
+	    replv_to_repl(repl, sval);
+	    free_STRING(sval);
 	}
-	if (repl_len) {
-	    memcpy(in_sval, string(&ThisReplace)->str, repl_len);
-	    in_sval += repl_len;
-	}
-	if (back->len)
-	    memcpy(in_sval, back->str, back->len);
-
-	/* cleanup, repl is freed by the caller */
-	free_STRING(back);
-
-    } else {
-	/* no match */
-	ThisResult = new_STRING1(ThisTarget, ThisTargetLen);
     }
 
-    return ThisResult;
-}
-#endif /* DEBUG_GSUB */
+    /* put the three pieces together */
+    ret_val = new_STRING0(front_len + string(repl)->len + back->len);
+    {
+	char *p = ret_val->str;
 
+	if (front_len) {
+	    memcpy(p, front, front_len);
+	    p += front_len;
+	}
+
+	if (string(repl)->len) {
+	    memcpy(p, string(repl)->str, string(repl)->len);
+	    p += string(repl)->len;
+	}
+	if (back->len)
+	    memcpy(p, back->str, back->len);
+    }
+
+    /* cleanup, repl is freed by the caller */
+    repl_destroy(&xrepl);
+    free_STRING(back);
+
+    return ret_val;
+}
+#endif /* USE_GSUB0 */
+
+#ifdef USE_GSUB2
 static STRING *
-new_gsub(PTR re, int level)
+gsub2(PTR re, CELL *repl, CELL *target)
+{
+    int pass;
+    int j;
+    CELL xrepl;
+    STRING *input = string(target);
+    STRING *output = 0;
+    STRING *sval;
+    size_t want = 0;
+    size_t have;
+    size_t used;
+
+    TRACE(("called gsub2\n"));
+
+    /*
+     * If the replacement is constant, do it only once.
+     */
+    if (repl->type != C_REPLV) {
+	cellcpy(&xrepl, repl);
+    }
+
+    /*
+     * On the first pass, determine the size of the resulting string.
+     * On the second pass, actually apply changes - if any.
+     */
+    for (pass = 0; pass < 2; ++pass) {
+	TRACE(("start pass %d\n", pass + 1));
+	repl_cnt = 0;
+	for (j = 0; j <= (int) input->len; ++j) {
+	    size_t howmuch;
+	    char *where = REmatch(input->str + j,
+				  input->len - j,
+				  cast_to_re(re),
+				  &howmuch);
+	    /*
+	     * REmatch returns a non-null pointer if it found a match.  But
+	     * that can be an empty string, e.g., for "*" or "?".  The length
+	     * is in 'howmuch'.
+	     */
+	    if (where != 0) {
+		have = (where - (input->str + j));
+		if (have) {
+		    TRACE(("..before match:%d:", (int) have));
+		    TRACE_STRING2(input->str + j, have);
+		    TRACE(("\n"));
+		    if (pass) {
+			memcpy(output->str + used, input->str + j, have);
+			used += have;
+		    } else {
+			want += have;
+		    }
+		}
+
+		TRACE(("REmatch %d:%d:", (int) j, (int) howmuch));
+		TRACE_STRING2(where, howmuch);
+		TRACE(("\n"));
+
+		++repl_cnt;
+
+		if (repl->type == C_REPLV) {
+		    sval = new_STRING1(where, howmuch);
+		    cellcpy(&xrepl, repl);
+		    replv_to_repl(&xrepl, sval);
+		    free_STRING(sval);
+		}
+
+		have = string(&xrepl)->len;
+		TRACE(("..replace:"));
+		TRACE_STRING2(string(&xrepl)->str, have);
+		TRACE(("\n"));
+
+		if (pass) {
+		    memcpy(output->str + used, string(&xrepl)->str, have);
+		    used += have;
+		} else {
+		    want += have;
+		}
+
+		if (howmuch) {
+		    j = (where - input->str) + howmuch - 1;
+		} else if (j < (int) input->len) {
+		    TRACE(("..emptied:"));
+		    TRACE_STRING2(input->str + j, 1);
+		    TRACE(("\n"));
+		    if (pass) {
+			output->str[used++] = input->str[j];
+		    } else {
+			++want;
+		    }
+		}
+	    } else {
+		if (repl_cnt) {
+		    have = (input->len - j);
+		    TRACE(("..after match:%d:", (int) have));
+		    TRACE_STRING2(input->str + j, have);
+		    TRACE(("\n"));
+		    if (pass) {
+			memcpy(output->str + used, input->str + j, have);
+		    } else {
+			want += have;
+		    }
+		}
+		break;
+	    }
+	}
+
+	if (!repl_cnt)
+	    break;
+
+	TRACE(("..done pass %d\n", pass + 1));
+	if (!pass) {
+	    output = new_STRING0(want);
+	    used = 0;
+	    TRACE(("..input %d ->output %d\n",
+		   (int) input->len,
+		   (int) output->len));
+	}
+    }
+    TRACE(("..done gsub2\n"));
+    return output;
+}
+#endif
+
+#ifdef EXP_UNROLLED_GSUB
+/* #define DEBUG_GSUB 1 */
+
+static size_t gsub_max;
+static GSUB_STK *gsub_stk;
+
+#if OPT_TRACE > 0
+static const char *
+indent(int level)
+{
+    static const char value[] = "-----------------";
+    const char *result;
+    int limit = (int) sizeof(value) - 1;
+
+    if (level < limit)
+	result = value + limit - level;
+    else
+	result = "";
+    return result;
+}
+#endif
+
+/*
+ * This is a revision of "gsub0" which does not recur on the stack.  However,
+ * it uses a fake stack of its own, and is less efficient.
+ */
+static STRING *
+gsub1(PTR re, int level)
 {
     char xbuff[2];
     char *in_sval;
@@ -1370,6 +1500,7 @@ new_gsub(PTR re, int level)
     ThisFront = 0;
 
     ThisMiddle = REmatch(ThisTarget, ThisTargetLen, cast_to_re(re), &ThisMiddleLen);
+
     if (ThisMiddle != 0) {
 
 	if (!ThisEmptyOk && (ThisMiddleLen == 0) && (ThisMiddle == ThisTarget)) {
@@ -1491,7 +1622,7 @@ bi_gsub(CELL *sp)
     CELL sc;			/* copy of replacement target */
     CELL tc;			/* build the result here */
     STRING *result;
-#ifdef DEBUG_GSUB
+#if defined(USE_GSUB0) || defined(USE_GSUB2)
     STRING *resul2;
 #endif
     size_t stack_needs;
@@ -1500,13 +1631,6 @@ bi_gsub(CELL *sp)
     TRACE_FUNC("bi_gsub", sp);
 
     sp -= 2;
-
-    TRACE(("SP 0: "));
-    TRACE_CELL(sp);
-    TRACE(("SP 1: "));
-    TRACE_CELL(sp + 1);
-    TRACE(("SP 2: "));
-    TRACE_CELL(sp + 2);
 
     if (sp->type != C_RE)
 	cast_to_RE(sp);
@@ -1517,6 +1641,14 @@ bi_gsub(CELL *sp)
     if (sc.type < C_STRING)
 	cast1_to_s(&sc);
 
+    TRACE(("..actual gsub args:\n"));
+    TRACE(("arg0: "));
+    TRACE_CELL(sp);
+    TRACE(("arg1: "));
+    TRACE_CELL(sp + 1);
+    TRACE(("arg2: "));
+    TRACE_CELL(&sc);
+
     stack_needs = (string(&sc)->len + 2) * 2;
 
     if (stack_needs > gsub_max) {
@@ -1526,21 +1658,27 @@ bi_gsub(CELL *sp)
 	gsub_stk = zmalloc(stack_needs * sizeof(GSUB_STK));
 	gsub_max = stack_needs;
     }
-#ifdef DEBUG_GSUB
+#ifdef USE_GSUB0
     {
 	STRING *target = new_STRING1(string(&sc)->str, string(&sc)->len);
 
-	ThisBranch = btFinish;
-	ThisEmptyOk = 1;
+	repl_cnt = 0;
 	cellcpy(&ThisReplace, sp + 1);
-	ThisResult = 0;
-	ThisTarget = target->str;
-	ThisTargetLen = target->len;
-
-	resul2 = old_gsub(sp->ptr, 0);
-
-	TRACE(("OLD ->%d:'%.*s'\n", (int) resul2->len, (int) resul2->len, resul2->str));
+	resul2 = gsub0(sp->ptr, &ThisReplace, target->str, target->len, 1);
+	TRACE(("OLD ->%d:", (int) resul2->len));
+	TRACE_STRING(resul2);
+	TRACE(("\n"));
 	free_STRING(target);
+    }
+#endif
+#ifdef USE_GSUB2
+    {
+	resul2 = gsub2(sp->ptr, sp + 1, &sc);
+	if (resul2 != 0) {
+	    TRACE(("XXX ->%d:", (int) resul2->len));
+	    TRACE_STRING(resul2);
+	    TRACE(("\n"));
+	}
     }
 #endif
 
@@ -1553,14 +1691,16 @@ bi_gsub(CELL *sp)
 
     repl_cnt = 0;
 
-    result = new_gsub(sp->ptr, 0);
+    result = gsub1(sp->ptr, 0);
     tc.ptr = (PTR) result;
 
-#ifdef DEBUG_GSUB
+#ifdef USE_GSUB0
     TRACE(("NEW -> %d:", (int) result->len));
     TRACE_STRING(result);
     TRACE(("\n"));
-    if (result->len != resul2->len || memcmp(result->str, resul2->str, result->len)) {
+    if (resul2 != 0 &&
+	((result->len != resul2->len) ||
+	 memcmp(result->str, resul2->str, result->len))) {
 	TRACE(("OOPS: gsub result NEW != OLD\n"));
     }
 #endif
@@ -1577,11 +1717,6 @@ bi_gsub(CELL *sp)
     }
 #endif
 
-    /* cleanup */
-    free_STRING(string(&sc));
-    free_STRING(string(&tc));
-    repl_destroy(sp + 1);
-
     sp->type = C_DOUBLE;
     sp->dval = (double) repl_cnt;
 
@@ -1591,108 +1726,15 @@ bi_gsub(CELL *sp)
     TRACE_STRING(result);
     TRACE(("\n"));
 
+    /* cleanup */
+    free_STRING(string(&sc));
+    free_STRING(string(&tc));
+    repl_destroy(sp + 1);
+
     return_CELL("bi_gsub", sp);
 }
 
 #else /* GSUB uses stack... */
-static unsigned repl_cnt;	/* number of global replacements */
-
-/* recursive global subsitution
-   dealing with empty matches makes this mildly painful
-
-   repl is always of type REPL or REPLV, destroyed by caller
-   flag is set if, match of empty string at front is OK
-*/
-
-static STRING *
-gsub(PTR re, CELL *repl, char *target, size_t target_len, int flag)
-{
-    char *front = 0, *middle;
-    STRING *back;
-    size_t front_len, middle_len;
-    STRING *ret_val;
-    CELL xrepl;			/* a copy of repl so we can change repl */
-
-    if (!(middle = REmatch(target, target_len, cast_to_re(re), &middle_len)))
-	return new_STRING(target);	/* no match */
-
-    cellcpy(&xrepl, repl);
-
-    if (!flag && middle_len == 0 && middle == target) {
-	/* match at front that's not allowed */
-
-	if (*target == 0) {	/* target is empty string */
-	    repl_destroy(&xrepl);
-	    null_str.ref_cnt++;
-	    return &null_str;
-	} else if (1 && isAnchored(re)) {
-	    repl_destroy(&xrepl);
-	    return new_STRING1(target, target_len);
-	} else {
-	    char xbuff[2];
-
-	    front_len = 0;
-	    /* make new repl with target[0] */
-	    repl_destroy(repl);
-	    --target_len;
-	    xbuff[0] = *target++;
-	    xbuff[1] = 0;
-	    repl->type = C_REPL;
-	    repl->ptr = (PTR) new_STRING(xbuff);
-	    back = gsub(re, &xrepl, target, target_len, 1);
-	}
-    } else {			/* a match that counts */
-	repl_cnt++;
-
-	front = target;
-	front_len = (unsigned) (middle - target);
-
-	if (front_len == target_len) {	/* matched back of target */
-	    back = &null_str;
-	    null_str.ref_cnt++;
-	} else {
-	    back = gsub(re,
-			&xrepl,
-			middle + middle_len,
-			target_len - (front_len + middle_len),
-			0);
-	}
-
-	/* patch the &'s if needed */
-	if (repl->type == C_REPLV) {
-	    STRING *sval = new_STRING0(middle_len);
-
-	    memcpy(sval->str, middle, middle_len);
-	    replv_to_repl(repl, sval);
-	    free_STRING(sval);
-	}
-    }
-
-    /* put the three pieces together */
-    ret_val = new_STRING0(front_len + string(repl)->len + back->len);
-    {
-	char *p = ret_val->str;
-
-	if (front_len) {
-	    memcpy(p, front, front_len);
-	    p += front_len;
-	}
-
-	if (string(repl)->len) {
-	    memcpy(p, string(repl)->str, string(repl)->len);
-	    p += string(repl)->len;
-	}
-	if (back->len)
-	    memcpy(p, back->str, back->len);
-    }
-
-    /* cleanup, repl is freed by the caller */
-    repl_destroy(&xrepl);
-    free_STRING(back);
-
-    return ret_val;
-}
-
 /* set up for call to gsub() */
 CELL *
 bi_gsub(CELL *sp)
@@ -1714,7 +1756,9 @@ bi_gsub(CELL *sp)
 	cast1_to_s(&sc);
 
     repl_cnt = 0;
-    tc.ptr = (PTR) gsub(sp->ptr, sp + 1, string(&sc)->str, string(&sc)->len, 1);
+    tc.ptr = (PTR) gsub0(sp->ptr, sp + 1,
+			 string(&sc)->str,
+			 string(&sc)->len, 1);
 
     if (repl_cnt) {
 	tc.type = C_STRING;
