@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20140818
+MANIFEST for mawk, version t20140820
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -168,6 +168,7 @@ test/reg3.awk                   testcase for pattern
 test/reg4.awk                   test-case for square-brackets and embedded "/" or "]"
 test/reg5.awk                   test-case for character-classes
 test/reg6.awk                   testcase for J2C machine state
+test/reg7.awk                   test-script for gsub
 test/wc-awk.out                 reference for wc.awk
 test/wc.awk                     test-script which counts words
 test/wfrq-awk.out               reference for wfrq0.awk

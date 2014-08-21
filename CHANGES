@@ -1,8 +1,15 @@
--- $MawkId: CHANGES,v 1.195 2014/08/18 18:44:45 tom Exp $
+-- $MawkId: CHANGES,v 1.198 2014/08/20 22:49:03 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20140818
+20140820
+	+ regenerate parse.c using byacc 20140422
+	+ modify makefile-rule for generating parse.c to keep the "#line"
+	  preprocessor lines consistent with the actual filename.  This is
+	  needed by lcov.
+	+ add test/reg7.awk to help with recent testing.
+	+ discard intermediate new_gsub used for regression-testing, will do
+	  further improvements based on "gsub2".
 	+ fix a comparison in rexp3.c to work with embedded nulls (patch by
 	  Mike Brennan).
 	+ in-progress changes to implement "gsub2", which will reduce copying.
