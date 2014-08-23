@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.92 2014/08/21 20:12:27 tom Exp $
+ * $MawkId: bi_funct.c,v 1.96 2014/08/22 23:57:51 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -1160,13 +1160,6 @@ bi_sub(CELL *sp)
 
 static unsigned repl_cnt;	/* number of global replacements */
 
-/* recursive global subsitution
-   dealing with empty matches makes this mildly painful
-
-   repl is always of type REPL or REPLV, destroyed by caller
-   empty_ok is set if, match of empty string at front is OK
-*/
-
 #ifdef USE_GSUB0
 /* recursive global subsitution
    dealing with empty matches makes this mildly painful
@@ -1265,7 +1258,154 @@ gsub0(PTR re, CELL *repl, char *target, size_t target_len, int flag)
 }
 #endif /* USE_GSUB0 */
 
-#ifdef USE_GSUB2
+#if defined(USE_GSUB3)
+static STRING *
+gsub3(PTR re, CELL *repl, CELL *target)
+{
+    int j;
+    CELL xrepl;
+    STRING *input = string(target);
+    STRING *output;
+    STRING *buffer;
+    STRING *sval;
+    size_t have;
+    size_t used = 0;
+    size_t guess = input->len;
+    size_t limit = guess;
+
+    int skip0 = -1;
+    size_t howmuch;
+    char *where;
+
+    TRACE(("called gsub3\n"));
+
+    /*
+     * If the replacement is constant, do it only once.
+     */
+    if (repl->type != C_REPLV) {
+	cellcpy(&xrepl, repl);
+    } else {
+	memset(&xrepl, 0, sizeof(xrepl));
+    }
+
+    repl_cnt = 0;
+    output = new_STRING0(limit);
+
+    for (j = 0; j <= (int) input->len; ++j) {
+	if (isAnchored(re) && (j != 0)) {
+	    where = 0;
+	} else {
+	    where = REmatch(input->str + j,
+			    input->len - (size_t) j,
+			    cast_to_re(re),
+			    &howmuch);
+	}
+	/*
+	 * REmatch returns a non-null pointer if it found a match.  But
+	 * that can be an empty string, e.g., for "*" or "?".  The length
+	 * is in 'howmuch'.
+	 */
+	if (where != 0) {
+	    have = (size_t) (where - (input->str + j));
+	    if (have) {
+		skip0 = -1;
+		TRACE(("..before match:%d:", (int) have));
+		TRACE_STRING2(input->str + j, have);
+		TRACE(("\n"));
+		memcpy(output->str + used, input->str + j, have);
+		used += have;
+	    }
+
+	    TRACE(("REmatch %d vs %d len=%d:", (int) j, skip0, (int) howmuch));
+	    TRACE_STRING2(where, howmuch);
+	    TRACE(("\n"));
+
+	    if (repl->type == C_REPLV) {
+		if (xrepl.ptr == 0 ||
+		    string(&xrepl)->len != howmuch ||
+		    (howmuch != 0 &&
+		     memcmp(string(&xrepl)->str, where, howmuch))) {
+		    if (xrepl.ptr != 0)
+			repl_destroy(&xrepl);
+		    sval = new_STRING1(where, howmuch);
+		    cellcpy(&xrepl, repl);
+		    replv_to_repl(&xrepl, sval);
+		    free_STRING(sval);
+		}
+	    }
+
+	    have = string(&xrepl)->len;
+	    TRACE(("..replace:"));
+	    TRACE_STRING2(string(&xrepl)->str, have);
+	    TRACE(("\n"));
+
+	    if (howmuch || (j != skip0)) {
+		++repl_cnt;
+
+		/*
+		 * If this new chunk is longer than its replacement, add that
+		 * to the estimate of the length.  Then, if the estimate goes
+		 * past the allocated length, reallocate and copy the existing
+		 * data.
+		 */
+		if (have > howmuch) {	/* growing */
+		    guess += (have - howmuch);
+		    if (guess >= limit) {
+			buffer = output;
+			limit = (++guess) * 2;	/* FIXME - too coarse? */
+			output = new_STRING0(limit);
+			memcpy(output->str, buffer->str, used);
+			free_STRING(buffer);
+		    }
+		} else if (howmuch > have) {	/* shrinking */
+		    guess -= (howmuch - have);
+		}
+
+		/*
+		 * Finally, copy the new chunk.
+		 */
+		memcpy(output->str + used, string(&xrepl)->str, have);
+		used += have;
+	    }
+
+	    if (howmuch) {
+		j = (int) ((size_t) (where - input->str) + howmuch) - 1;
+	    } else {
+		j = (int) (where - input->str);
+		if (j < (int) input->len) {
+		    TRACE(("..emptied:"));
+		    TRACE_STRING2(input->str + j, 1);
+		    TRACE(("\n"));
+		    output->str[used++] = input->str[j];
+		}
+	    }
+	    skip0 = (howmuch != 0) ? (j + 1) : -1;
+	} else {
+	    have = (input->len - (size_t) j);
+	    TRACE(("..after match:%d:", (int) have));
+	    TRACE_STRING2(input->str + j, have);
+	    TRACE(("\n"));
+	    memcpy(output->str + used, input->str + j, have);
+	    used += have;
+	    break;
+	}
+    }
+
+    TRACE(("..input %d ->output %d\n",
+	   (int) input->len,
+	   (int) output->len));
+
+    repl_destroy(&xrepl);
+    if (output->len > used) {
+	buffer = output;
+	output = new_STRING1(output->str, used);
+	free_STRING(buffer);
+    }
+    TRACE(("..done gsub3\n"));
+    return output;
+}
+#define my_gsub gsub3
+#elif defined(USE_GSUB2)
 static STRING *
 gsub2(PTR re, CELL *repl, CELL *target)
 {
@@ -1415,6 +1555,7 @@ gsub2(PTR re, CELL *repl, CELL *target)
     TRACE(("..done gsub2\n"));
     return output;
 }
+#define my_gsub gsub2
 #endif
 
 #ifdef EXP_UNROLLED_GSUB
@@ -1466,7 +1607,7 @@ bi_gsub(CELL *sp)
 	free_STRING(target);
     }
 #endif
-    result = gsub2(sp->ptr, sp + 1, &sc);
+    result = my_gsub(sp->ptr, sp + 1, &sc);
     tc.ptr = (PTR) result;
 
 #ifdef DEBUG_GSUB
