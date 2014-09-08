@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.96 2014/08/22 23:57:51 tom Exp $
+ * $MawkId: bi_funct.c,v 1.99 2014/09/07 22:33:03 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -77,6 +77,18 @@ the GNU General Public License, version 2, 1991.
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
+
+#if defined(mawk_srand) || defined(mawk_rand)
+#define USE_SYSTEM_SRAND
+#endif
+
+#if defined(HAVE_BSD_STDLIB_H) && defined(USE_SYSTEM_SRAND)
+#include <bsd/stdlib.h>		/* prototype arc4random */
+#endif
+
+#if defined(WINVER) && (WINVER >= 0x501)
+#include <windows.h>
+#endif
 
 /* #define EXP_UNROLLED_GSUB 1 */
 /* #define DEBUG_GSUB 1 */
@@ -147,10 +159,11 @@ bi_funct_init(void)
 #ifndef NO_INIT_SRAND
     /* seed rand() off the clock */
     {
-	CELL c;
+	CELL c[2];
 
-	c.type = C_NOINIT;
-	bi_srand(&c);
+	memset(c, 0, sizeof(c));
+	c[1].type = C_NOINIT;
+	bi_srand(c + 1);
     }
 #endif
 
@@ -752,9 +765,7 @@ bi_sqrt(CELL *sp)
     return_CELL("bi_sqrt", sp);
 }
 
-#if defined(mawk_srand) || defined(mawk_rand)
-#define USE_SYSTEM_SRAND
-#else
+#if !(defined(mawk_srand) || defined(mawk_rand))
 /* For portability, we'll use our own random number generator , taken
    from:  Park, SK and Miller KW, "Random Number Generators:
    Good Ones are Hard to Find", CACM, 31, 1192-1201, 1988.
@@ -782,6 +793,30 @@ static CELL cseed;		/* argument of last call to srand() */
 #endif /* M == MAX__LONG */
 #endif /* defined(mawk_srand) || defined(mawk_rand) */
 
+static double
+initial_seed(void)
+{
+    double result;
+#if defined(HAVE_GETTIMEOFDAY)
+    struct timeval data;
+    gettimeofday(&data, (struct timezone *) 0);
+    result = (data.tv_sec * 1000000) + data.tv_usec;
+#elif defined(WINVER) && (WINVER >= 0x501)
+    union {
+	FILETIME ft;
+	long long since1601;	/* time since 1 Jan 1601 in 100ns units */
+    } data;
+
+    GetSystemTimeAsFileTime(&data.ft);
+    result = (double) (data.since1601 / 10LL);
+#else
+    time_t now;
+    (void) time(&now);
+    result = (double) now;
+#endif
+    return result;
+}
+
 CELL *
 bi_srand(CELL *sp)
 {
@@ -799,11 +834,10 @@ bi_srand(CELL *sp)
 
     if (sp->type == C_NOINIT)	/* seed off clock */
     {
-	time_t secs = time((time_t *) 0);
 	cellcpy(sp, &cseed);
 	cell_destroy(&cseed);
 	cseed.type = C_DOUBLE;
-	cseed.dval = (double) secs;
+	cseed.dval = initial_seed();
     } else {			/* user seed */
 	sp--;
 	/* swap cseed and *sp ; don't need to adjust ref_cnts */

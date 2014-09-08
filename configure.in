@@ -1,8 +1,8 @@
-dnl $MawkId: configure.in,v 1.50 2013/12/27 00:45:25 tom Exp $
+dnl $MawkId: configure.in,v 1.54 2014/09/07 21:42:24 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl configure.in
-dnl copyright 2008-2012,2013, Thomas E. Dickey
+dnl copyright 2008-2013,2014, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -94,13 +94,14 @@ AC_MSG_RESULT($with_builtin_srand)
 
 if test "x${with_builtin_srand}" = xno; then
     CF_SRAND(mawk_)
+	AC_DEFINE_UNQUOTED(NAME_RANDOM, "$cf_cv_srand_func")
 fi
 ###############################################################################
 AC_MSG_CHECKING(if you want mawk to initialize random numbers at startup)
-CF_ARG_ENABLE([init-srand],
-[  --enable-init-srand     initialize random numbers automatically],
-	[with_init_srand=yes],
-	[with_init_srand=no])
+CF_ARG_DISABLE([init-srand],
+[  --disable-init-srand    suppress automatic initialization of random numbers],
+	[with_init_srand=no],
+	[with_init_srand=yes])
 if test "x${with_init_srand}" != xno; then
 	with_init_srand=yes
 else
@@ -131,7 +132,15 @@ CF_MAWK_FIND_SIZE_T
 CF_LOCALE
 CF_CHECK_ENVIRON(environ)
 
-AC_CHECK_FUNCS(fork matherr mktime pipe strftime tdestroy tsearch wait)
+AC_CHECK_FUNCS(fork gettimeofday matherr mktime pipe strftime tdestroy tsearch wait)
+
+###	Checks for libraries.
+case $cf_cv_system_name in #(vi
+*mingw32*) #(vi
+	CPPFLAGS="$CPPFLAGS -DWINVER=0x0501"
+#	LIBS=" -lpsapi $LIBS"
+	;;
+esac
 
 test "$ac_cv_func_fork" = yes && \
 test "$ac_cv_func_pipe" = yes && \
