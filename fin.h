@@ -1,6 +1,6 @@
 /********************************************
 fin.h
-copyright 2009,2010, Thomas E. Dickey
+copyright 2009-2010,2014 Thomas E. Dickey
 copyright 1991-1992,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.h,v 1.11 2010/12/10 17:00:00 tom Exp $
+ * $MawkId: fin.h,v 1.13 2014/09/13 01:01:10 tom Exp $
  * @Log: fin.h,v @
  * Revision 1.1.1.1  1993/07/03  18:58:13  mike
  * move source to cvs
@@ -46,6 +46,7 @@ typedef struct {
 #define  MAIN_FLAG    1		/* part of main input stream if on */
 #define  EOF_FLAG     2
 #define  START_FLAG   4		/* used when RS == "" */
+#define  FIN_FLAG     8		/* set if fin->buff is no longer beginning */
 
 FIN *FINdopen(int, int);
 FIN *FINopen(char *, int);

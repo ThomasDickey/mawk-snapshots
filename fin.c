@@ -1,6 +1,6 @@
 /********************************************
 fin.c
-copyright 2008-2010,2012.  Thomas E. Dickey
+copyright 2008-2012,2014.  Thomas E. Dickey
 copyright 1991-1995,1996.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.37 2012/12/08 00:12:06 tom Exp $
+ * $MawkId: fin.c,v 1.41 2014/09/13 01:01:10 tom Exp $
  * @Log: fin.c,v @
  * Revision 1.10  1995/12/24  22:23:22  mike
  * remove errmsg() from inside FINopen
@@ -295,11 +295,16 @@ FINgets(FIN * fin, size_t *len_p)
 
     case SEP_MLR:
     case SEP_RE:
-	q = re_pos_match(p, (size_t) (fin->limit - p), rs_shadow.ptr, &match_len);
+	q = re_pos_match(p, (size_t) (fin->limit - p), rs_shadow.ptr,
+			 &match_len,
+			 (p != fin->buff) ||
+			 (fin->flags & FIN_FLAG));
 	/* if the match is at the end, there might still be
 	   more to match in the file */
-	if (q && q[match_len] == 0 && !(fin->flags & EOF_FLAG))
+	if (q && q[match_len] == 0 && !(fin->flags & EOF_FLAG)) {
+	    TRACE(("re_pos_match cancelled\n"));
 	    q = (char *) 0;
+	}
 	break;
 
     default:
@@ -337,6 +342,7 @@ FINgets(FIN * fin, size_t *len_p)
 	size_t amount = (size_t) (fin->limit - p);
 	size_t blocks = fin->nbuffs * BUFFSZ;
 
+	fin->flags |= FIN_FLAG;
 	r = amount;
 	if (blocks < r) {
 	    fin->flags |= EOF_FLAG;
