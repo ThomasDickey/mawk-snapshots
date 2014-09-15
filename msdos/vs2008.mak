@@ -1,9 +1,8 @@
-# $MawkId: vs6.mak,v 1.6 2014/09/07 14:55:27 tom Exp $
-# Microsoft C makefile for mawk,
+# $MawkId: vs2008.mak,v 1.1 2014/09/14 22:30:35 tom Exp $
+# Microsoft C makefile for mawk using Visual Studio 2008 and nmake.
 # 
-# Tested with Microsoft Visual Studio 6 using nmake.
 ###############################################################################
-# copyright 2010-2012,2014 Thomas E. Dickey
+# copyright 2014 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -16,7 +15,7 @@
 
 #========================================================================
 
-CFLAGS = -I. -DWINVER=0x501 -DLOCAL_REGEXP $(cflags)
+CFLAGS = -I. -D_POSIX_ -DWINVER=0x501 -DLOCAL_REGEXP $(cflags)
 
 .c.obj:
 	$(CC) $(CFLAGS) -c $<
@@ -35,8 +34,10 @@ MAWK_OBJ = $(OBJ1) $(OBJ2) $(OBJ3)
 mawk.exe : $(MAWK_OBJ)
 	$(link) $(LDFLAGS) $(MAWK_OBJ) $(LIBS) -out:mawk.exe -map:mawk.map
 
-config.h : msdos/vs6.h
-	copy msdos\vs6.h  config.h
+$(MAWK_OBJ) : config.h
+
+config.h : msdos/vs2008.h
+	copy msdos\vs2008.h  config.h
 
 dosexec.c : msdos/dosexec.c
 	copy msdos\dosexec.c dosexec.c
@@ -67,7 +68,8 @@ check :  mawk_test fpe_test
 ########################################
 
 scancode.c :  makescan.c  scan.h
-	$(CC) -o makescan.exe  makescan.c
+	$(CC) $(CFLAGS) makescan.c
+	$(link) $(LDFLAGS) makescan.obj $(LIBS) -out:makescan.exe -map:makescan.map
 	makescan.exe > scancode.c
 	del makescan.exe
 

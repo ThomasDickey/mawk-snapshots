@@ -11,13 +11,11 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.26 2014/09/12 23:19:05 tom Exp $
+ * $MawkId: split.c,v 1.29 2014/09/14 21:35:23 tom Exp $
  * @Log: split.c,v @
  * Revision 1.3  1996/02/01  04:39:42  mike
  * dynamic array scheme
- *
- *
-*/
+ */
 
 /* split.c */
 
@@ -114,7 +112,7 @@ space_split(const char *s, size_t slen)
 }
 
 size_t
-re_split(const char *s, size_t slen, PTR re)
+re_split(char *s, size_t slen, PTR re)
 {
     size_t cnt = 0;
     const char *end = s + slen;
@@ -127,7 +125,7 @@ re_split(const char *s, size_t slen, PTR re)
 
     while (s < end) {
 	size_t mlen;
-	const char *m = re_pos_match(s, (size_t) (end - s), re, &mlen, no_bol);
+	char *m = re_pos_match(s, (size_t) (end - s), re, &mlen, no_bol);
 	if (m) {
 	    /* stuff in front of match is a field, might have length zero */
 	    node_p->strings[idx] = new_STRING1(s, (size_t) (m - s));
@@ -157,12 +155,12 @@ re_split(const char *s, size_t slen, PTR re)
  * length of match is returned in *lenp
  */
 char *
-re_pos_match(const char *str, size_t str_len, PTR re, size_t *lenp, int no_bol)
+re_pos_match(char *str, size_t str_len, PTR re, size_t *lenp, int no_bol)
 {
     const char *end = str + str_len;
 
     while (str < end) {
-	char *match = REmatch((char *) str, (size_t) (end - str),
+	char *match = REmatch(str, (size_t) (end - str),
 			      cast_to_re(re), lenp, no_bol);
 	if (match) {
 	    if (*lenp) {
@@ -194,7 +192,7 @@ null_split(const char *s, size_t slen)
     unsigned idx = 0;
 
     while (s < end) {
-	node_p->strings[idx] = new_STRING1(s, 1);
+	node_p->strings[idx] = new_STRING1(s++, 1);
 	if (++idx == SP_SIZE) {
 	    idx = 0;
 	    node_p = grow_sp_list(node_p);
@@ -293,8 +291,12 @@ bi_split(CELL *sp)
     } else {
 	switch ((sp + 2)->type) {
 	case C_RE:
-	    cnt = re_split(string(sp)->str, string(sp)->len,
-			   (sp + 2)->ptr);
+	    if (isEmpty_RE((sp + 2)->ptr)) {
+		cnt = null_split(string(sp)->str, string(sp)->len);
+	    } else {
+		cnt = re_split(string(sp)->str, string(sp)->len,
+			       (sp + 2)->ptr);
+	    }
 	    break;
 
 	case C_SPACE:

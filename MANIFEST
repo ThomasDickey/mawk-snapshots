@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20140912
+MANIFEST for mawk, version t20140914
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -102,10 +102,6 @@ man/array.pdf                   generated documentation for array.w
 man/mawk.1                      troff source for unix style man pages
 man/mawk.doc                    ascii man pages
 msdos                           subdirectory
-msdos/INSTALL                   installation instructions for DOS
-msdos/NOTES                     notes for building/running with MS-DOS
-msdos/argvmks.c                 for MKS Korn Shell
-msdos/argvpoly.c                for polyshell
 msdos/dosexec.c                 system() and pipes() for DOS
 msdos/examples                  subdirectory
 msdos/examples/add_cr.awk       convert files from Unix to Dos line-endings
@@ -118,11 +114,8 @@ msdos/examples/texttest.awk     print contents of quoted #include's
 msdos/examples/winexe.awk       sum segment-sizes of exe's in current directory
 msdos/examples/winobj.awk       sum sizes of obj's in current directory
 msdos                           subdirectory
-msdos/makefile.msc              nmake and MSC 6.0A
-msdos/mawk.def                  linker file
-msdos/msc.h                     definitions for MSC
-msdos/vs6.h                     use Visual Studio 6 to build console-mawk
-msdos/vs6.mak                   makefile for Visual Studio 6 (not MS-DOS anymore)
+msdos/vs2008.h                  definitions for building with Visual Studio 2008
+msdos/vs2008.mak                nmakefile for building with Visual Studio 2008
 package/debian                  subdirectory
 package/debian/changelog        start working on debian package
 package/debian/compat           debian build-script
