@@ -1,3 +1,9 @@
+mawk-cur (1.3.4-20141027) unstable; urgency=high
+
+  * fix regression in gsub
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Mon, 27 Oct 2014 04:24:49 -0400
+
 mawk-cur (1.3.4-20140914) unstable; urgency=low
 
   * improve gsub performance

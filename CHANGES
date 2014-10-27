@@ -1,6 +1,11 @@
--- $MawkId: CHANGES,v 1.217 2014/09/14 22:36:13 tom Exp $
+-- $MawkId: CHANGES,v 1.218 2014/10/27 08:43:09 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20141027
+	+ remove a special check for anchored regular expressions in gsub3
+	  which did not handle expressions with "|" alternation (report by
+	  "Ypnose").
 
 20140914
 	+ rename vs6.mak / vs6.h to vs2008 for Visual Studio 2008 compiles.
