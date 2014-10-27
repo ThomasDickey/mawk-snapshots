@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.102 2014/09/12 00:02:25 tom Exp $
+ * $MawkId: bi_funct.c,v 1.103 2014/10/27 08:43:38 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -1226,15 +1226,11 @@ gsub3(PTR re, CELL *repl, CELL *target)
     output = new_STRING0(limit);
 
     for (j = 0; j <= (int) input->len; ++j) {
-	if (isAnchored(re) && (j != 0)) {
-	    where = 0;
-	} else {
-	    where = REmatch(input->str + j,
-			    input->len - (size_t) j,
-			    cast_to_re(re),
-			    &howmuch,
-			    (j != 0));
-	}
+	where = REmatch(input->str + j,
+			input->len - (size_t) j,
+			cast_to_re(re),
+			&howmuch,
+			(j != 0));
 	/*
 	 * REmatch returns a non-null pointer if it found a match.  But
 	 * that can be an empty string, e.g., for "*" or "?".  The length
