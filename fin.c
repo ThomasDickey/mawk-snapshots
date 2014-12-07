@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.41 2014/09/13 01:01:10 tom Exp $
+ * $MawkId: fin.c,v 1.42 2014/12/07 00:34:27 Ismael.Luceno Exp $
  * @Log: fin.c,v @
  * Revision 1.10  1995/12/24  22:23:22  mike
  * remove errmsg() from inside FINopen
@@ -189,6 +189,7 @@ FINsemi_close(FIN * fin)
 		close(fin->fd);
 	}
 
+	fin->flags |= EOF_FLAG;
 	fin->limit =
 	    fin->buff =
 	    fin->buffp = &dead;	/* marks it semi_closed */
