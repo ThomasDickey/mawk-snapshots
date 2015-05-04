@@ -1,6 +1,15 @@
--- $MawkId: CHANGES,v 1.220 2014/12/07 00:36:02 tom Exp $
+-- $MawkId: CHANGES,v 1.225 2015/05/03 23:08:24 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20150503
+	+ add --with-man2html configure option
+	+ improve description of -W options and how they can be combined into
+	  a comma-separated list (adapted from Leif LeBaron).
+	+ modify parsing for -Wexec to permit its value to be separated by '='
+	  in addition to a space, for consistency with the other -W options.
+	+ cosmetic changes to configure script macros, from work on xterm.
+	+ update config.guess and config.sub
 
 20141206
 	+ Mawk behaves incorrectly when using the nextfile statement.  It marks

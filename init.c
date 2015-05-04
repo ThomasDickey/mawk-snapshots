@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2012,2014, Thomas E. Dickey
+copyright 2008-2014,2015, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.40 2014/09/07 22:45:32 tom Exp $
+ * $MawkId: init.c,v 1.42 2015/05/03 21:28:01 tom Exp $
  * @Log: init.c,v @
  * Revision 1.11  1995/08/20  17:35:21  mike
  * include <stdlib.h> for MSC, needed for environ decl
@@ -418,8 +418,13 @@ process_cmdline(int argc, char **argv)
 		    } else if (nextarg == argc) {
 			no_program();
 		    }
-		    pfile_name = argv[nextarg];
-		    i = nextarg + 1;
+		    if (haveValue(optNext)) {
+			pfile_name = optNext + 1;
+			i = nextarg;
+		    } else {
+			pfile_name = argv[nextarg];
+			i = nextarg + 1;
+		    }
 		    goto no_more_opts;
 
 		case W_INTERACTIVE:

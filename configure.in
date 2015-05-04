@@ -1,8 +1,8 @@
-dnl $MawkId: configure.in,v 1.54 2014/09/07 21:42:24 tom Exp $
+dnl $MawkId: configure.in,v 1.58 2015/05/03 22:39:11 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl configure.in
-dnl copyright 2008-2013,2014, Thomas E. Dickey
+dnl copyright 2008-2014,2015, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -52,6 +52,7 @@ AC_ARG_PROGRAM
 
 CF_PROG_CC
 AC_PROG_MAKE_SET
+CF_MAKEFLAGS
 AC_PROG_CPP
 AC_PROG_INSTALL
 
@@ -63,6 +64,7 @@ CF_MAWK_MATHLIB
 CF_HELP_MESSAGE(Miscellaneous options)
 CF_DISABLE_ECHO
 CF_ENABLE_WARNINGS
+CF_WITH_MAN2HTML
 
 ###############################################################################
 AC_MSG_CHECKING(if you want to use mawk's own regular-expressions engine)
@@ -135,8 +137,8 @@ CF_CHECK_ENVIRON(environ)
 AC_CHECK_FUNCS(fork gettimeofday matherr mktime pipe strftime tdestroy tsearch wait)
 
 ###	Checks for libraries.
-case $cf_cv_system_name in #(vi
-*mingw32*) #(vi
+case $cf_cv_system_name in
+(*mingw32*)
 	CPPFLAGS="$CPPFLAGS -DWINVER=0x0501"
 #	LIBS=" -lpsapi $LIBS"
 	;;
@@ -153,4 +155,4 @@ CF_SET_MATH_LIB_VERSION
 CF_MAWK_FIND_MAX_INT
 CF_MAWK_RUN_FPE_TESTS
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile man/Makefile)
