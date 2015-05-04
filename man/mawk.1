@@ -1,6 +1,6 @@
-.\" $MawkId: mawk.1,v 1.27 2014/09/07 21:38:42 tom Exp $
+.\" $MawkId: mawk.1,v 1.29 2015/05/03 22:05:38 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2012,2014, Thomas E. Dickey
+.\" # copyright 2008-2014,2015, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2014-09-07" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2015-05-03" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -128,9 +128,14 @@ representation of the program to stdout and exits 0
 Program text is read from
 .I file
 and this is the last option.
-It is useful on systems that support the
+.IP
+This is a useful alternative to \-\fBf\fP on systems that support the
 .B #!
 "magic number" convention for executable scripts.
+Those implicitly pass the pathname of the script itself as the final 
+parameter, and expect no more than one "\-" option on the \fB#!\fP line.
+Because \fB\*n\fP can combine multiple \-\fBW\fP options separated by
+commas, you can use this option when an additional \-\fBW\fP option is needed.
 .TP
 \-\fBW \fRhelp
 prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRusage\*('').
@@ -175,6 +180,10 @@ both tell \fB\*n\fP to show its version.
 \fB\*n\fP
 allows multiple \fB\-W\fP options to be combined by separating the options
 with commas, e.g., \-Wsprint=2000,posix.
+This is useful for executable
+.B #!
+"magic number" invocations in which only one argument is supported,
+e.g., \-\fBWinteractive,exec\fP.
 .\" **************************************************************************
 .SH "THE AWK LANGUAGE"
 .SS "\fB1. Program structure"

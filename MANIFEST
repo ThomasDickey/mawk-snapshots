@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20141206
+MANIFEST for mawk, version t20150503
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -97,6 +97,7 @@ icons/mawk48.png                artwork for my webpage
 icons/mawk48.svg                a suitable icon for mawk
 man                             subdirectory
 man/Makefile                    makefile for alternate doc-formats
+man/Makefile.in                 makefile for mawk's man-directory
 man/TODO                        to-do list (update to conform with POSIX-1003.1-2004)
 man/array.pdf                   generated documentation for array.w
 man/mawk.1                      troff source for unix style man pages
