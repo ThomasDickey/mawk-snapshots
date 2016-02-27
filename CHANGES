@@ -1,6 +1,13 @@
--- $MawkId: CHANGES,v 1.225 2015/05/03 23:08:24 tom Exp $
+-- $MawkId: CHANGES,v 1.229 2016/02/27 01:53:19 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20160226
+	+ update COPYING from
+	  https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+	  (Original-Mawk #38).
+	+ minor updates to configure script macros
+	+ update config.guess and config.sub
 
 20150503
 	+ add --with-man2html configure option
@@ -173,7 +180,7 @@ Changes by Thomas E Dickey <dickey@invisible-island.net>
 		  --posix
 		  --re-interval
 		  --traditional
-	+ integrate strtime function (patch by Dominic Letz, Original-Mawk #2).
+	+ integrate strftime function (patch by Dominic Letz, Original-Mawk #2).
 	+ correct logic for "/dev/stdin" special device (GenToo #424137,
 	  Original-Mawk #17).
 	+ updates for configure script macros:
