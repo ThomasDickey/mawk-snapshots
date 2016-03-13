@@ -1,6 +1,6 @@
 /********************************************
 rexp3.c
-copyright 2008-2013,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.36 2014/09/12 23:19:45 tom Exp $
+ * $MawkId: rexp3.c,v 1.38 2016/03/13 16:33:31 tom Exp $
  * @Log: rexp3.c,v @
  * Revision 1.3  1993/07/24  17:55:15  mike
  * more cleanup
@@ -64,11 +64,12 @@ the GNU General Public License, version 2, 1991.
 
 #define	  CASE_UANY(x)	case  x + U_OFF :  case	 x + U_ON
 
+#define TR_STR(s) TRACE((" str:%i len:%lu\n", ((s) ? (int) ((s) - str) : -99), (unsigned long) *lenp))
 #define RE_TURN() \
 	if (cb_ss) { \
 	    *lenp = (size_t) (cb_e - cb_ss); \
 	} \
-	TRACE(("=%i/%lu\n", (int) (s - str), (unsigned long) *lenp)); \
+	TR_STR(s); \
 	return cb_ss
 
 /* returns start of first longest match and the length by
@@ -99,11 +100,11 @@ REmatch(char *str,		/* string to test */
     TRACE(("REmatch: %s \"%s\" ~ /pattern/", no_bol ? "any" : "1st", str));
 
     /* check for the easy case */
-    if ((m + 1)->s_type == M_ACCEPT && m->s_type == M_STR) {
+    if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {
 	if ((ts = str_str(s, str_len, m->s_data.str, (size_t) m->s_len))) {
 	    *lenp = m->s_len;
 	}
-	TRACE(("=%i/%lu\n", (int) (ts - str), (unsigned long) *lenp));
+	TR_STR(ts);
 	return ts;
     }
 

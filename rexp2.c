@@ -1,6 +1,6 @@
 /********************************************
 rexp2.c
-copyright 2009-2010,2014, Thomas E. Dickey
+copyright 2009-2014,2016, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.23 2014/08/21 23:58:04 tom Exp $
+ * $MawkId: rexp2.c,v 1.24 2016/03/13 14:23:46 tom Exp $
  * @Log: rexp2.c,v @
  * Revision 1.3  1993/07/24  17:55:12  mike
  * more cleanup
@@ -220,7 +220,7 @@ REtest(char *str,		/* string to test */
     STATE *tm;
 
     /* handle the easy case quickly */
-    if ((m + 1)->s_type == M_ACCEPT && m->s_type == M_STR) {
+    if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {
 	return str_str(s, len, m->s_data.str, (size_t) m->s_len) != (char *) 0;
     } else {
 	u_flag = U_ON;
