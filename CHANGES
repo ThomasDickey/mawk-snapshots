@@ -1,6 +1,10 @@
--- $MawkId: CHANGES,v 1.229 2016/02/27 01:53:19 tom Exp $
+-- $MawkId: CHANGES,v 1.230 2016/03/13 14:23:20 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20160313
+	+ correct order of checks for machine state in REtest which caused an
+	  out-of-bounds reference (Original-Mawk #36).
 
 20160226
 	+ update COPYING from
