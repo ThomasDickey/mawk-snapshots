@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2013,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.103 2014/10/27 08:43:38 tom Exp $
+ * $MawkId: bi_funct.c,v 1.105 2016/06/16 00:36:50 tom Exp $
  * @Log: bi_funct.c,v @
  * Revision 1.9  1996/01/14  17:16:11  mike
  * flush_all_output() before system()
@@ -884,7 +884,7 @@ bi_rand(CELL *sp)
 	long value = (long) mawk_rand();
 	sp++;
 	sp->type = C_DOUBLE;
-	sp->dval = ((double) value) / RAND_MAX;
+	sp->dval = ((double) value) / MAWK_RAND_MAX;
     }
 #else
     crank(seed);
