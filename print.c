@@ -1,6 +1,6 @@
 /********************************************
 print.c
-copyright 2008-2010,2012.  Thomas E. Dickey
+copyright 2008-2012,2016.  Thomas E. Dickey
 copyright 1991-1996,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.25 2014/08/15 00:29:48 mike Exp $
+ * $MawkId: print.c,v 1.26 2016/09/05 17:22:38 tom Exp $
  * @Log: print.c,v @
  * Revision 1.7  1996/09/18 01:04:36  mike
  * Check ferror() after print and printf.
@@ -551,7 +551,7 @@ do_printf(
 	    }
 	}
 
-	if (argcnt <= 0)
+	if ((int) argcnt <= 0)
 	    rt_error("not enough arguments passed to %s(\"%s\")",
 		     who, format);
 
