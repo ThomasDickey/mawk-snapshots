@@ -1,6 +1,22 @@
--- $MawkId: CHANGES,v 1.231 2016/06/16 00:36:50 tom Exp $
+-- $MawkId: CHANGES,v 1.237 2016/09/05 17:10:04 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20160905
+	+ escape '/' in range for test/reg4.awk to allow test-comparison with
+	  gawk and BWK.
+	+ updated configure macros, e.g., for compiler warnings and static
+	  analysis:
+	  + CF_CC_ENV_FLAGS
+	  + CF_GNU_SOURCE
+	  + CF_PROG_LINT
+	  + CF_RAND
+	  + CF_XOPEN_SOURCE
+	+ minor build-fix for HPUX 11.11 "make", which is confused by the
+	  recursive use of "make" in clean/distclean rules.
+	+ amend fix for Gentoo #424137 to eliminate a memory leak when opening
+	  files (Original-Mawk #44).
+	+ update config.guess and config.sub
 
 20160615
 	+ correct range when using system rand() function, which was 0..2

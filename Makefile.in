@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.47 2015/05/03 23:20:19 tom Exp $
+# $MawkId: Makefile.in,v 1.48 2016/09/05 16:08:12 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2014,2015 Thomas E. Dickey
+# copyright 2009-2015,2016 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -146,12 +146,12 @@ uninstall :
 	rm -f $(MAWK_MAN)
 
 clean :
-	cd man && $(MAKE) $(MAKE_RECUR) $@
+	-cd man && $(MAKE) $(MAKE_RECUR) $@
 	-rm -f y.tab.c y.tab.h makescan$x
 	-rm -f *$o test/$(PROG) *core* test/*core* $(PROG)
 
 distclean :  clean
-	cd man && $(MAKE) $(MAKE_RECUR) $@
+	-cd man && $(MAKE) $(MAKE_RECUR) $@
 	-rm -f scancode.c
 	-rm -f man2html.tmp
 	-rm -f defines.out maxint.out fpe_check$x tags makedeps.awk
