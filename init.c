@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2014,2015, Thomas E. Dickey
+copyright 2008-2015,2016, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,55 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.42 2015/05/03 21:28:01 tom Exp $
- * @Log: init.c,v @
- * Revision 1.11  1995/08/20  17:35:21  mike
- * include <stdlib.h> for MSC, needed for environ decl
- *
- * Revision 1.10  1995/06/09  22:51:50  mike
- * silently exit(0) if no program
- *
- * Revision 1.9  1995/06/06  00:18:30  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.8  1994/12/14  14:40:34  mike
- * -Wi option
- *
- * Revision 1.7  1994/12/11  22:43:20  mike
- * don't assume **environ is writable
- *
- * Revision 1.6  1994/12/11  22:14:16  mike
- * remove THINK_C #defines.  Not a political statement, just no indication
- * that anyone ever used it.
- *
- * Revision 1.5  1994/10/08  19:15:45  mike
- * remove SM_DOS
- *
- * Revision 1.4  1994/03/11  02:23:49  mike
- * -We option
- *
- * Revision 1.3  1993/07/17  00:45:14  mike
- * indent
- *
- * Revision 1.2	 1993/07/04  12:52:00  mike
- * start on autoconfig changes
- *
- * Revision 5.5	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.4	 1992/12/24  01:58:19  mike
- * 1.1.2d changes for MsDOS
- *
- * Revision 5.3	 1992/07/10  16:17:10  brennan
- * MsDOS: remove NO_BINMODE macro
- *
- * Revision 5.2	 1992/01/09  08:46:14  brennan
- * small change for MSC
- *
- * Revision 5.1	 91/12/05  07:56:07  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: init.c,v 1.44 2016/09/18 19:57:41 tom Exp $
+ */
 
 /* init.c */
 #include <mawk.h>
@@ -311,7 +264,7 @@ parse_w_opt(char *source, char **next)
     const char *first;
 
     /* forgive and ignore empty options */
-    while (*source != '\0' && *source == ',') {
+    while (*source == ',') {
 	++source;
     }
 

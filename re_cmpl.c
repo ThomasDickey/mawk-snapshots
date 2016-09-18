@@ -1,6 +1,6 @@
 /********************************************
 re_cmpl.c
-copyright 2008-2010,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 1991-1994,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,33 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.28 2014/09/14 20:51:26 tom Exp $
- * @Log: re_cmpl.c,v @
- * Revision 1.6  1994/12/13  00:14:58  mike
- * \\ -> \ on second replacement scan
- *
- * Revision 1.5  1994/10/08  19:15:51  mike
- * remove SM_DOS
- *
- * Revision 1.4  1993/07/21  01:17:53  mike
- * handle "&" as replacement correctly
- *
- * Revision 1.3  1993/07/17  13:23:10  mike
- * indent and general code cleanup
- *
- * Revision 1.2  1993/07/15  23:38:23  mike
- * SIZE_T and indent
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:19  mike
- * move source to cvs
- *
- * Revision 5.2	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.1	 1991/12/05  07:56:25  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: re_cmpl.c,v 1.29 2016/09/18 19:50:53 tom Exp $
+ */
 
 /*  re_cmpl.c  */
 
@@ -138,6 +113,7 @@ re_uncompile(PTR m)
 #endif
 }
 
+#ifdef NO_LEAKS
 void
 re_destroy(PTR m)
 {
@@ -160,6 +136,7 @@ re_destroy(PTR m)
 	}
     }
 }
+#endif
 
 /*=================================================*/
 /*  replacement	 operations   */

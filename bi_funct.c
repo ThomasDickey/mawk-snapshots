@@ -11,56 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.105 2016/06/16 00:36:50 tom Exp $
- * @Log: bi_funct.c,v @
- * Revision 1.9  1996/01/14  17:16:11  mike
- * flush_all_output() before system()
- *
- * Revision 1.8  1995/08/27  18:13:03  mike
- * fix random number generator to work with longs larger than 32bits
- *
- * Revision 1.7  1995/06/09  22:53:30  mike
- * change a memcmp() to strncmp() to make purify happy
- *
- * Revision 1.6  1994/12/13  00:26:32  mike
- * rt_nr and rt_fnr for run-time error messages
- *
- * Revision 1.5  1994/12/11  22:14:11  mike
- * remove THINK_C #defines.  Not a political statement, just no indication
- * that anyone ever used it.
- *
- * Revision 1.4  1994/12/10  21:44:12  mike
- * fflush builtin
- *
- * Revision 1.3  1993/07/14  11:46:36  mike
- * code cleanup
- *
- * Revision 1.2	 1993/07/14  01:22:27  mike
- * rm SIZE_T
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:08  mike
- * move source to cvs
- *
- * Revision 5.5	 1993/02/13  21:57:18  mike
- * merge patch3
- *
- * Revision 5.4	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.3.1.2  1993/01/27	 01:04:06  mike
- * minor tuning to str_str()
- *
- * Revision 5.3.1.1  1993/01/15	 03:33:35  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.3	 1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.2	 1992/07/08  15:43:41  brennan
- * patch2: length returns.  I am a wimp
- *
- * Revision 5.1	 1991/12/05  07:55:35  brennan
- * 1.1 pre-release
+ * $MawkId: bi_funct.c,v 1.107 2016/09/18 18:37:41 tom Exp $
  */
 
 #include <mawk.h>
@@ -468,9 +419,11 @@ bi_mktime(CELL *sp)
     time_t result;
     struct tm my_tm;
     STRING *sval = string(sp);
-    int error = 0;
 
     TRACE_FUNC("bi_mktime", sp);
+
+    if (!sval)
+	goto error;
 
     memset(&my_tm, 0, sizeof(my_tm));
     switch (sscanf(sval->str, "%d %d %d %d %d %d %d",
@@ -487,11 +440,11 @@ bi_mktime(CELL *sp)
 	my_tm.tm_isdst = -1;	/* ask mktime to get timezone */
 	break;
     default:
-	error = 1;		/* not enough data */
-	break;
+	goto error;		/* not enough data */
     }
 
-    if (error) {
+    if (0) {
+      error:
 	result = -1;
     } else {
 	my_tm.tm_year -= 1900;
@@ -953,8 +906,7 @@ CELL *
 bi_system(CELL *sp GCC_UNUSED)
 {
 #ifdef HAVE_REAL_PIPES
-    int pid;
-    unsigned ret_val;
+    int ret_val;
 
     TRACE_FUNC("bi_system", sp);
 
@@ -962,24 +914,7 @@ bi_system(CELL *sp GCC_UNUSED)
 	cast1_to_s(sp);
 
     flush_all_output();
-    switch (pid = fork()) {
-    case -1:			/* fork failed */
-
-	errmsg(errno, "could not create a new process");
-	ret_val = 127;
-	break;
-
-    case 0:			/* the child */
-	execl(shell, shell, "-c", string(sp)->str, (char *) 0);
-	/* if get here, execl() failed */
-	errmsg(errno, "execute of %s failed", shell);
-	fflush(stderr);
-	_exit(127);
-
-    default:			/* wait for the child */
-	ret_val = (unsigned) wait_for(pid);
-	break;
-    }
+    ret_val = wait_status(system(string(sp)->str));
 
     cell_destroy(sp);
     sp->type = C_DOUBLE;

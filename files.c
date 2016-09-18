@@ -11,49 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.31 2016/09/05 13:46:51 tom Exp $
- *
- * @Log: files.c,v @
- * Revision 1.9  1996/01/14  17:14:10  mike
- * flush_all_output()
- *
- * Revision 1.8  1995/06/06  00:18:27  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.7  1994/12/11  20:48:50  mike
- * fflush builtin
- *
- * Revision 1.6  1994/10/08  19:15:40  mike
- * remove SM_DOS
- *
- * Revision 1.5  1994/04/17  20:01:37  mike
- * recognize filename "/dev/stdout"
- *
- * Revision 1.4  1994/02/21  00:11:07  mike
- * code cleanup
- *
- * Revision 1.3  1993/07/16  01:00:36  mike
- * cleanup and indent
- *
- * Revision 5.5	 1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.4	 1992/07/10  16:10:30  brennan
- * patch2
- * MsDOS: remove useless NO_BINMODE macro
- * get process exit code on in pipes
- *
- * Revision 5.3	 1992/04/07  20:21:17  brennan
- * patch 2
- * unbuffered output to a tty
- *
- * Revision 5.2	 1992/04/07  16:03:08  brennan
- * patch 2
- * allow same filename for output and input, but use different descriptors
- * E.g. < "/dev/tty" and > "/dev/tty"
- *
- * Revision 5.1	 91/12/05  07:56:00  brennan
- * 1.1 pre-release
+ * $MawkId: files.c,v 1.32 2016/09/18 18:52:52 tom Exp $
  */
 
 /* files.c */
@@ -593,12 +551,25 @@ wait_for(int pid)
 	}
     }
 
-    if (exit_status & 0xff)
-	exit_status = 128 + (exit_status & 0xff);
-    else
-	exit_status = (exit_status & 0xff00) >> 8;
+    return wait_status(exit_status);
+}
 
-    return exit_status;
+/*
+ * POSIX system() call returns a value from wait(), which should be tested
+ * using the POSIX macros.
+ */
+int
+wait_status(int status)
+{
+    if (status != -1) {
+	if (WIFEXITED(status)) {
+	    status = WEXITSTATUS(status);
+	} else if (WIFSIGNALED(status)) {
+	    status = 256 + WTERMSIG(status);
+	}
+    }
+
+    return status;
 }
 
 #endif /* HAVE_REAL_PIPES */

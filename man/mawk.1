@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.29 2015/05/03 22:05:38 tom Exp $
+.\" $MawkId: mawk.1,v 1.31 2016/09/18 19:16:47 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2014,2015, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2015-05-03" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2016-09-18" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -1129,12 +1129,19 @@ Fflush with an empty argument ("") flushes all open output.
 .PP
 The function
 \fBsystem\fR(\fIexpr\fR)
-uses
-/bin/sh
-to execute
+uses the C runtime \fBsystem\fP call to execute
 .I expr
-and returns the exit status of the command
-.IR expr .
+and returns the corresponding wait status of the command as follows:
+.bP
+if the \fBsystem\fP call failed, setting the status to -1,
+\fImawk\fP returns that value.
+.bP
+if the command exited normally,
+\fImawk\fP returns its exit-status.
+.bP
+if the command exited due to a signal such as \fBSIGHUP\fP,
+\fImawk\fP returns the signal number plus 256.
+.PP
 Changes made to the
 .B ENVIRON
 array are not passed to commands executed with
