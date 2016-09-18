@@ -1,6 +1,6 @@
 /********************************************
 files.h
-copyright 2009-2010,2012 Thomas E. Dickey
+copyright 2009-2012,2016, Thomas E. Dickey
 copyright 1991-1994,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,25 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.h,v 1.12 2012/11/29 00:56:19 tom Exp $
- * @Log: files.h,v @
- * Revision 1.3  1996/01/14  17:14:11  mike
- * flush_all_output()
- *
- * Revision 1.2  1994/12/11  22:14:13  mike
- * remove THINK_C #defines.  Not a political statement, just no indication
- * that anyone ever used it.
- *
- * Revision 1.1.1.1  1993/07/03  18:58:13  mike
- * move source to cvs
- *
- * Revision 5.2  1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.1  1991/12/05  07:59:18  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: files.h,v 1.13 2016/09/18 18:40:04 tom Exp $
+ */
 
 #ifndef   MAWK_FILES_H
 #define   MAWK_FILES_H
@@ -53,6 +36,7 @@ extern int file_flush(STRING *);
 extern int flush_all_output(void);
 extern PTR get_pipe(char *, int, int *);
 extern int wait_for(int);
+extern int wait_status(int);
 extern void close_out_pipes(void);
 
 #ifdef  HAVE_FAKE_PIPES
