@@ -1,6 +1,6 @@
 /********************************************
 types.h
-copyright 2009-2012,2014 Thomas E. Dickey
+copyright 2009-2014,2016 Thomas E. Dickey
 copyright 1991-1993,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,17 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: types.h,v 1.12 2014/08/22 00:51:29 tom Exp $
- * @Log: types.h,v @
- * Revision 1.3  1993/07/15  23:56:18  mike
- * general cleanup
- *
- * Revision 1.2  1993/07/04  12:52:15  mike
- * start on autoconfig changes
- *
- * Revision 5.1  1991/12/05  07:59:39  brennan
- * 1.1 pre-release
- *
+ * $MawkId: types.h,v 1.13 2016/09/27 00:59:29 tom Exp $
  */
 
 /*  types.h  */
@@ -72,12 +62,12 @@ typedef unsigned char UChar;
 typedef struct {
     size_t len;
     unsigned ref_cnt;
-    char str[1];
+    char str[2];
 } STRING;
 
 /* number of bytes more than the characters to store a
    string */
-#define  STRING_OH   (sizeof(STRING)-0)
+#define  STRING_OH   (sizeof(STRING)-1)
 
 typedef unsigned short VCount;
 
