@@ -1,6 +1,13 @@
--- $MawkId: CHANGES,v 1.240 2016/09/18 18:43:58 tom Exp $
+-- $MawkId: CHANGES,v 1.244 2016/09/27 09:28:47 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20160927
+	+ allow single-quote as a flag in printf, to complete the change
+	  for LC_NUMERIC in 20121129 (report by Graham Monteith).  
+	+ revert one of the fixes made for a Coverity warning about loss of
+	  precision in 20121209, which unnecessarily exposed a different
+	  problem (Original-Mawk #45).
 
 20160918
 	+ simplify "system()" function by calling C "system()" function, and

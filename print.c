@@ -11,58 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.26 2016/09/05 17:22:38 tom Exp $
- * @Log: print.c,v @
- * Revision 1.7  1996/09/18 01:04:36  mike
- * Check ferror() after print and printf.
- *
- * Revision 1.6  1995/10/13  16:56:45  mike
- * Some assumptions that int==long were still in do_printf -- now removed.
- *
- * Revision 1.5  1995/06/18  19:17:50  mike
- * Create a type Int which on most machines is an int, but on machines
- * with 16bit ints, i.e., the PC is a long.  This fixes implicit assumption
- * that int==long.
- *
- * Revision 1.4  1994/10/08  19:15:50  mike
- * remove SM_DOS
- *
- * Revision 1.3  1993/07/15  23:38:19  mike
- * SIZE_T and indent
- *
- * Revision 1.2	 1993/07/07  00:07:50  mike
- * more work on 1.2
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:18  mike
- * move source to cvs
- *
- * Revision 5.6	 1993/02/13  21:57:30  mike
- * merge patch3
- *
- * Revision 5.5	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.4.1.2  1993/01/20	 12:53:11  mike
- * d_to_l()
- *
- * Revision 5.4.1.1  1993/01/15	 03:33:47  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.4	 1992/11/29  18:03:11  mike
- * when printing integers, convert doubles to
- * longs so output is the same on 16bit systems as 32bit systems
- *
- * Revision 5.3	 1992/08/17  14:23:21  brennan
- * patch2: After parsing, only bi_sprintf() uses string_buff.
- *
- * Revision 5.2	 1992/02/24  10:52:16  brennan
- * printf and sprintf() can now have more args than % conversions
- * removed HAVE_PRINTF_HD -- it was too obscure
- *
- * Revision 5.1	 91/12/05  07:56:22  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: print.c,v 1.27 2016/09/27 09:29:19 tom Exp $
+ */
 
 #include "mawk.h"
 #include "bi_vars.h"
@@ -521,7 +471,7 @@ do_printf(
 
 	/* eat the flags */
 	while (*q == '-' || *q == '+' || *q == ' ' ||
-	       *q == '#' || *q == '0')
+	       *q == '#' || *q == '0' || *q == '\'')
 	    q++;
 
 	ast_cnt = 0;
