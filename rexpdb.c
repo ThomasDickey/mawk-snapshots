@@ -1,6 +1,6 @@
 /********************************************
 rexpdb.c
-copyright 2008-2010,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,21 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.12 2014/08/08 00:51:49 tom Exp $
- * @Log: rexpdb.c,v @
- * Revision 1.2  1993/07/23  13:21:51  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03  18:58:28  mike
- * move source to cvs
- *
- * Revision 3.2  1991/08/13  09:10:09  brennan
- * VERSION .9994
- *
- * Revision 3.1  91/06/07  10:33:30  brennan
- * VERSION 0.995
- *
-*/
+ * $MawkId: rexpdb.c,v 1.16 2016/09/30 21:27:07 tom Exp $
+ */
 
 #include "rexp.h"
 #include <ctype.h>
@@ -45,7 +32,8 @@ static const char *xlat[] =
     "M_2JB",
     "M_SAVE_POS",
     "M_2JC",
-    "M_ACCEPT"};
+    "M_ACCEPT"
+};
 
 const char *
 REs_type(PTR p)
@@ -60,6 +48,8 @@ REmprint(PTR m, FILE *f)
     const char *end_on_string;
 
     while (1) {
+	fprintf(f, "%03d ", (int) (p - (STATE *) m));
+	fprintf(f, ".\t");
 	if (p->s_type >= END_ON) {
 	    p->s_type = (SType) (p->s_type - END_ON);
 	    end_on_string = "$";
@@ -71,9 +61,10 @@ REmprint(PTR m, FILE *f)
 	    return;
 	}
 
-	fprintf(f, "%-10s", xlat[((UChar) (p->s_type)) % U_ON]);
+	fprintf(f, "%s", xlat[((UChar) (p->s_type)) % U_ON]);
 	switch (p->s_type) {
 	case M_STR:
+	    fprintf(f, "\t");
 	    da_string(f, p->s_data.str, (size_t) p->s_len);
 	    break;
 
@@ -81,18 +72,38 @@ REmprint(PTR m, FILE *f)
 	case M_2JA:
 	case M_2JB:
 	case M_2JC:
-	    fprintf(f, "%d", p->s_data.jump);
+	    fprintf(f, "\t%d", p->s_data.jump);
 	    break;
 	case M_CLASS:
 	    {
 		UChar *q = (UChar *) p->s_data.bvp;
 		UChar *r = q + sizeof(BV);
-		while (q < r)
-		    fprintf(f, "%2x ", *q++);
+		unsigned bitnum = 0;
+		fprintf(f, "\t[");
+		while (q < r) {
+		    unsigned bits = *q++;
+		    if (bits != 0) {
+			unsigned b;
+			for (b = 0; b < 8; ++b) {
+			    if (bits & (unsigned) (1 << b)) {
+				int ch = (int) (bitnum + b);
+				if (ch < 32 || ch >= 128) {
+				    fprintf(f, "\\%03o", ch);
+				} else {
+				    if (strchr("\\[]", ch))
+					fprintf(f, "\\");
+				    fprintf(f, "%c", ch);
+				}
+			    }
+			}
+		    }
+		    bitnum += 8;
+		}
+		fprintf(f, "]");
 	    }
 	    break;
 	}
-	fprintf(f, "%s\n", end_on_string);
+	fprintf(f, "\t%s\n", end_on_string);
 	if (end_on_string[0])
 	    p->s_type = (SType) (p->s_type + END_ON);
 	if (p->s_type == M_ACCEPT)

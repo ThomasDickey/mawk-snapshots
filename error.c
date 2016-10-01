@@ -1,6 +1,6 @@
 /********************************************
 error.c
-copyright 2008-2012,2014 Thomas E. Dickey
+copyright 2008-2014,2016 Thomas E. Dickey
 copyright 1991-1994,1995 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,36 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.22 2014/09/07 21:43:43 tom Exp $
- * @Log: error.c,v @
- * Revision 1.6  1995/06/06  00:18:22  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.5  1994/12/13  00:26:33  mike
- * rt_nr and rt_fnr for run-time error messages
- *
- * Revision 1.4  1994/09/23  00:20:00  mike
- * minor bug fix: handle \ in eat_nl()
- *
- * Revision 1.3  1993/07/17  13:22:49  mike
- * indent and general code cleanup
- *
- * Revision 1.2  1993/07/04  12:51:44  mike
- * start on autoconfig changes
- *
- * Revision 1.1.1.1  1993/07/03  18:58:11  mike
- * move source to cvs
- *
- * Revision 5.3  1993/01/22  14:55:46  mike
- * trivial change for unexpected_char()
- *
- * Revision 5.2  1992/10/02  23:26:04  mike
- * using vargs.h
- *
- * Revision 5.1  1991/12/05  07:55:48  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: error.c,v 1.23 2016/09/29 23:00:43 tom Exp $
+ */
 
 #include <mawk.h>
 #include <scan.h>
@@ -49,7 +21,7 @@ the GNU General Public License, version 2, 1991.
 /* for run time error messages only */
 unsigned rt_nr, rt_fnr;
 /* *INDENT-OFF* */
-static struct token_str {
+static const struct token_str {
     short token;
     const char *str;
 } token_str[] = {
@@ -105,13 +77,13 @@ static struct token_str {
 /* *INDENT-ON* */
 
 /* if paren_cnt >0 and we see one of these, we are missing a ')' */
-static int missing_rparen[] =
+static const int missing_rparen[] =
 {
     EOF, NL, SEMI_COLON, SC_FAKE_SEMI_COLON, RBRACE, 0
 };
 
 /* ditto for '}' */
-static int missing_rbrace[] =
+static const int missing_rbrace[] =
 {
     EOF, BEGIN, END, 0
 };
@@ -139,8 +111,8 @@ void
 yyerror(const char *s GCC_UNUSED)
 {
     const char *ss = 0;
-    struct token_str *p;
-    int *ip;
+    const struct token_str *p;
+    const int *ip;
 
     for (p = token_str; p->token; p++)
 	if (current_token == p->token) {

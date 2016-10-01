@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2012,2013, Thomas E. Dickey
+copyright 2008-2013,2016, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,37 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.18 2013/02/19 10:51:21 tom Exp $
- * @Log: rexp.c,v @
- * Revision 1.3  1996/09/02 18:47:36  mike
- * Make ^* and ^+ syntax errors.
- *
- * Revision 1.2  1993/07/23 13:21:32  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:26  mike
- * move source to cvs
- *
- * Revision 3.4	 1991/08/13  09:09:59  brennan
- * VERSION .9994
- *
- * Revision 3.3	 91/08/04  15:45:03  brennan
- * no longer attempt to recover mem on failed REcompile
- * Its not worth the effort
- *
- * Revision 3.2	 91/08/03  07:24:06  brennan
- * check for empty machine stack (missing operand) wasn't quite right
- *
- * Revision 3.1	 91/06/07  10:33:16  brennan
- * VERSION 0.995
- *
- * Revision 1.7	 91/06/05  08:58:47  brennan
- * change RE_free to free
- *
- * Revision 1.6	 91/06/03  07:07:17  brennan
- * moved parser stacks inside REcompile
- * removed unnecessary copying
- *
+ * $MawkId: rexp.c,v 1.20 2016/09/29 00:28:04 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -51,7 +21,7 @@ the GNU General Public License, version 2, 1991.
 
 /*  DATA   */
 int REerrno;
-const char *REerrlist[] =
+const char *const REerrlist[] =
 {(char *) 0,
  /* 1  */ "missing '('",
  /* 2  */ "missing ')'",
@@ -64,16 +34,16 @@ const char *REerrlist[] =
 
 /* This table drives the operator precedence parser */
 /* *INDENT-OFF* */
-static  short  table[8][8]  =  {
-/*        0   |   CAT   *   +   ?   (   )   */
-/* 0 */   {0,  L,  L,    L,  L,  L,  L,  E1},
-/* | */   {G,  G,  L,    L,  L,  L,  L,  G},
-/* CAT*/  {G,  G,  G,    L,  L,  L,  L,  G},
-/* * */   {G,  G,  G,    G,  G,  G,  E7, G},
-/* + */   {G,  G,  G,    G,  G,  G,  E7, G},
-/* ? */   {G,  G,  G,    G,  G,  G,  E7, G},
-/* ( */   {E2, L,  L,    L,  L,  L,  L,  EQ},
-/* ) */   {G , G,  G,    G,  G,  G,  E7, G}     }   ;
+static  short  table[8][8] = {
+/*        0   |   CAT  *   +   ?   (   )   */
+/* 0 */  {0,  L,  L,   L,  L,  L,  L,  E1},
+/* | */  {G,  G,  L,   L,  L,  L,  L,  G},
+/* CAT*/ {G,  G,  G,   L,  L,  L,  L,  G},
+/* * */  {G,  G,  G,   G,  G,  G,  E7, G},
+/* + */  {G,  G,  G,   G,  G,  G,  E7, G},
+/* ? */  {G,  G,  G,   G,  G,  G,  E7, G},
+/* ( */  {E2, L,  L,   L,  L,  L,  L,  EQ},
+/* ) */  {G , G,  G,   G,  G,  G,  E7, G}};
 /* *INDENT-ON* */
 
 #define	 STACKSZ   64
@@ -169,9 +139,9 @@ REcompile(char *re, size_t len)
 	case 0:		/*  end of reg expr   */
 	    if (op_ptr->token == 0) {
 		/*  done   */
-		if (m_ptr == m_stack)
+		if (m_ptr == m_stack) {
 		    return (PTR) m_ptr->start;
-		else {
+		} else {
 		    /* machines still on the stack  */
 		    RE_panic("values still on machine stack");
 		}

@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2012,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,41 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.26 2014/08/22 00:00:17 tom Exp $
- * @Log: rexp.h,v @
- * Revision 1.2  1993/07/23  13:21:35  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03  18:58:27  mike
- * move source to cvs
- *
- * Revision 3.6  1992/01/21  17:31:45  brennan
- * moved ison() macro out of rexp[23].c
- *
- * Revision 3.5  91/10/29  10:53:55  brennan
- * SIZE_T
- *
- * Revision 3.4  91/08/13  09:10:02  brennan
- * VERSION .9994
- *
- * Revision 3.3  91/06/15  09:40:25  brennan
- * gcc defines __STDC__ but might not have stdlib.h
- *
- * Revision 3.2  91/06/10  16:18:19  brennan
- * changes for V7
- *
- * Revision 3.1  91/06/07  10:33:18  brennan
- * VERSION 0.995
- *
- * Revision 1.3  91/06/05  08:57:57  brennan
- * removed RE_xmalloc()
- *
- * Revision 1.2  91/06/03  07:23:26  brennan
- * changed type of RE_error_trap
- *
- * Revision 1.1  91/06/03  07:05:41  brennan
- * Initial revision
- *
+ * $MawkId: rexp.h,v 1.28 2016/09/30 19:02:09 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -208,37 +174,26 @@ RE_pos_push(RT_POS_ENTRY * head, const RT_STATE * owner, const char *s)
     head->pos = s;
     head->owner = (int) (owner - RE_run_stack_base);
 
-    if (++head == RE_pos_stack_limit)
+    if (++head == RE_pos_stack_limit) {
 	head = RE_new_pos_stack();
+    }
     head->prev_offset = 1;
     return head;
 }
-
-#if 0
-static /* inline */ const char *
-RE_pos_peek(const RT_POS_ENTRY * head)
-{
-    const RT_POS_ENTRY *prev = head - head->prev_offset;
-
-    /* peeking below the bottom node can be useful when debugging,
-     * so we allow it.  See RE_pos_stack_init().
-     */
-    return prev->pos;
-}
-#endif
 
 static /* inline */ const char *
 RE_pos_pop(RT_POS_ENTRY ** head, const RT_STATE * current)
 {
     RT_POS_ENTRY *prev = *head - (*head)->prev_offset;
 
-    if (prev->owner == current - RE_run_stack_base)	/* likely */
+    if (prev->owner == current - RE_run_stack_base) {	/* likely */
 	/* no need to preserve intervening nodes */
 	*head = prev;
-    else if (*head == prev)
+    } else if (*head == prev) {
 	RE_panic("unbalanced M_SAVE_POS and M_2JC");
-    else
+    } else {
 	(*head)->prev_offset += prev->prev_offset;
+    }
 
     return prev->pos;
 }

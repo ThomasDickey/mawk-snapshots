@@ -1,6 +1,6 @@
 /********************************************
 rexp0.c
-copyright 2008-2009,2010, Thomas E. Dickey
+copyright 2008-2010,2016, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1994,1996, Michael D. Brennan
 
@@ -12,60 +12,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.27 2010/12/10 17:00:00 tom Exp $
- * @Log: rexp0.c,v @
- * Revision 1.5  1996/11/08 15:39:27  mike
- * While cleaning up block_on, I introduced a bug. Now fixed.
- *
- * Revision 1.4  1996/09/02 18:47:09  mike
- * Allow []...] and [^]...] to put ] in a class.
- * Make ^* and ^+ syntax errors.
- *
- * Revision 1.3  1994/12/26  16:37:52  mike
- * 1.1.2 fix to do_str was incomplete -- fix it
- *
- * Revision 1.2  1993/07/23  13:21:38  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:27  mike
- * move source to cvs
- *
- * Revision 3.8	 1992/04/21  20:22:38  brennan
- * 1.1 patch2
- * [c1-c2] now works if c2 is an escaped character
- *
- * Revision 3.7	 1992/03/24  09:33:12  brennan
- * 1.1 patch2
- * When backing up in do_str, check if last character was escaped
- *
- * Revision 3.6	 92/01/21  17:32:51  brennan
- * added some casts so that character classes work with signed chars
- *
- * Revision 3.5	 91/10/29  10:53:57  brennan
- * SIZE_T
- *
- * Revision 3.4	 91/08/13  09:10:05  brennan
- * VERSION .9994
- *
- * Revision 3.3	 91/07/19  07:29:24  brennan
- * backslash at end of regular expression now stands for backslash
- *
- * Revision 3.2	 91/07/19  06:58:23  brennan
- * removed small bozo in processing of escape characters
- *
- * Revision 3.1	 91/06/07  10:33:20  brennan
- * VERSION 0.995
- *
- * Revision 1.2	 91/06/05  08:59:36  brennan
- * changed RE_free to free
- *
- * Revision 1.1	 91/06/03  07:10:15  brennan
- * Initial revision
- *
-*/
+ * $MawkId: rexp0.c,v 1.32 2016/10/01 00:25:57 tom Exp $
+ */
 
 /*  lexical scanner  */
 
+#undef LOCAL_REGEXP		/* no need for push/pop */
 #include  "rexp.h"
 
 #include <ctype.h>
@@ -84,7 +36,7 @@ static BV *store_bvp(BV *);
 /* make next array visible */
 /* *INDENT-OFF* */
 static const
-char RE_char2token['|' + 1] =
+char char2token[] =
 {
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*07*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*0f*/
@@ -101,12 +53,25 @@ char RE_char2token['|' + 1] =
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*67*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*6f*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*77*/
-    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_OR
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_OR,   T_CHAR, T_CHAR, T_CHAR,	/*7f*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*87*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*8f*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*97*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*9f*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*a7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*af*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*b7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*bf*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*c7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*cf*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*d7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*df*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*e7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*ef*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*f7*/
+    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR	/*ff*/
 };
 /* *INDENT-ON* */
-
-#define	 char2token(x) \
-( (UChar)(x) > '|' ? T_CHAR : RE_char2token[x] )
 
 #define NOT_STARTED    (-1)
 
@@ -153,7 +118,7 @@ RE_lex(MACHINE * mp)
 	return 0;
     }
 
-    switch (c = char2token((UChar) (*lp))) {
+    switch (c = char2token[(UChar) (*lp)]) {
     case T_PLUS:
     case T_STAR:
 	if (prev == T_START)
@@ -305,7 +270,7 @@ do_str(
     while ((1 + p - re_str) < (int) re_len) {
 	char *save;
 
-	switch (char2token((UChar) (*p))) {
+	switch (char2token[(UChar) (*p)]) {
 	case T_CHAR:
 	    pt = p;
 	    *s++ = *p++;
@@ -342,7 +307,7 @@ do_str(
   BUILD A CHARACTER CLASS
  *---------------------------*/
 
-#define	 char_on( b, x)  ((b)[(x)>>3] |= (UChar) ( 1 << ((x)&7) ))
+#define	 char_on(b,x)  ((b)[(x)>>3] |= (UChar) ( 1 << ((x)&7) ))
 
 static void
 block_on(BV b, int x, int y)
@@ -364,7 +329,7 @@ block_on(BV b, int x, int y)
     }
 }
 
-#define CCLASS_DATA(name) { CCLASS_##name, #name, sizeof(#name) - 1, 0 }
+#define CCLASS_DATA(name) { CCLASS_##name, #name, sizeof(#name) - 1 }
 
 typedef enum {
     CCLASS_NONE = 0,
@@ -389,11 +354,11 @@ typedef enum {
 static CCLASS *
 lookup_cclass(char **start)
 {
-    static struct {
+    static CCLASS *cclass_data[CCLASS_xdigit];
+    static const struct {
 	CCLASS_ENUM code;
 	const char *name;
 	unsigned size;
-	CCLASS *data;
     } cclass_table[] = {
 	CCLASS_DATA(alnum),
 	    CCLASS_DATA(alpha),
@@ -417,8 +382,8 @@ lookup_cclass(char **start)
 
 #ifdef NO_LEAKS
     if (start == 0) {
-	for (item = 0; item < sizeof(cclass_table) /
-	     sizeof(cclass_table[0]); ++item) {
+	for (item = 0; item < (sizeof(cclass_table) /
+			       sizeof(cclass_table[0])); ++item) {
 	    if (cclass_table[item].data) {
 		free(cclass_table[item].data);
 		cclass_table[item].data = 0;
@@ -429,25 +394,66 @@ lookup_cclass(char **start)
 #endif
     name = (*start += 2);	/* point past "[:" */
     colon = strchr(name, ':');
-    if (colon == 0 || colon[1] != ']')
-	return 0;		/* perhaps this is a literal "[:" */
-
-    size = (size_t) (colon - *start);	/* length of name */
-    *start = colon + 2;
-
-    for (item = 0; item < sizeof(cclass_table) / sizeof(cclass_table[0]); ++item) {
-	if (size == cclass_table[item].size
-	    && !strncmp(name, cclass_table[item].name, size)) {
-	    code = cclass_table[item].code;
-	    break;
-	}
-    }
-
-    if (code == CCLASS_NONE) {
+    if (colon == 0 || colon[1] != ']') {
 	RE_error_trap(-E3);
     }
 
-    if ((result = cclass_table[item].data) == 0) {
+    size = (size_t) (colon - *start);	/* length of name */
+    if (size < 5 || size > 6) {
+	RE_error_trap(-E3);
+    }
+
+    *start = colon + 2;
+
+    switch (name[0]) {
+    case 'a':
+	item = ((name[2] == 'n')
+		? CCLASS_alnum
+		: CCLASS_alpha);
+	break;
+    case 'b':
+	item = CCLASS_blank;
+	break;
+    case 'c':
+	item = CCLASS_cntrl;
+	break;
+    case 'd':
+	item = CCLASS_digit;
+	break;
+    case 'g':
+	item = CCLASS_graph;
+	break;
+    case 'l':
+	item = CCLASS_lower;
+	break;
+    case 'p':
+	item = ((name[1] == 'r')
+		? CCLASS_print
+		: CCLASS_punct);
+	break;
+    case 's':
+	item = CCLASS_space;
+	break;
+    case 'u':
+	item = CCLASS_upper;
+	break;
+    case 'x':
+	item = CCLASS_xdigit;
+	break;
+    default:
+	item = CCLASS_NONE;
+	break;
+    }
+
+    if (item-- != CCLASS_NONE &&
+	(size == cclass_table[item].size) &&
+	!strncmp(name, cclass_table[item].name, size)) {
+	code = cclass_table[item].code;
+    } else {
+	RE_error_trap(-E3);
+    }
+
+    if ((result = cclass_data[item]) == 0) {
 	int ch = 0;
 	size_t have = 4;
 	size_t used = 0;
@@ -525,7 +531,7 @@ lookup_cclass(char **start)
 	    ++used;
 	}
 	data[used].first = -1;
-	cclass_table[item].data = data;
+	cclass_data[item] = data;
 	result = data;
     }
     return result;
@@ -641,7 +647,7 @@ do_class(char **start, MACHINE * mp)
 		    ++cclass;
 		}
 	    } else {
-		prevc = *p++;
+		prevc = (UChar) * p++;
 		char_on(*bvp, prevc);
 	    }
 	    break;
@@ -657,7 +663,7 @@ do_class(char **start, MACHINE * mp)
 		char *mark = ++p;
 
 		if (*p != '\\')
-		    c = *(UChar *) p++;
+		    c = (UChar) * p++;
 		else {
 		    ++p;
 		    c = escape(&p);
@@ -675,7 +681,7 @@ do_class(char **start, MACHINE * mp)
 	    break;
 
 	default:
-	    prevc = *(UChar *) p++;
+	    prevc = (UChar) * p++;
 	    char_on(*bvp, prevc);
 	    break;
 	}
@@ -766,24 +772,6 @@ ctohex(int c)
     return NOT_HEX;
 }
 
-#define	 ET_END	    7
-/* *INDENT-OFF* */
-static struct {
-    char in, out;
-}
-escape_test[ET_END + 1] =
-{
-   {'n', '\n'},
-   {'t', '\t'},
-   {'f', '\f'},
-   {'b', '\b'},
-   {'r', '\r'},
-   {'a', '\07'},
-   {'v', '\013'},
-   {0, 0}
-} ;
-/* *INDENT-ON* */
-
 /*
  * Return the char and move the pointer forward.
  * On entry *s -> at the character after the slash.
@@ -794,19 +782,39 @@ escape(char **start_p)
     register char *p = *start_p;
     register unsigned x;
     unsigned xx;
-    int i;
 
-    escape_test[ET_END].in = *p;
-    i = 0;
-    while (escape_test[i].in != *p)
-	i++;
-    if (i != ET_END) {
-	/* in escape_test table */
+    switch (*p) {
+    case 'n':
 	*start_p = p + 1;
-	return escape_test[i].out;
-    }
-
-    if (isoctal(*p)) {
+	return '\n';
+    case 't':
+	*start_p = p + 1;
+	return '\t';
+    case 'f':
+	*start_p = p + 1;
+	return '\f';
+    case 'b':
+	*start_p = p + 1;
+	return '\b';
+    case 'r':
+	*start_p = p + 1;
+	return '\r';
+    case 'a':
+	*start_p = p + 1;
+	return '\07';
+    case 'v':
+	*start_p = p + 1;
+	return '\013';
+    case '\0':
+	return '\\';
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
 	x = (unsigned) (*p++ - '0');
 	if (isoctal(*p)) {
 	    x = (x << 3) + (unsigned) (*p++ - '0');
@@ -815,12 +823,8 @@ escape(char **start_p)
 	}
 	*start_p = p;
 	return (int) (x & 0xff);
-    }
-
-    if (*p == 0)
-	return '\\';
-
-    if (*p++ == 'x') {
+    case 'x':
+	++p;
 	if ((x = (unsigned) ctohex(*p)) == NOT_HEX) {
 	    *start_p = p;
 	    return 'x';
@@ -834,9 +838,9 @@ escape(char **start_p)
 
 	*start_p = p;
 	return (int) x;
+    default:
+	/* anything else \c -> c */
+	*start_p = p + 1;
+	return (UChar) * p;
     }
-
-    /* anything else \c -> c */
-    *start_p = p;
-    return *(UChar *) (p - 1);
 }

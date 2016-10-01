@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2012,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,39 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.15 2014/09/14 22:26:06 tom Exp $
- * @Log: da.c,v @
- * Revision 1.6  1995/06/18  19:19:59  mike
- * remove use of comma operator that broke some sysVr3 compilers
- *
- * Revision 1.5  1994/12/13  00:12:08  mike
- * delete A statement to delete all of A at once
- *
- * Revision 1.4  1994/10/08  19:15:32  mike
- * remove SM_DOS
- *
- * Revision 1.3  1993/12/01  14:25:10  mike
- * reentrant array loops
- *
- * Revision 1.2  1993/07/22  00:04:05  mike
- * new op code _LJZ _LJNZ
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:10  mike
- * move source to cvs
- *
- * Revision 5.4	 1993/01/09  19:05:48  mike
- * dump code to stdout and exit(0)
- *
- * Revision 5.3	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.2	 1992/07/25  21:35:25  brennan
- * patch2
- * fixed small typo on da of _PRE_DEC
- *
- * Revision 5.1	 1991/12/05  07:55:45  brennan
- * 1.1 pre-release
- *
+ * $MawkId: da.c,v 1.22 2016/09/30 17:37:33 tom Exp $
  */
 
 /*  da.c  */
@@ -56,6 +24,28 @@ the GNU General Public License, version 2, 1991.
 #include  "repl.h"
 #include  "field.h"
 
+typedef struct fdump {
+    struct fdump *link;
+    FBLOCK *data;
+} DUMP_FUNCS;
+
+static DUMP_FUNCS *fdump_list;	/* linked list of all user functions */
+
+#ifdef LOCAL_REGEXP
+#include "regexp.h"
+
+typedef struct regex {
+    struct regex *link;
+    PTR data;
+} DUMP_REGEX;
+
+static DUMP_REGEX *regex_list;	/* list regular expressions dumped */
+
+static void add_to_regex_list(PTR);
+#else
+#define add_to_regex_list(p)	/* nothing */
+#endif /* LOCAL_REGEXP */
+
 typedef struct {
     char op;
     const char *name;
@@ -63,7 +53,7 @@ typedef struct {
 
 static const char *find_bi_name(PF_CP);
 /* *INDENT-OFF* */
-static OP_NAME simple_code[] =
+static const OP_NAME simple_code[] =
 
 {
    {_STOP,      "stop"},
@@ -170,6 +160,7 @@ da(INST * start, FILE *fp)
     while (p->op != _HALT) {
 	/* print the relative code address (label) */
 	fprintf(fp, "%03ld ", (long) (p - start));
+	fprintf(fp, ".\t");
 
 	switch (p++->op) {
 
@@ -177,7 +168,8 @@ da(INST * start, FILE *fp)
 	    cp = (CELL *) p++->ptr;
 	    switch (cp->type) {
 	    case C_RE:
-		fprintf(fp, "pushc\t0x%lx\t/%s/\n", (long) cp->ptr,
+		add_to_regex_list(cp->ptr);
+		fprintf(fp, "pushc\t%p\t/%s/\n", cp->ptr,
 			re_uncompile(cp->ptr));
 		break;
 
@@ -217,8 +209,9 @@ da(INST * start, FILE *fp)
 
 	case _MATCH0:
 	case _MATCH1:
-	    fprintf(fp, "match%d\t0x%lx\t/%s/\n",
-		    p[-1].op == _MATCH1, (long) p->ptr,
+	    add_to_regex_list(p->ptr);
+	    fprintf(fp, "match%d\t%p\t/%s/\n",
+		    p[-1].op == _MATCH1, p->ptr,
 		    re_uncompile(p->ptr));
 	    p++;
 	    break;
@@ -364,7 +357,7 @@ da(INST * start, FILE *fp)
 	    break;
 	default:
 	    {
-		OP_NAME *q = simple_code;
+		const OP_NAME *q = simple_code;
 		int k = (p - 1)->op;
 
 		while (q->op != _HALT && q->op != k)
@@ -398,7 +391,7 @@ special_cases[] =
 static const char *
 find_bi_name(PF_CP p)
 {
-    BI_REC *q;
+    const BI_REC *q;
     int i;
 
     for (q = bi_funct; q->name; q++) {
@@ -417,37 +410,62 @@ find_bi_name(PF_CP p)
     return "unknown builtin";
 }
 
-static struct fdump {
-    struct fdump *link;
-    FBLOCK *fbp;
-} *fdump_list;			/* linked list of all user functions */
-
 void
 add_to_fdump_list(FBLOCK * fbp)
 {
-    struct fdump *p = ZMALLOC(struct fdump);
-    p->fbp = fbp;
+    DUMP_FUNCS *p = ZMALLOC(DUMP_FUNCS);
+    p->data = fbp;
     p->link = fdump_list;
     fdump_list = p;
 }
 
 void
-fdump(void)
+dump_funcs(void)
 {
-    register struct fdump *p, *q = fdump_list;
+    register DUMP_FUNCS *p, *q = fdump_list;
 
     while (q) {
 	p = q;
 	q = p->link;
-	fprintf(stdout, "function %s\n", p->fbp->name);
-	da(p->fbp->code, stdout);
+	fprintf(stdout, "function %s\n", p->data->name);
+	da(p->data->code, stdout);
 	ZFREE(p);
     }
 }
 
+#ifdef LOCAL_REGEXP
+static void
+add_to_regex_list(PTR re)
+{
+    DUMP_REGEX *p = ZMALLOC(DUMP_REGEX);
+    p->data = re;
+    p->link = regex_list;
+    regex_list = p;
+}
+
+void
+dump_regex(void)
+{
+    register DUMP_REGEX *p, *q = regex_list;
+
+    while (q) {
+	p = q;
+	q = p->link;
+	fprintf(stdout, "# regex %p\n", p->data);
+	REmprint(cast_to_re(p->data), stdout);
+	ZFREE(p);
+    }
+}
+#else /* using system regex */
+void
+dump_regex(void)
+{
+}
+#endif /* LOCAL_REGEXP */
+
 #if OPT_TRACE > 0
 /* *INDENT-OFF* */
-static OP_NAME type_names[] =
+static const OP_NAME type_names[] =
 {
     {C_NOINIT,    "noinit"},
     {C_DOUBLE,    "double"},
@@ -477,7 +495,7 @@ da_type_name(CELL *cdp)
     return result;
 }
 /* *INDENT-OFF* */
-static OP_NAME other_codes[] = {
+static const OP_NAME other_codes[] = {
     { AE_PUSHA,   "ae_pusha" },
     { AE_PUSHI,   "ae_pushi" },
     { ALOOP,      "aloop" },

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.29 2016/09/18 19:50:53 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.30 2016/09/30 13:47:45 tom Exp $
  */
 
 /*  re_cmpl.c  */
@@ -31,7 +31,7 @@ typedef struct re_node {
 /* a list of compiled regular expressions */
 static RE_NODE *re_list;
 
-static char efmt[] = "regular expression compile failed (%s)\n%s";
+static const char efmt[] = "regular expression compile failed (%s)\n%s";
 
 /* compile a STRING to a regular expression machine.
    Search a list of pre-compiled strings first

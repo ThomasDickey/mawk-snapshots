@@ -1,6 +1,6 @@
 /********************************************
 makescan.c
-copyright 2009-2010, Thomas E. Dickey
+copyright 2009-2010,2016, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,21 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: makescan.c,v 1.10 2010/12/10 17:00:00 tom Exp $
- * @Log: makescan.c,v @
- * Revision 1.3  1993/07/17  13:23:01  mike
- * indent and general code cleanup
- *
- * Revision 1.2	 1993/07/15  13:26:59  mike
- * SIZE_T and indent
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:16  mike
- * move source to cvs
- *
- * Revision 5.1	 1991/12/05  07:56:16  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: makescan.c,v 1.11 2016/09/30 23:58:49 tom Exp $
+ */
 
 /* source for makescan.exe which builds the scancode[]
    via:	  makescan.exe > scancode.c
@@ -45,7 +32,7 @@ scan_init(void)
     register char *p;
 
     memset(scan_code, SC_UNEXPECTED, sizeof(scan_code));
-    for (p = scan_code + '0'; p <= scan_code + '9'; p++)
+    for (p = &scan_code['0']; p <= &scan_code['9']; p++)
 	*p = SC_DIGIT;
     scan_code[0] = 0;
     scan_code[' '] = scan_code['\t'] = scan_code['\f'] = SC_SPACE;
@@ -82,8 +69,8 @@ scan_init(void)
     scan_code['~'] = SC_MATCH;
     scan_code['$'] = SC_DOLLAR;
 
-    for (p = scan_code + 'A'; p <= scan_code + 'Z'; p++)
-	*p = *(p + 'a' - 'A') = SC_IDCHAR;
+    for (p = &scan_code['A']; p <= &scan_code['Z']; p++)
+	p[0] = p['a' - 'A'] = SC_IDCHAR;
 
 }
 
