@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2013,2014 Thomas E. Dickey
+copyright 2008-2014,2016 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,37 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.51 2014/09/14 21:35:13 tom Exp $
- * @Log: mawk.h,v @
- * Revision 1.10  1996/08/25 19:31:04  mike
- * Added work-around for solaris strtod overflow bug.
- *
- * Revision 1.9  1995/06/18  19:42:21  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.8  1995/06/18  19:17:48  mike
- * Create a type Int which on most machines is an int, but on machines
- * with 16bit ints, i.e., the PC is a long.  This fixes implicit assumption
- * that int==long.
- *
- * Revision 1.7  1995/06/09  22:57:17  mike
- * parse() no longer returns on error
- *
- * Revision 1.6  1994/12/13  00:09:55  mike
- * rt_nr and rt_fnr for run-time error messages
- *
- * Revision 1.5  1994/12/11  23:25:09  mike
- * -Wi option
- *
- * Revision 1.4  1994/12/11  22:14:18  mike
- * remove THINK_C #defines.  Not a political statement, just no indication
- * that anyone ever used it.
- *
- * Revision 1.3  1993/07/07  00:07:41  mike
- * more work on 1.2
- *
- * Revision 1.2  1993/07/04  12:52:06  mike
- * start on autoconfig changes
+ * $MawkId: mawk.h,v 1.53 2016/09/30 22:54:27 tom Exp $
  */
 
 /*  mawk.h  */
@@ -106,7 +76,7 @@ extern STRING null_str;
 extern char string_buff[SPRINTF_LIMIT];
 
 /* help with casts */
-extern int mpow2[];
+extern const int mpow2[];
 
  /* these are used by the parser, scanner and error messages
     from the compile  */
@@ -177,7 +147,7 @@ extern char *re_pos_match(char *, size_t, PTR, size_t *, int);
 extern int binmode(void);
 
 #ifndef  REXP_H
-extern char *str_str(char *, size_t, char *, size_t);
+extern char *str_str(char *, size_t, const char *, size_t);
 #endif
 
 extern void parse(void);

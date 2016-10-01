@@ -1,6 +1,6 @@
 /********************************************
 kw.c
-copyright 2008-2009,2012, Thomas E. Dickey
+copyright 2008-2012,2016, Thomas E. Dickey
 copyright 1991-1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,18 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: kw.c,v 1.6 2012/06/27 09:19:43 tom Exp $
- * @Log: kw.c,v @
- * Revision 1.2  1993/07/17  13:22:59  mike
- * indent and general code cleanup
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:15  mike
- * move source to cvs
- *
- * Revision 5.1	 1991/12/05  07:56:12  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: kw.c,v 1.7 2016/09/29 23:02:51 tom Exp $
+ */
 
 /* kw.c */
 
@@ -31,7 +21,7 @@ the GNU General Public License, version 2, 1991.
 #include "parse.h"
 #include "init.h"
 /* *INDENT-OFF* */
-static struct kw
+static const struct kw
 {
     const char *text;
     short kw;
@@ -69,7 +59,7 @@ keywords[] =
 void
 kw_init(void)
 {
-    register struct kw *p = keywords;
+    register const struct kw *p = keywords;
     register SYMTAB *q;
 
     while (p->text) {
@@ -83,7 +73,7 @@ kw_init(void)
 const char *
 find_kw_str(int kw_token)
 {
-    struct kw *p;
+    const struct kw *p;
 
     for (p = keywords; p->text; p++)
 	if (p->kw == kw_token)

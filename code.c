@@ -1,6 +1,6 @@
 /********************************************
 code.c
-copyright 2009-2012,2013, Thomas E. Dickey
+copyright 2009-2013,2016, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,42 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.36 2013/08/03 14:15:22 tom Exp $
- * @Log: code.c,v @
- * Revision 1.6  1995/06/18  19:42:13  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.5  1995/06/09  23:21:36  mike
- * make sure there is an execution block in case user defines function,
- * but no pattern-action pairs
- *
- * Revision 1.4  1995/03/08  00:06:22  mike
- * add a pointer cast
- *
- * Revision 1.3  1994/10/08  19:15:29  mike
- * remove SM_DOS
- *
- * Revision 1.2  1993/07/07  00:07:38  mike
- * more work on 1.2
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:10  mike
- * move source to cvs
- *
- * Revision 5.4	 1993/01/14  13:11:11  mike
- * code2() -> xcode2()
- *
- * Revision 5.3	 1993/01/09  20:15:35  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.2	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.1	 1991/12/05  07:55:43  brennan
- * 1.1 pre-release
- *
+ * $MawkId: code.c,v 1.38 2016/09/30 13:23:08 tom Exp $
  */
-
-/*  code.c  */
 
 #include "mawk.h"
 #include "code.h"
@@ -207,7 +173,7 @@ set_code(void)
 void
 dump_code(void)
 {
-    fdump();			/* dumps all user functions */
+    dump_funcs();		/* dumps all user functions */
     if (begin_start) {
 	fprintf(stdout, "BEGIN\n");
 	da(begin_start, stdout);
@@ -220,6 +186,7 @@ dump_code(void)
 	fprintf(stdout, "MAIN\n");
 	da(main_start, stdout);
     }
+    dump_regex();		/* dumps all regular expressions */
 }
 
 static CODEBLOCK *

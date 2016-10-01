@@ -1,6 +1,16 @@
--- $MawkId: CHANGES,v 1.244 2016/09/27 09:28:47 tom Exp $
+-- $MawkId: CHANGES,v 1.249 2016/09/30 21:15:51 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20160930
+	+ optimize closes on regular expressions to filter out redundant
+	  wildcards, fixing a special case leftover by changes in 20100224
+	  (Original-Mawk #34).
+	+ add regular-expressions to the -Wdump option when using mawk's
+	  built-in regular expressions.
+	+ fix a sign-extension in character-class parser (Original-Mawk #46).
+	+ minor optimizations.
+	+ improve use of const in tables.
 
 20160927
 	+ allow single-quote as a flag in printf, to complete the change

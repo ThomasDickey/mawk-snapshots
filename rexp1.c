@@ -1,6 +1,6 @@
 /********************************************
 rexp1.c
-copyright 2009,2010, Thomas E. Dickey
+copyright 2009-2010,2016, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,29 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.14 2010/12/10 17:00:00 tom Exp $
- * @Log: rexp1.c,v @
- * Revision 1.3  1993/07/24  17:55:10  mike
- * more cleanup
- *
- * Revision 1.2	 1993/07/23  13:21:41  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:27  mike
- * move source to cvs
- *
- * Revision 3.4	 1992/02/20  16:08:12  brennan
- * change new_TWO() to work around sun acc bug
- *
- * Revision 3.3	 91/10/29  10:54:01  brennan
- * SIZE_T
- *
- * Revision 3.2	 91/08/13  09:10:11  brennan
- * VERSION .9994
- *
- * Revision 3.1	 91/06/07  10:33:22  brennan
- * VERSION 0.995
- *
+ * $MawkId: rexp1.c,v 1.16 2016/09/30 21:11:29 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -116,10 +94,10 @@ RE_str(char *str, size_t len)
 void
 RE_cat(MACHINE * mp, MACHINE * np)
 {
-    unsigned sz1, sz2, sz;
+    size_t sz1, sz2, sz;
 
-    sz1 = (unsigned) (mp->stop - mp->start);
-    sz2 = (unsigned) (np->stop - np->start + 1);
+    sz1 = (size_t) (mp->stop - mp->start);
+    sz2 = (size_t) (np->stop - np->start + 1);
     sz = sz1 + sz2;
 
     mp->start = (STATE *) RE_realloc(mp->start, sz * STATESZ);
@@ -134,10 +112,10 @@ void
 RE_or(MACHINE * mp, MACHINE * np)
 {
     register STATE *p;
-    unsigned szm, szn;
+    size_t szm, szn;
 
-    szm = (unsigned) (mp->stop - mp->start + 1);
-    szn = (unsigned) (np->stop - np->start + 1);
+    szm = (size_t) (mp->stop - mp->start + 1);
+    szn = (size_t) (np->stop - np->start + 1);
 
     p = (STATE *) RE_malloc((szm + szn + 1) * STATESZ);
     memcpy(p + 1, mp->start, szm * STATESZ);
@@ -152,6 +130,39 @@ RE_or(MACHINE * mp, MACHINE * np)
     p->s_data.jump = (int) szn;
 }
 
+/*
+ * Ignore attempts to wrap an atom using zero-or-more repetitions in another
+ * loop with the same condition.
+ */
+static int
+ignore_star_star(MACHINE * mp)
+{
+    size_t sz = (size_t) (mp->stop - mp->start + 1);
+
+    if (sz >= 4) {
+	STATE *p = mp->start;
+	STATE *q = mp->stop;
+
+	if ((p->s_type % U_ON) != M_2JA) {
+	    ;
+	} else if (p->s_data.jump != 4) {
+	    TRACE((".. expected jump %d\n", p->s_data.jump));
+	} else if (((p + 1)->s_type % U_ON) != M_SAVE_POS) {
+	    TRACE((".. expected save %s\n", REs_type(p + 1)));
+	} else if (((q - 2)->s_type % U_ON) != M_CLASS &&
+		   ((q - 2)->s_type % U_ON) != M_STR &&
+		   ((q - 2)->s_type % U_ON) != M_U) {
+	    TRACE((".. expected atom %s\n", REs_type(q - 2)));
+	} else if (((q - 1)->s_type % U_ON) != M_2JC) {
+	    TRACE(("ignored loop %s\n", REs_type(q - 1)));
+	} else {
+	    TRACE(("ignore repeated loop\n"));
+	    return 1;
+	}
+    }
+    return 0;
+}
+
 /*  UNARY  OPERATIONS	  */
 
 /*  replace m by m*   */
@@ -160,8 +171,10 @@ void
 RE_close(MACHINE * mp)
 {
     register STATE *p;
-    unsigned sz;
+    size_t sz;
 
+    if (ignore_star_star(mp))
+	return;
     /*
      *                2JA end
      * loop:
@@ -171,7 +184,7 @@ RE_close(MACHINE * mp)
      * end:
      *          ACCEPT
      */
-    sz = (unsigned) (mp->stop - mp->start + 1);
+    sz = (size_t) (mp->stop - mp->start + 1);
     p = (STATE *) RE_malloc((sz + 3) * STATESZ);
     memcpy(p + 2, mp->start, sz * STATESZ);
     RE_free(mp->start);
@@ -191,8 +204,10 @@ void
 RE_poscl(MACHINE * mp)
 {
     register STATE *p;
-    unsigned sz;
+    size_t sz;
 
+    if (ignore_star_star(mp))
+	return;
     /*
      * loop:
      *          SAVE_POS
@@ -200,7 +215,7 @@ RE_poscl(MACHINE * mp)
      *          2JC loop
      *          ACCEPT
      */
-    sz = (unsigned) (mp->stop - mp->start + 1);
+    sz = (size_t) (mp->stop - mp->start + 1);
     p = (STATE *) RE_malloc((sz + 2) * STATESZ);
     memcpy(p + 1, mp->start, sz * STATESZ);
     RE_free(mp->start);
@@ -218,10 +233,10 @@ RE_poscl(MACHINE * mp)
 void
 RE_01(MACHINE * mp)
 {
-    unsigned sz;
+    size_t sz;
     register STATE *p;
 
-    sz = (unsigned) (mp->stop - mp->start + 1);
+    sz = (size_t) (mp->stop - mp->start + 1);
     p = (STATE *) RE_malloc((sz + 1) * STATESZ);
     memcpy(p + 1, mp->start, sz * STATESZ);
     RE_free(mp->start);

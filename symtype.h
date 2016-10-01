@@ -1,6 +1,6 @@
 /********************************************
 symtype.h
-copyright 2009-2010,2012, Thomas E. Dickey
+copyright 2009-2012,2016, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,42 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.15 2012/11/26 11:53:31 tom Exp $
- * @Log: symtype.h,v @
- * Revision 1.6  1996/02/01  04:39:43  mike
- * dynamic array scheme
- *
- * Revision 1.5  1995/04/21  14:20:23  mike
- * move_level variable to fix bug in arglist patching of moved code.
- *
- * Revision 1.4  1994/12/13  00:13:02  mike
- * delete A statement to delete all of A at once
- *
- * Revision 1.3  1993/12/01  14:25:25  mike
- * reentrant array loops
- *
- * Revision 1.2  1993/07/15  01:55:08  mike
- * rm SIZE_T & indent
- *
- * Revision 1.1.1.1  1993/07/03  18:58:21  mike
- * move source to cvs
- *
- * Revision 5.5  1993/01/09  19:03:44  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.4  1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.3  1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.2  1992/07/08  15:44:44  brennan
- * patch2: length returns.  I am a wimp
- *
- * Revision 5.1  1991/12/05  07:59:37  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: symtype.h,v 1.18 2016/09/30 13:22:32 tom Exp $
+ */
 
 /* types related to symbols are defined here */
 
@@ -90,7 +56,8 @@ typedef struct fblock {
 } FBLOCK;			/* function block */
 
 extern void add_to_fdump_list(FBLOCK *);
-extern void fdump(void);
+extern void dump_funcs(void);
+extern void dump_regex(void);
 
 /*-------------------------
   elements of the symbol table
@@ -126,7 +93,7 @@ typedef struct {
 	CELL *cp;
 	int kw;
 	PF_CP fp;
-	BI_REC *bip;
+	const BI_REC *bip;
 	ARRAY array;
 	FBLOCK *fbp;
     } stval;
@@ -181,7 +148,7 @@ extern SYMTAB *save_id(const char *);
 extern void restore_ids(void);
 
 /* error.c */
-extern const char * type_to_str(int);
+extern const char *type_to_str(int);
 extern void type_error(SYMTAB *);
 
 #ifdef NO_LEAKS

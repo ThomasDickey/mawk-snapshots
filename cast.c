@@ -1,6 +1,6 @@
 /********************************************
 cast.c
-copyright 2009-2013,2014, Thomas E. Dickey
+copyright 2009-2014,2016, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,55 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.20 2014/09/14 20:14:16 tom Exp $
- * @Log: cast.c,v @
- * Revision 1.6  1996/08/11 22:07:50  mike
- * Fix small bozo in rt_error("overflow converting ...")
- *
- * Revision 1.5  1995/06/18  19:17:45  mike
- * Create a type Int which on most machines is an int, but on machines
- * with 16bit ints, i.e., the PC is a long.  This fixes implicit assumption
- * that int==long.
- *
- * Revision 1.4  1995/06/06  00:02:02  mike
- * fix cast in d_to_l()
- *
- * Revision 1.3  1993/07/17  13:22:45  mike
- * indent and general code cleanup
- *
- * Revision 1.2	 1993/07/04  12:51:41  mike
- * start on autoconfig changes
- *
- * Revision 5.5	 1993/03/06  18:49:45  mike
- * rm rt_overflow from check_strnum
- *
- * Revision 5.4	 1993/02/13  21:57:20  mike
- * merge patch3
- *
- * Revision 5.3.1.4  1993/01/22	 15:05:19  mike
- * pow2->mpow2 for linux
- *
- * Revision 5.3.1.3  1993/01/22	 14:18:33  mike
- * const for strtod and ansi picky compilers
- *
- * Revision 5.3.1.2  1993/01/20	 12:53:06  mike
- * d_to_l()
- *
- * Revision 5.3.1.1  1993/01/15	 03:33:37  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.3	 1992/11/28  23:48:42  mike
- * For internal conversion numeric->string, when testing
- * if integer, use longs instead of ints so 16 and 32 bit
- * systems behave the same
- *
- * Revision 5.2	 1992/08/17  14:19:45  brennan
- * patch2: After parsing, only bi_sprintf() uses string_buff.
- *
- * Revision 5.1	 1991/12/05  07:55:41  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: cast.c,v 1.21 2016/09/30 11:51:20 tom Exp $
+ */
 
 /*  cast.c  */
 
@@ -69,7 +22,7 @@ the GNU General Public License, version 2, 1991.
 #include "scan.h"
 #include "repl.h"
 
-int mpow2[NUM_CELL_TYPES] =
+const int mpow2[NUM_CELL_TYPES] =
 {1, 2, 4, 8, 16, 32, 64, 128, 256, 512};
 
 void
@@ -305,7 +258,7 @@ cast_to_RE(CELL *cp)
 void
 cast_for_split(CELL *cp)
 {
-    static char meta[] = "^$.*+?|[]()";
+    static const char meta[] = "^$.*+?|[]()";
     static char xbuff[] = "\\X";
     int c;
     size_t len;

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.107 2016/09/18 18:37:41 tom Exp $
+ * $MawkId: bi_funct.c,v 1.109 2016/09/30 22:54:45 tom Exp $
  */
 
 #include <mawk.h>
@@ -51,7 +51,7 @@ the GNU General Public License, version 2, 1991.
 
 /* global for the disassembler */
 /* *INDENT-OFF* */
-BI_REC bi_funct[] =
+const BI_REC bi_funct[] =
 {				/* info to load builtins */
 
    { "length",   bi_length,   0, 1 },	/* special must come first */
@@ -90,7 +90,7 @@ BI_REC bi_funct[] =
 void
 bi_funct_init(void)
 {
-    register BI_REC *p;
+    register const BI_REC *p;
     register SYMTAB *stp;
 
     /* length is special (posix bozo) */
@@ -145,11 +145,11 @@ bi_length(CELL *sp)
 }
 
 char *
-str_str(char *target, size_t target_len, char *key, size_t key_len)
+str_str(char *target, size_t target_len, const char *key, size_t key_len)
 {
     register int k = key[0];
     int k1;
-    char *prior;
+    const char *prior;
     char *result = 0;
 
     switch (key_len) {

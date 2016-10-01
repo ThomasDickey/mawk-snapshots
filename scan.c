@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2013,2014, Thomas E. Dickey
+copyright 2008-2014,2016, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1996,2014, Michael D. Brennan
 
@@ -12,56 +12,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.41 2014/08/21 20:05:54 tom Exp $
- * @Log: scan.c,v @
- * Revision 1.8  1996/07/28 21:47:05  mike
- * gnuish patch
- *
- * Revision 1.7  1995/06/18  19:42:24  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.6  1995/06/10  16:57:52  mike
- * silently exit(0) if no program
- * always add a '\n' on eof in scan_fillbuff()
- *
- * Revision 1.5  1995/06/06  00:18:33  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.4  1994/09/23  00:20:04  mike
- * minor bug fix: handle \ in eat_nl()
- *
- * Revision 1.3  1993/07/17  00:45:21  mike
- * indent
- *
- * Revision 1.2	 1993/07/04  12:52:09  mike
- * start on autoconfig changes
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:20  mike
- * move source to cvs
- *
- * Revision 5.6	 1993/02/13  21:57:33  mike
- * merge patch3
- *
- * Revision 5.5	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.4.1.1  1993/01/15	 03:33:50  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.4	 1992/11/29  18:57:50  mike
- * field expressions convert to long so 16 bit and 32 bit
- * systems behave the same
- *
- * Revision 5.3	 1992/07/08  15:43:41  brennan
- * patch2: length returns.  I am a wimp
- *
- * Revision 5.2	 1992/02/21  14:16:53  brennan
- * fix:	 getline <=
- *
- * Revision 5.1	 91/12/05  07:56:27  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: scan.c,v 1.43 2016/09/30 23:37:35 tom Exp $
+ */
 
 #include  "mawk.h"
 #include  "scan.h"
@@ -122,7 +74,7 @@ string_too_long(void)
 	    string_too_long()
 
 void
-scan_init(char *cmdline_program)
+scan_init(const char *cmdline_program)
 {
     if (cmdline_program) {
 	program_fd = -1;	/* command line program */
@@ -426,11 +378,11 @@ yylex(void)
 
     case SC_DIV:
 	{
-	    static int can_precede_div[] =
+	    static const int can_precede_div[] =
 	    {DOUBLE, STRING_, RPAREN, ID, D_ID, RE, RBOX, FIELD,
 	     GETLINE, INC_or_DEC, -1};
 
-	    int *p = can_precede_div;
+	    const int *p = can_precede_div;
 
 	    do {
 		if (*p == current_token) {
@@ -864,7 +816,7 @@ collect_decimal(int c, int *flag)
 
 /*----------  process escape characters ---------------*/
 
-static char hex_val['f' - 'A' + 1] =
+static const char hex_val['f' - 'A' + 1] =
 {
     10, 11, 12, 13, 14, 15, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -923,60 +875,86 @@ hex(char **start_p)
     return (int) x;
 }
 
-#define	 ET_END	    9
-
-static struct {
-    char in, out;
-}
-/* *INDENT-OFF* */
-escape_test[ET_END + 1] =
-{
-  {'n', '\n'},
-  {'t', '\t'},
-  {'f', '\f'},
-  {'b', '\b'},
-  {'r', '\r'},
-  {'a', '\07'},
-  {'v', '\013'},
-  {'\\', '\\'},
-  {'\"', '\"'},
-  {0, 0}
-};
-/* *INDENT-ON* */
-/* process the escape characters in a string, in place . */ char *
+/* process the escape characters in a string, in place . */
+char *
 rm_escape(char *s, size_t *lenp)
 {
     register char *p, *q;
     char *t;
-    int i;
 
     q = p = s;
 
     while (*p) {
 	if (*p == '\\') {
-	    escape_test[ET_END].in = *++p;	/* sentinal */
-	    i = 0;
-	    while (escape_test[i].in != *p)
-		i++;
-
-	    if (i != ET_END)	/* in table */
-	    {
+	    int ch = *++p;
+	    switch (ch) {
+	    case 'n':
 		p++;
-		*q++ = escape_test[i].out;
-	    } else if (isoctal(*p)) {
+		*q++ = '\n';
+		break;
+	    case 't':
+		p++;
+		*q++ = '\t';
+		break;
+	    case 'f':
+		p++;
+		*q++ = '\f';
+		break;
+	    case 'b':
+		p++;
+		*q++ = '\b';
+		break;
+	    case 'r':
+		p++;
+		*q++ = '\r';
+		break;
+	    case 'a':
+		p++;
+		*q++ = '\07';
+		break;
+	    case 'v':
+		p++;
+		*q++ = '\013';
+		break;
+	    case '\\':
+		p++;
+		*q++ = '\\';
+		break;
+	    case '\"':
+		p++;
+		*q++ = '\"';
+		break;
+	    case '0':
+	    case '1':
+	    case '2':
+	    case '3':
+	    case '4':
+	    case '5':
+	    case '6':
+	    case '7':
 		t = p;
 		*q++ = (char) octal(&t);
 		p = t;
-	    } else if (*p == 'x' && ishex(*(UChar *) (p + 1))) {
-		t = p + 1;
-		*q++ = (char) hex(&t);
-		p = t;
-	    } else if (*p == 0)	/* can only happen with command line assign */
+		break;
+	    case 'x':
+		if (ishex(*(UChar *) (p + 1))) {
+		    t = p + 1;
+		    *q++ = (char) hex(&t);
+		    p = t;
+		    break;
+		} else {
+		    goto not_escape;
+		}
+	    case '\0':
 		*q++ = '\\';
-	    else {		/* not an escape sequence */
+		break;
+	      not_escape:
+	    default:
 		*q++ = '\\';
 		*q++ = *p++;
+		break;
 	    }
+
 	} else
 	    *q++ = *p++;
     }

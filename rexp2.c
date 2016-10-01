@@ -12,53 +12,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.24 2016/03/13 14:23:46 tom Exp $
- * @Log: rexp2.c,v @
- * Revision 1.3  1993/07/24  17:55:12  mike
- * more cleanup
- *
- * Revision 1.2	 1993/07/23  13:21:44  mike
- * cleanup rexp code
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:28  mike
- * move source to cvs
- *
- * Revision 3.8	 1992/12/24  00:36:44  mike
- * fixed major bozo for LMDOS when growing stack
- * fixed potential LMDOS bozo with M_STR+U_ON+END_ON
- * fixed minor bug in M_CLASS+U_ON+END_ON
- *
- * Revision 3.7	 92/01/21  17:33:15  brennan
- * added some casts so that character classes work with signed chars
- *
- * Revision 3.6	 91/10/29  10:54:03  brennan
- * SIZE_T
- *
- * Revision 3.5	 91/08/13  09:10:15  brennan
- * VERSION .9994
- *
- * Revision 3.4	 91/08/08  07:53:34  brennan
- * work around for turboC realloc() bug
- *
- * Revision 3.4	 91/08/07  07:10:47  brennan
- * work around for TurboC realloc() bug
- *
- * Revision 3.3	 91/08/04  15:45:57  brennan
- * minor change for large model dos
- *
- * Revision 3.2	 91/06/10  16:18:14  brennan
- * changes for V7
- *
- * Revision 3.1	 91/06/07  10:33:25  brennan
- * VERSION 0.995
- *
- * Revision 1.8	 91/06/05  09:01:33  brennan
- * changes to RE_new_run_stack
- *
- * Revision 1.7	 91/05/31  10:56:02  brennan
- * stack_empty hack for DOS large model
- *
-*/
+ * $MawkId: rexp2.c,v 1.25 2016/09/28 21:26:38 tom Exp $
+ */
 
 /*  test a string against a machine   */
 

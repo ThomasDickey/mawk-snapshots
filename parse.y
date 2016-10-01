@@ -1,6 +1,6 @@
 /********************************************
 parse.y
-copyright 2008-2010,2012, Thomas E. Dickey
+copyright 2008-2012,2016, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,72 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.19 2012/11/28 10:43:56 tom Exp $
- * @Log: parse.y,v @
- * Revision 1.11  1995/06/11  22:40:09  mike
- * change if(dump_code) -> if(dump_code_flag)
- * cleanup of parse()
- * add cast to shutup solaris cc compiler on char to int comparison
- * switch_code_to_main() which cleans up outside_error production
- *
- * Revision 1.10  1995/04/21  14:20:21  mike
- * move_level variable to fix bug in arglist patching of moved code.
- *
- * Revision 1.9  1995/02/19  22:15:39  mike
- * Always set the call_offset field in a CA_REC (for obscure
- * reasons in fcall.c (see comments) there.)
- *
- * Revision 1.8  1994/12/13  00:39:20  mike
- * delete A statement to delete all of A at once
- *
- * Revision 1.7  1994/10/08  19:15:48  mike
- * remove SM_DOS
- *
- * Revision 1.6  1993/12/01  14:25:17  mike
- * reentrant array loops
- *
- * Revision 1.5  1993/07/22  00:04:13  mike
- * new op code _LJZ _LJNZ
- *
- * Revision 1.4  1993/07/15  23:38:15  mike
- * SIZE_T and indent
- *
- * Revision 1.3  1993/07/07  00:07:46  mike
- * more work on 1.2
- *
- * Revision 1.2  1993/07/03  21:18:01  mike
- * bye to yacc_mem
- *
- * Revision 1.1.1.1  1993/07/03  18:58:17  mike
- * move source to cvs
- *
- * Revision 5.8  1993/05/03  01:07:18  mike
- * fix bozo in LENGTH production
- *
- * Revision 5.7  1993/01/09  19:03:44  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.6  1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.5  1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.4  1992/08/08  17:17:20  brennan
- * patch 2: improved timing of error recovery in
- * bungled function definitions. Fixes a core dump
- *
- * Revision 5.3  1992/07/08  15:43:41  brennan
- * patch2: length returns.  I am a wimp
- *
- * Revision 5.2  1992/01/08  16:11:42  brennan
- * code FE_PUSHA carefully for MSDOS large mode
- *
- * Revision 5.1  91/12/05  07:50:22  brennan
- * 1.1 pre-release
- *
-*/
-
+ * $MawkId: parse.y,v 1.20 2016/09/29 23:19:54 tom Exp $
+ */
 
 %{
 
@@ -132,7 +68,7 @@ static CA_REC *active_arglist;
   SYMTAB   *stp ;
   int      start ;   /* code starting address as offset from code_base */
   PF_CP    fp ;      /* ptr to a (print/printf) or (sub/gsub) function */
-  BI_REC   *bip ;    /* ptr to info about a builtin */
+  const BI_REC *bip ; /* ptr to info about a builtin */
   FBLOCK   *fbp  ;   /* ptr to a function block */
   ARG2_REC *arg2p ;
   CA_REC   *ca_p  ;
@@ -478,7 +414,7 @@ args    :  expr        %prec  LPAREN
 
 builtin :
         BUILTIN mark  LPAREN  ID RPAREN
-        { BI_REC *p = $1 ;
+        { const BI_REC *p = $1 ;
           $$ = $2 ;
           if ( (int)p->min_args > 1 || (int)p->max_args < 1 )
             compile_error(
@@ -501,7 +437,7 @@ builtin :
           }
         }
         | BUILTIN mark  LPAREN  arglist RPAREN
-        { BI_REC *p = $1 ;
+        { const BI_REC *p = $1 ;
           $$ = $2 ;
           if ( (int)p->min_args > $4 || (int)p->max_args < $4 )
             compile_error(
