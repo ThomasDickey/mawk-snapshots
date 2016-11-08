@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.109 2016/09/30 22:54:45 tom Exp $
+ * $MawkId: bi_funct.c,v 1.110 2016/11/07 21:43:45 tom Exp $
  */
 
 #include <mawk.h>
@@ -837,7 +837,7 @@ bi_rand(CELL *sp)
 	long value = (long) mawk_rand();
 	sp++;
 	sp->type = C_DOUBLE;
-	sp->dval = ((double) value) / MAWK_RAND_MAX;
+	sp->dval = ((double) value) / ((unsigned long) MAWK_RAND_MAX);
     }
 #else
     crank(seed);
