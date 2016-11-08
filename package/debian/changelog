@@ -1,3 +1,9 @@
+mawk-cur (1.3.4-20161107) unstable; urgency=low
+
+  * maintenance updates
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Mon, 07 Nov 2016 16:36:53 -0500
+
 mawk-cur (1.3.4-20160930) unstable; urgency=low
 
   * maintenance updates
