@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2012,2014 Thomas E. Dickey
+copyright 2008-2014,2016 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,55 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.32 2014/09/14 22:18:43 tom Exp $
- * @Log: field.c,v @
- * Revision 1.5  1995/06/18  19:17:47  mike
- * Create a type Int which on most machines is an int, but on machines
- * with 16bit ints, i.e., the PC is a long.  This fixes implicit assumption
- * that int==long.
- *
- * Revision 1.4  1994/10/08  19:15:38  mike
- * remove SM_DOS
- *
- * Revision 1.3  1993/07/14  12:32:39  mike
- * run thru indent
- *
- * Revision 1.2	 1993/07/14  12:22:11  mike
- * rm SIZE_T and (void) casts
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:12  mike
- * move source to cvs
- *
- * Revision 5.7	 1993/05/08  18:06:00  mike
- * null_split
- *
- * Revision 5.6	 1993/02/13  21:57:25  mike
- * merge patch3
- *
- * Revision 5.5	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.4.1.2  1993/01/20	 12:53:08  mike
- * d_to_l()
- *
- * Revision 5.4.1.1  1993/01/15	 03:33:42  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.4	 1992/11/29  22:52:11  mike
- * double->string conversions uses long ints for 16/32 bit
- * compatibility.
- * Fixed small LM_DOS bozo.
- *
- * Revision 5.3	 1992/08/17  14:21:10  brennan
- * patch2: After parsing, only bi_sprintf() uses string_buff.
- *
- * Revision 5.2	 1992/07/10  16:17:10  brennan
- * MsDOS: remove NO_BINMODE macro
- *
- * Revision 5.1	 1991/12/05  07:55:57  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: field.c,v 1.35 2016/11/21 02:15:47 tom Exp $
+ */
 
 /* field.c */
 
@@ -83,7 +36,7 @@ CELL **fbankv;
 #define FBANKV_CHUNK_SIZE    1024
 static size_t fbankv_num_chunks;
 
-/* make fbankv big enough to hold field CELL $i 
+/* make fbankv big enough to hold field CELL $i
    is called with i==0 during initialization
 
    This does not create field CELL $i, it just
@@ -113,8 +66,8 @@ allocate_fbankv(int i)
     }
 }
 
-/* max_field created i.e. $max_field exists 
-   as new fields are created max_field grows 
+/* max_field created i.e. $max_field exists
+   as new fields are created max_field grows
 */
 static int max_field = FBANK_SZ - 1;
 
@@ -270,7 +223,7 @@ set_field0(char *s, size_t len)
     }
 }
 
-/* split field[0] into $1, $2 ... and set NF  
+/* split field[0] into $1, $2 ... and set NF
  *
  * Note the current values are valid CELLS and
  * have to be destroyed when the new values are loaded.
@@ -327,6 +280,92 @@ split_field0(void)
     if (cnt > 0) {
 	transfer_to_fields(cnt);
     }
+}
+
+static void
+invalid_format(CELL *fp)
+{
+    const char *what = (fp == CONVFMT) ? "CONVFMT" : "OFMT";
+    const char *format = string(fp)->str;
+    rt_error("illegal format assigned to %s: %s", what, format);
+}
+
+/*
+ * We expect only one field, using the same format choices as in do_printf().
+ */
+static int
+valid_format(CELL *fp)
+{
+    int result = 1;
+    char *format = string(fp)->str;
+    char *q = format;
+    int args = 0;
+
+    while (*q != '\0') {
+	if (*q++ == '%') {
+	    int l_flag = 0;
+	    int h_flag = 0;
+
+	    if (++args > 1)
+		invalid_format(fp);
+
+	    while (*q == '-' || *q == '+' || *q == ' ' ||
+		   *q == '#' || *q == '0' || *q == '\'') {
+		q++;
+	    }
+	    if (*q == '*') {
+		invalid_format(fp);
+	    } else {
+		while (scan_code[*(unsigned char *) q] == SC_DIGIT) {
+		    q++;
+		}
+	    }
+	    if (*q == '.') {	/* have precision */
+		q++;
+		if (*q == '*') {
+		    invalid_format(fp);
+		} else {
+		    while (scan_code[*(unsigned char *) q] == SC_DIGIT) {
+			q++;
+		    }
+		}
+	    }
+	    if (*q == 'l') {
+		q++;
+	    } else if (*q == 'h') {
+		q++;
+	    }
+	    switch (*q++) {
+	    case 's':
+		if (l_flag + h_flag)
+		    invalid_format(fp);
+		break;
+	    case 'c':
+		if (l_flag + h_flag)
+		    invalid_format(fp);
+		break;
+	    case 'd':
+	    case 'i':
+		break;
+	    case 'o':
+	    case 'x':
+	    case 'X':
+	    case 'u':
+		break;
+	    case 'e':
+	    case 'g':
+	    case 'f':
+	    case 'E':
+	    case 'G':
+		if (h_flag + l_flag)
+		    invalid_format(fp);
+		break;
+	    default:
+		invalid_format(fp);
+	    }
+	}
+    }
+    return result;
 }
 
 /*
@@ -402,18 +441,20 @@ field_assign(CELL *fp, CELL *cp)
 
 	free_STRING(string(fp));
 	cellcpy(fp, cp);
-	if (fp->type < C_STRING)	/* !! */
+	if (fp->type < C_STRING) {	/* !! */
 	    fp->ptr = (PTR) new_STRING("%.6g");
-	else if (fp == CONVFMT) {
-	    /* It's a string, but if it's really goofy and CONVFMT,
-	       it could still damage us. Test it .
-	     */
-	    char xbuff[512];
+	} else if (valid_format(fp)) {
+	    if (fp == CONVFMT) {
+		/* It's a string, but if it's really goofy and CONVFMT,
+		   it could still damage us. Test it .
+		 */
+		char xbuff[512];
 
-	    xbuff[256] = 0;
-	    sprintf(xbuff, string(fp)->str, 3.1459);
-	    if (xbuff[256])
-		rt_error("CONVFMT assigned unusable value");
+		xbuff[256] = 0;
+		sprintf(xbuff, string(fp)->str, 3.1459);
+		if (xbuff[256])
+		    rt_error("CONVFMT assigned unusable value");
+	    }
 	}
 	break;
 
@@ -560,7 +601,7 @@ build_field0(void)
 }
 
 /* We are assigning to a CELL and we aren't sure if its
-   a field 
+   a field
 */
 void
 slow_cell_assign(CELL *target, CELL *source)
@@ -710,7 +751,7 @@ field_leaks(void)
     for (n = 0; n < FBANK_SZ + NUM_PFIELDS; n++) {
 	cell_destroy(&field[n]);
     }
-    /* fbankv[0] == field 
+    /* fbankv[0] == field
        this call does all the rest of the fields
      */
     fbankv_free();

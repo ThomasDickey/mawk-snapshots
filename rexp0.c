@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.32 2016/10/01 00:25:57 tom Exp $
+ * $MawkId: rexp0.c,v 1.33 2016/11/21 00:26:41 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -382,11 +382,11 @@ lookup_cclass(char **start)
 
 #ifdef NO_LEAKS
     if (start == 0) {
-	for (item = 0; item < (sizeof(cclass_table) /
-			       sizeof(cclass_table[0])); ++item) {
-	    if (cclass_table[item].data) {
-		free(cclass_table[item].data);
-		cclass_table[item].data = 0;
+	for (item = 0; item < (sizeof(cclass_data) /
+			       sizeof(cclass_data[0])); ++item) {
+	    if (cclass_data[item]) {
+		free(cclass_data[item]);
+		cclass_data[item] = 0;
 	    }
 	}
 	return 0;
