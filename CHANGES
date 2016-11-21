@@ -1,6 +1,11 @@
--- $MawkId: CHANGES,v 1.251 2016/11/07 21:51:33 tom Exp $
+-- $MawkId: CHANGES,v 1.254 2016/11/21 02:15:47 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20161120
+	+ add runtime check for assignments to OFMT and CONVFMT to ensure
+	  they use a single parameter (Original-Mawk #47).
+	+ repair build for --with-valgrind, broken in 20160930 const-fixes.
 
 20161107
 	+ correct sign-extension from 20160615 change to rand() (report by
