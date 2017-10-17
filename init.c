@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2015,2016, Thomas E. Dickey
+copyright 2008-2016,2017, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.44 2016/09/18 19:57:41 tom Exp $
+ * $MawkId: init.c,v 1.45 2017/10/17 01:19:15 tom Exp $
  */
 
 /* init.c */
@@ -431,6 +431,7 @@ process_cmdline(int argc, char **argv)
 		case W_USAGE:
 		    usage();
 		    /* NOTREACHED */
+		    break;
 		case W_UNKNOWN:
 		    errmsg(0, "vacuous option: -W %s", optArg + j);
 		    break;

@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2013,2014, Thomas E. Dickey
+copyright 2008-2014,2017, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,85 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.38 2014/09/14 22:18:43 tom Exp $
- * @Log: execute.c,v @
- * Revision 1.13  1996/02/01  04:39:40  mike
- * dynamic array scheme
- *
- * Revision 1.12  1995/06/06  00:18:24  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.11  1995/03/08  00:06:24  mike
- * add a pointer cast
- *
- * Revision 1.10  1994/12/13  00:12:10  mike
- * delete A statement to delete all of A at once
- *
- * Revision 1.9  1994/10/25  23:36:11  mike
- * clear aloop stack on _NEXT
- *
- * Revision 1.8  1994/10/08  19:15:35  mike
- * remove SM_DOS
- *
- * Revision 1.7  1993/12/30  19:10:03  mike
- * minor cleanup to _CALL
- *
- * Revision 1.6  1993/12/01  14:25:13  mike
- * reentrant array loops
- *
- * Revision 1.5  1993/07/22  00:04:08  mike
- * new op code _LJZ _LJNZ
- *
- * Revision 1.4  1993/07/14  12:18:21  mike
- * run thru indent
- *
- * Revision 1.3	 1993/07/14  11:50:17  mike
- * rm SIZE_T and void casts
- *
- * Revision 1.2	 1993/07/04  12:51:49  mike
- * start on autoconfig changes
- *
- * Revision 5.10  1993/02/13  21:57:22	mike
- * merge patch3
- *
- * Revision 5.9	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.8	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.7.1.1  1993/01/15	 03:33:39  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.7	 1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.6	 1992/11/29  18:57:50  mike
- * field expressions convert to long so 16 bit and 32 bit
- * systems behave the same
- *
- * Revision 5.5	 1992/08/11  15:24:55  brennan
- * patch2: F_PUSHA and FE_PUSHA
- * If this is preparation for g?sub(r,s,$expr) or (++|--) on $expr,
- * then if expr > NF, make sure $expr is set to ""
- *
- * Revision 5.4	 1992/08/11  14:51:54  brennan
- * patch2:  $expr++ is numeric even if $expr is string.
- * I forgot to do this earlier when handling x++ case.
- *
- * Revision 5.3	 1992/07/08  17:03:30  brennan
- * patch 2
- * revert to version 1.0 comparisons, i.e.
- * page 44-45 of AWK book
- *
- * Revision 5.2	 1992/04/20  21:40:40  brennan
- * patch 2
- * x++ is numeric, even if x is string
- *
- * Revision 5.1	 1991/12/05  07:55:50  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: execute.c,v 1.42 2017/10/17 01:06:18 tom Exp $
+ */
 
 #include "mawk.h"
 #include "files.h"
@@ -113,15 +36,8 @@ static char dz_msg[] = "division by zero";
 #define	 CHECK_DIVZERO(x) do { if ((x) == 0.0 ) rt_error(dz_msg); } while (0)
 #endif
 
-#ifdef	 DEBUG
-#define	 inc_sp()   if( ++sp == eval_stack+EVAL_STACK_SIZE )\
-			 eval_overflow()
-#else
-
-/* If things are working, the eval stack should not overflow */
-
-#define inc_sp()    sp++
-#endif
+#define	 inc_sp()   if ( ++sp == stack_danger) eval_overflow()
+#define  dec_sp()   if ( sp-- == (stack_base - 1)) eval_underflow()
 
 #define	 SAFETY	   16
 #define	 DANGER	   (EVAL_STACK_SIZE-SAFETY)
@@ -133,13 +49,17 @@ CELL eval_stack[EVAL_STACK_SIZE];
 static CELL *stack_base = eval_stack;
 static CELL *stack_danger = eval_stack + DANGER;
 
-#ifdef	DEBUG
 static void
 eval_overflow(void)
 {
     overflow("eval stack", EVAL_STACK_SIZE);
 }
-#endif
+
+static void
+eval_underflow(void)
+{
+    bozo("eval stack underflow");
+}
 
 /* holds info for array loops (on a stack) */
 typedef struct aloop_state {
@@ -281,7 +201,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		    }
 		}
 	    }
-	    /* fall thru */
+	    /* FALLTHRU */
 
 	case _PUSHA:
 	case A_PUSHA:
@@ -484,7 +404,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	case _POP:
 	    cell_destroy(sp);
-	    sp--;
+	    dec_sp();
 	    break;
 
 	case _ASSIGN:
@@ -495,7 +415,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    /* don't propagate type C_MBSTRN */
 	    if (sp->type == C_MBSTRN)
 		check_strnum(sp);
-	    sp--;
+	    dec_sp();
 	    cell_destroy(((CELL *) sp->ptr));
 	    cellcpy(sp, cellcpy(sp->ptr, sp + 1));
 	    cell_destroy(sp + 1);
@@ -505,7 +425,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    /* assign to a field  */
 	    if (sp->type == C_MBSTRN)
 		check_strnum(sp);
-	    sp--;
+	    dec_sp();
 	    field_assign((CELL *) sp->ptr, sp + 1);
 	    cell_destroy(sp + 1);
 	    cellcpy(sp, (CELL *) sp->ptr);
@@ -521,7 +441,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK		/* specific to V7 and XNX23A */
 	    clrerr();
 #endif
-	    cp->dval += (sp--)->dval;
+	    cp->dval += sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -538,7 +459,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    cp->dval -= (sp--)->dval;
+	    cp->dval -= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -555,7 +477,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    cp->dval *= (sp--)->dval;
+	    cp->dval *= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -577,7 +500,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    cp->dval /= (sp--)->dval;
+	    cp->dval /= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -596,7 +520,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    CHECK_DIVZERO(sp->dval);
 #endif
 
-	    cp->dval = fmod(cp->dval, (sp--)->dval);
+	    cp->dval = fmod(cp->dval, sp->dval);
+	    dec_sp();
 	    sp->type = C_DOUBLE;
 	    sp->dval = cp->dval;
 	    break;
@@ -607,7 +532,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    cp = (CELL *) (sp - 1)->ptr;
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
-	    cp->dval = pow(cp->dval, (sp--)->dval);
+	    cp->dval = pow(cp->dval, sp->dval);
+	    dec_sp();
 	    sp->type = C_DOUBLE;
 	    sp->dval = cp->dval;
 	    break;
@@ -622,7 +548,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    tc.dval += (sp--)->dval;
+	    tc.dval += sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -639,7 +566,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    tc.dval -= (sp--)->dval;
+	    tc.dval -= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -656,7 +584,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    tc.dval *= (sp--)->dval;
+	    tc.dval *= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -678,7 +607,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 #ifdef SW_FP_CHECK
 	    clrerr();
 #endif
-	    tc.dval /= (sp--)->dval;
+	    tc.dval /= sp->dval;
+	    dec_sp();
 #ifdef SW_FP_CHECK
 	    fpcheck();
 #endif
@@ -697,7 +627,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    CHECK_DIVZERO(sp->dval);
 #endif
 
-	    tc.dval = fmod(tc.dval, (sp--)->dval);
+	    tc.dval = fmod(tc.dval, sp->dval);
+	    dec_sp();
 	    sp->type = C_DOUBLE;
 	    sp->dval = tc.dval;
 	    field_assign(cp, &tc);
@@ -708,14 +639,15 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		cast1_to_d(sp);
 	    cp = (CELL *) (sp - 1)->ptr;
 	    cast1_to_d(cellcpy(&tc, cp));
-	    tc.dval = pow(tc.dval, (sp--)->dval);
+	    tc.dval = pow(tc.dval, sp->dval);
+	    dec_sp();
 	    sp->type = C_DOUBLE;
 	    sp->dval = tc.dval;
 	    field_assign(cp, &tc);
 	    break;
 
 	case _ADD:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 #ifdef SW_FP_CHECK
@@ -728,7 +660,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case _SUB:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 #ifdef SW_FP_CHECK
@@ -741,7 +673,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case _MUL:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 #ifdef SW_FP_CHECK
@@ -754,7 +686,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case _DIV:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 
@@ -772,7 +704,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case _MOD:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 
@@ -784,7 +716,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case _POW:
-	    sp--;
+	    dec_sp();
 	    if (TEST2(sp) != TWO_DOUBLES)
 		cast2_to_d(sp);
 	    sp[0].dval = pow(sp[0].dval, sp[1].dval);
@@ -861,7 +793,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		char *str1, *str2;
 		STRING *b;
 
-		sp--;
+		dec_sp();
 		if (TEST2(sp) != TWO_STRINGS)
 		    cast2_to_s(sp);
 		str1 = string(sp)->str;
@@ -968,7 +900,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    else
 		cdp++;
 	    cell_destroy(sp);
-	    sp--;
+	    dec_sp();
 	    break;
 
 	case _JZ:
@@ -978,7 +910,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    else
 		cdp++;
 	    cell_destroy(sp);
-	    sp--;
+	    dec_sp();
 	    break;
 
 	case _LJZ:
@@ -989,7 +921,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		cdp += cdp->op;
 	    } else {
 		/* pop and don't jump */
-		sp--;
+		dec_sp();
 		cdp++;
 	    }
 	    break;
@@ -1002,7 +934,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		cdp += cdp->op;
 	    } else {
 		/* pop and don't jump */
-		sp--;
+		dec_sp();
 		cdp++;
 	    }
 	    break;
@@ -1010,37 +942,43 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    /*  the relation operations */
 	    /*  compare() makes sure string ref counts are OK */
 	case _EQ:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t == 0 ? 1.0 : 0.0;
 	    break;
 
 	case _NEQ:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t ? 1.0 : 0.0;
 	    break;
 
 	case _LT:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t < 0 ? 1.0 : 0.0;
 	    break;
 
 	case _LTE:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t <= 0 ? 1.0 : 0.0;
 	    break;
 
 	case _GT:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t > 0 ? 1.0 : 0.0;
 	    break;
 
 	case _GTE:
-	    t = compare(--sp);
+	    dec_sp();
+	    t = compare(sp);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t >= 0 ? 1.0 : 0.0;
 	    break;
@@ -1058,10 +996,9 @@ execute(INST * cdp,		/* code ptr, start execution here */
 			    : 0.0);
 
 		break /* the case */ ;
-	    } else {
-		cellcpy(sp, field);
-		/* and FALL THRU */
 	    }
+	    cellcpy(sp, field);
+	    /* FALLTHRU */
 
 	case _MATCH1:
 	    /* does expr at sp[0] match RE at cdp */
@@ -1079,7 +1016,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    /* does sp[-1] match sp[0] as re */
 	    cast_to_RE(sp);
 
-	    if ((--sp)->type < C_STRING)
+	    dec_sp();
+	    if (sp->type < C_STRING)
 		cast1_to_s(sp);
 	    t = REtest(string(sp)->str,
 		       string(sp)->len,
@@ -1092,7 +1030,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    break;
 
 	case A_LENGTH:
-	    sp--;
+	    dec_sp();
 	    sp->type = C_DOUBLE;
 	    sp->dval = (double) (((ARRAY) ((sp + 0)->ptr))->size);
 	    break;
@@ -1102,7 +1040,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       sp[-1]  is an expression
 
 	       we compute       (expression in array)  */
-	    sp--;
+	    dec_sp();
 	    cp = array_find((sp + 1)->ptr, sp, NO_CREATE);
 	    cell_destroy(sp);
 	    sp->type = C_DOUBLE;
@@ -1122,7 +1060,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case DEL_A:
 	    /* free all the array at once */
 	    array_clear(sp->ptr);
-	    sp--;
+	    dec_sp();
 	    break;
 
 	    /* form a multiple array index */
@@ -1134,8 +1072,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    if (sp->type != C_DOUBLE)
 		cast1_to_d(sp);
 	    exit_code = d_to_i(sp->dval);
-	    sp--;
-	    /* fall thru */
+	    dec_sp();
+	    /* FALLTHRU */
 
 	case _EXIT0:
 
@@ -1279,7 +1217,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case _RET0:
 	    inc_sp();
 	    sp->type = C_NOINIT;
-	    /* fall thru */
+	    /* FALLTHRU */
 
 	case _RET:
 
@@ -1322,7 +1260,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		t = fbp->nargs - a_args;	/* t is number of locals */
 		while (t > 0) {
 		    t--;
-		    sp++;
+		    inc_sp();
 		    type_p++;
 		    sp->type = C_NOINIT;
 		    if ((type_p) != 0 && (*type_p == ST_LOCAL_ARRAY))
@@ -1347,15 +1285,17 @@ execute(INST * cdp,		/* code ptr, start execution here */
 			}
 
 			type_p--;
-			sp--;
+			dec_sp();
 
 		    }
 		    while (sp >= nfp);
 
-		    cellcpy(++sp, cp);
+		    inc_sp();
+		    cellcpy(sp, cp);
 		    cell_destroy(cp);
-		} else
-		    sp++;	/* no arguments passed */
+		} else {
+		    inc_sp();	/* no arguments passed */
+		}
 	    }
 	    break;
 
@@ -1482,13 +1422,13 @@ cellcpy(CELL *target, CELL *source)
 
     case C_STRNUM:
 	target->dval = source->dval;
-	/* fall thru */
+	/* FALLTHRU */
 
     case C_REPL:
     case C_MBSTRN:
     case C_STRING:
 	string(source)->ref_cnt++;
-	/* fall thru */
+	/* FALLTHRU */
 
     case C_RE:
 	target->ptr = source->ptr;

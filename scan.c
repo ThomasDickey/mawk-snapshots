@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2016,2017, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1996,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.43 2016/09/30 23:37:35 tom Exp $
+ * $MawkId: scan.c,v 1.44 2017/10/17 01:05:54 tom Exp $
  */
 
 #include  "mawk.h"
@@ -243,7 +243,7 @@ eat_nl(void)			/* eat all space including newlines */
 
 	case SC_NL:
 	    lineno++;
-	    /* fall thru  */
+	    /* FALLTHRU  */
 
 	case SC_SPACE:
 	    break;
@@ -637,7 +637,7 @@ yylex(void)
 	    case ST_NR:
 		NR_flag = 1;
 		stp->type = ST_VAR;
-		/* fall thru */
+		/* FALLTHRU */
 
 	    case ST_VAR:
 	    case ST_ARRAY:
@@ -982,7 +982,7 @@ collect_string(void)
 
 	case SC_NL:
 	    p[-1] = 0;
-	    /* fall thru */
+	    /* FALLTHRU */
 
 	case 0:		/* unterminated string */
 	    compile_error(
@@ -1089,7 +1089,7 @@ collect_RE(void)
 
 	case SC_NL:
 	    p[-1] = 0;
-	    /* fall thru */
+	    /* FALLTHRU */
 
 	case 0:		/* unterminated re */
 	    compile_error(

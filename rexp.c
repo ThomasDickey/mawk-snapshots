@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2013,2016, Thomas E. Dickey
+copyright 2008-2016,2017, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.20 2016/09/29 00:28:04 tom Exp $
+ * $MawkId: rexp.c,v 1.21 2017/10/17 01:19:15 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -146,9 +146,9 @@ REcompile(char *re, size_t len)
 		    RE_panic("values still on machine stack");
 		}
 	    }
+	    /* FALLTHRU */
 
-	    /*  otherwise  fall  thru to default
-	       which is operator case  */
+	    /*  otherwise, default is operator case  */
 
 	default:
 
