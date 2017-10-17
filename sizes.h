@@ -1,6 +1,6 @@
 /********************************************
 sizes.h
-copyright 2009,2010.  Thomas E. Dickey
+copyright 2009-2014,2017  Thomas E. Dickey
 copyright 1991-1995,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,43 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.10 2014/08/14 23:34:44 mike Exp $
- * @Log: sizes.h,v @
- * Revision 1.8  1995/10/14  22:09:51  mike
- * getting MAX__INT from values.h didn't really work since the value was
- * unusable in an #if MAX__INT <= 0x7fff
- * at least it didn't work under sunos -- so use of values.h is a goner
- *
- * Revision 1.7  1995/06/18  19:17:51  mike
- * Create a type Int which on most machines is an int, but on machines
- * with 16bit ints, i.e., the PC is a long.  This fixes implicit assumption
- * that int==long.
- *
- * Revision 1.6  1994/10/10  01:39:01  mike
- * get MAX__INT from limits.h or values.h
- *
- * Revision 1.5  1994/10/08  19:15:53  mike
- * remove SM_DOS
- *
- * Revision 1.4  1994/09/25  23:00:49  mike
- * remove #if 0
- *
- * Revision 1.3  1993/07/15  23:56:15  mike
- * general cleanup
- *
- * Revision 1.2  1993/07/04  12:52:13  mike
- * start on autoconfig changes
- *
- * Revision 5.3  1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.2  1992/08/27  03:20:08  mike
- * patch2: increase A_HASH_PRIME
- *
- * Revision 5.1  1991/12/05  07:59:35  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: sizes.h,v 1.11 2017/10/17 00:43:54 tom Exp $
+ */
 
 /*  sizes.h  */
 
@@ -85,7 +50,7 @@ typedef unsigned UInt;
 #define  Max_UInt  MAX__UINT
 #endif
 
-#define EVAL_STACK_SIZE  256	/* initial size , can grow */
+#define EVAL_STACK_SIZE  1024	/* initial size , can grow */
 
 /*
  * FBANK_SZ, the number of fields at startup, must be a power of 2.

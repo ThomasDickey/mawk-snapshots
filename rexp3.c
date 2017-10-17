@@ -1,6 +1,6 @@
 /********************************************
 rexp3.c
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2016,2017, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.39 2016/09/28 21:25:25 tom Exp $
+ * $MawkId: rexp3.c,v 1.40 2017/10/17 01:19:15 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -30,7 +30,7 @@ the GNU General Public License, version 2, 1991.
 	stackp->u = (ux); \
 } while(0)
 
-#define	  CASE_UANY(x)	case  x + U_OFF :  case	 x + U_ON
+#define	CASE_UANY(x) case (x)+U_OFF:  /* FALLTHRU */ case (x)+U_ON
 
 #define TR_STR(s) TRACE((" str:%i len:%lu\n", ((s) ? (int) ((s) - str) : -99), (unsigned long) *lenp))
 #define RE_TURN() \
@@ -397,7 +397,7 @@ REmatch(char *str,		/* string to test */
 	    m++;
 	    RE_CASE();
 	}
-	/* fall thru */
+	/* FALLTHRU */
 
       CASE_UANY(M_2JB):	/* take the jump branch */
 	push(m + 1, s, sp, ss, u_flag);

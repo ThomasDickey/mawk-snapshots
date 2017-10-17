@@ -1,6 +1,6 @@
 /********************************************
 nstd.h
-copyright 2009-2010,2012 Thomas E. Dickey
+copyright 2009-2012,2017 Thomas E. Dickey
 copyright 1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -18,7 +18,7 @@ the GNU General Public License, version 2, 1991.
 */
 
 /*
- * $MawkId: nstd.h,v 1.10 2012/11/29 09:44:12 tom Exp $
+ * $MawkId: nstd.h,v 1.11 2017/10/17 01:19:15 tom Exp $
  * @Log: nstd.h,v @
  * Revision 1.6  1995/06/18  19:42:22  mike
  * Remove some redundant declarations and add some prototypes
@@ -66,7 +66,11 @@ typedef unsigned size_t;
 
 /* if have to diddle with errno to get errors from the math library */
 #ifndef STDC_MATHERR
-#define STDC_MATHERR   (defined(FPE_TRAPS_ON) && !defined(HAVE_MATHERR))
+#if (defined(FPE_TRAPS_ON) && !defined(HAVE_MATHERR))
+#define STDC_MATHERR   1
+#else
+#define STDC_MATHERR   0
+#endif
 #endif
 
 #endif /* NSTD_H */

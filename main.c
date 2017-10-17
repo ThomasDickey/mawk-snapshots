@@ -1,6 +1,6 @@
 /********************************************
 main.c
-copyright 2009-2012,2013 Thomas E. Dickey
+copyright 2009-2014,2017 Thomas E. Dickey
 copyright 1991-1995,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,35 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: main.c,v 1.30 2014/08/15 00:29:34 mike Exp $
- * @Log: main.c,v @
- * Revision 1.4  1995/06/09  22:57:19  mike
- * parse() no longer returns on error
- *
- * Revision 1.3  1995/06/06  00:18:32  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.2  1993/07/17  00:45:19  mike
- * indent
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:16  mike
- * move source to cvs
- *
- * Revision 5.4	 1993/02/13  21:57:27  mike
- * merge patch3
- *
- * Revision 5.3	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.2.1.1  1993/01/15	 03:33:44  mike
- * patch3: safer double to int conversion
- *
- * Revision 5.2	 1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.1	 1991/12/05  07:56:14  brennan
- * 1.1 pre-release
- *
+ * $MawkId: main.c,v 1.31 2017/10/17 00:41:48 tom Exp $
  */
 
 /*  main.c  */

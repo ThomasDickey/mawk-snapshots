@@ -1,6 +1,6 @@
 /********************************************
 rexp2.c
-copyright 2009-2014,2016, Thomas E. Dickey
+copyright 2009-2016,2017, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.25 2016/09/28 21:26:38 tom Exp $
+ * $MawkId: rexp2.c,v 1.26 2017/10/17 01:19:15 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -155,7 +155,7 @@ slow_push(
 	} while(0)
 #endif
 
-#define	  CASE_UANY(x)	case  x + U_OFF :  case	 x + U_ON
+#define	CASE_UANY(x) case (x)+U_OFF:  /* FALLTHRU */ case (x)+U_ON
 
 /*
  * test if str ~ /machine/
@@ -371,7 +371,7 @@ REtest(char *str,		/* string to test */
 	    m++;
 	    RE_CASE();
 	}
-	/* fall thru */
+	/* FALLTHRU */
 
       CASE_UANY(M_2JB):	/* take the jump branch */
 	/* don't stack an ACCEPT */
