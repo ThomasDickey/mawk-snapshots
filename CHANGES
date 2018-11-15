@@ -1,6 +1,13 @@
--- $MawkId: CHANGES,v 1.258 2017/10/17 08:21:44 tom Exp $
+-- $MawkId: CHANGES,v 1.261 2018/11/15 01:37:56 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20181114
+	+ revert a change for memory-leaks which made the forced-exit via a
+	  user function inconsistent with earlier versions (report by Sihera
+	  Andre).
+	+ amend a change for memory-leaks to avoid a double-free (Original-Mawk
+	  #56).
 
 20171017
 	+ add Debian compile/link flags to test-package.

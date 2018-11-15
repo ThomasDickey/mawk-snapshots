@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.42 2014/12/07 00:34:27 Ismael.Luceno Exp $
+ * $MawkId: fin.c,v 1.43 2018/11/15 00:31:57 tom Exp $
  * @Log: fin.c,v @
  * Revision 1.10  1995/12/24  22:23:22  mike
  * remove errmsg() from inside FINopen
@@ -475,7 +475,6 @@ static FIN *
 next_main(int open_flag)	/* called by open_main() if on */
 {
     register CELL *cp;
-    CELL *cp0;
     CELL argc;			/* copy of ARGC */
     CELL c_argi;		/* cell copy of argi */
     CELL argval;		/* copy of ARGV[c_argi] */
@@ -499,16 +498,12 @@ next_main(int open_flag)	/* called by open_main() if on */
 	c_argi.dval = argi;
 	argi += 1.0;
 
-	if (!(cp0 = array_find(Argv, &c_argi, NO_CREATE)))
+	if (!(cp = array_find(Argv, &c_argi, NO_CREATE)))
 	    continue;		/* its deleted */
 
 	/* make a copy so we can cast w/o side effect */
 	cell_destroy(&argval);
-	cp = cellcpy(&argval, cp0);
-#ifndef NO_LEAKS
-	cell_destroy(cp0);
-#endif
-
+	cp = cellcpy(&argval, cp);
 	if (cp->type < C_STRING)
 	    cast1_to_s(cp);
 	if (string(cp)->len == 0) {
