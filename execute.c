@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2014,2017, Thomas E. Dickey
+copyright 2008-2017,2018, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.43 2018/11/15 01:20:01 tom Exp $
+ * $MawkId: execute.c,v 1.44 2018/11/15 01:20:01 tom Exp $
  */
 
 #include "mawk.h"

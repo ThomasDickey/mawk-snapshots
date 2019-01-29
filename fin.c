@@ -1,6 +1,6 @@
 /********************************************
 fin.c
-copyright 2008-2012,2014.  Thomas E. Dickey
+copyright 2008-2014,2018.  Thomas E. Dickey
 copyright 1991-1995,1996.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,63 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.43 2018/11/15 00:31:57 tom Exp $
- * @Log: fin.c,v @
- * Revision 1.10  1995/12/24  22:23:22  mike
- * remove errmsg() from inside FINopen
- *
- * Revision 1.9  1995/06/06  00:18:29  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.8  1994/12/13  00:26:35  mike
- * rt_nr and rt_fnr for run-time error messages
- *
- * Revision 1.7  1994/12/11  23:25:05  mike
- * -Wi option
- *
- * Revision 1.6  1994/12/11  22:14:15  mike
- * remove THINK_C #defines.  Not a political statement, just no indication
- * that anyone ever used it.
- *
- * Revision 1.5  1994/10/08  19:15:42  mike
- * remove SM_DOS
- *
- * Revision 1.4  1993/07/17  13:22:55  mike
- * indent and general code cleanup
- *
- * Revision 1.3  1993/07/15  13:26:55  mike
- * SIZE_T and indent
- *
- * Revision 1.2	 1993/07/04  12:51:57  mike
- * start on autoconfig changes
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:13  mike
- * move source to cvs
- *
- * Revision 5.7	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.6	 1992/12/17  02:48:01  mike
- * 1.1.2d changes for DOS
- *
- * Revision 5.5	 1992/07/28  15:11:30  brennan
- * minor change in finding eol, needed for MsDOS
- *
- * Revision 5.4	 1992/07/10  16:17:10  brennan
- * MsDOS: remove NO_BINMODE macro
- *
- * Revision 5.3	 1992/07/08  16:14:27  brennan
- * FILENAME and FNR retain last values in the
- * END block.
- *
- * Revision 5.2	 1992/02/21  13:30:08  brennan
- * fixed bug that free'd FILENAME twice if
- * command line was var=value only
- *
- * Revision 5.1	 91/12/05  07:56:02  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: fin.c,v 1.44 2018/11/15 00:31:57 tom Exp $
+ */
 
 /* fin.c */
 
