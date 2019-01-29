@@ -1,4 +1,4 @@
--- $MawkId: README,v 1.5 2010/05/13 21:52:05 tom Exp $
+-- $MawkId: README,v 1.6 2019/01/29 02:05:45 tom Exp $
 -- vile:txtmode fc=78
 
 mawk -- an implementation of new/posix awk
@@ -10,8 +10,8 @@ This file gives more specific information.
 Send bug reports, comments, questions, etc. to 
 
 	Thomas E. Dickey <dickey@invisible-island.net>
-	http://invisible-island.net/mawk/
-	ftp://invisible-island.net/mawk/
+	https://invisible-island.net/mawk/
+	ftp://ftp.invisible-island.net/mawk/
 
 -------------------------------------------------------------------------------
 
