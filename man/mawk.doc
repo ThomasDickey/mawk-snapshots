@@ -97,10 +97,10 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        tion definitions.
 
        A pattern can be:
-              BBEEGGIINN
-              EENNDD
-              expression
-              expression , expression
+            BBEEGGIINN
+            EENNDD
+            expression
+            expression , expression
 
        One, but not both, of _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} can be omitted.  If _{_a_c_t_i_o_n_}  is
        omitted  it is implicitly { print }.  If _p_a_t_t_e_r_n is omitted, then it is
@@ -118,21 +118,21 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
        The following statements control program flow inside blocks.
 
-              iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t
+            iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t
 
-              iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t eellssee _s_t_a_t_e_m_e_n_t
+            iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t eellssee _s_t_a_t_e_m_e_n_t
 
-              wwhhiillee ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t
+            wwhhiillee ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t
 
-              ddoo _s_t_a_t_e_m_e_n_t wwhhiillee ( _e_x_p_r )
+            ddoo _s_t_a_t_e_m_e_n_t wwhhiillee ( _e_x_p_r )
 
-              ffoorr ( _o_p_t___e_x_p_r ; _o_p_t___e_x_p_r ; _o_p_t___e_x_p_r ) _s_t_a_t_e_m_e_n_t
+            ffoorr ( _o_p_t___e_x_p_r ; _o_p_t___e_x_p_r ; _o_p_t___e_x_p_r ) _s_t_a_t_e_m_e_n_t
 
-              ffoorr ( _v_a_r iinn _a_r_r_a_y ) _s_t_a_t_e_m_e_n_t
+            ffoorr ( _v_a_r iinn _a_r_r_a_y ) _s_t_a_t_e_m_e_n_t
 
-              ccoonnttiinnuuee
+            ccoonnttiinnuuee
 
-              bbrreeaakk
+            bbrreeaakk
 
    22.. DDaattaa ttyyppeess,, ccoonnvveerrssiioonn aanndd ccoommppaarriissoonn
        There are two basic data types, numeric and string.  Numeric  constants
@@ -182,12 +182,12 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        typed string, and the value of x will be converted to string if  neces-
        sary  and  concatenated  with  "hello".  (Of course, the value and type
        stored in x is not changed by any conversions.)  A string expression is
-       converted  to numeric using its longest numeric prefix as with _a_t_o_f(3).
+       converted  to numeric using its longest numeric prefix as with aattooff(3).
        A numeric expression is converted to  string  by  replacing  _e_x_p_r  with
        sspprriinnttff((CCOONNVVFFMMTT,  _e_x_p_r),  unless  _e_x_p_r  can  be represented on the host
        machine as an exact integer  then  it  is  converted  to  sspprriinnttff("%d",
        _e_x_p_r).   SSpprriinnttff(()) is an AWK built-in that duplicates the functionality
-       of _s_p_r_i_n_t_f(3), and CCOONNVVFFMMTT is a built-in  variable  used  for  internal
+       of sspprriinnttff(3), and CCOONNVVFFMMTT is a built-in  variable  used  for  internal
        conversion  from  number to string and initialized to "%.6g".  Explicit
        type conversions can be  forced,  _e_x_p_r  ""  is  string  and  _e_x_p_r+0  is
        numeric.
@@ -222,47 +222,47 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        passed  as  an  argument  to a built-in function that expects a regular
        expression argument.
 
-       AWK uses extended regular expressions as with  _e_g_r_e_p(1).   The  regular
-       expression  metacharacters, i.e., those with special meaning in regular
-       expressions are
+       AWK uses extended regular expressions as with the --EE option of ggrreepp(1).
+       The regular expression metacharacters, i.e., those with special meaning
+       in regular expressions are
 
-             ^ $ . [ ] | ( ) * + ?
+            \ ^ $ . [ ] | ( ) * + ?
 
        Regular expressions are built up from characters as follows:
 
-              _c            matches any non-metacharacter _c.
+            _c            matches any non-metacharacter _c.
 
-              \_c           matches a character  defined  by  the  same  escape
-                           sequences  used  in string constants or the literal
-                           character _c if \_c is not an escape sequence.
+            \_c           matches  a  character  defined  by  the  same  escape
+                         sequences  used  in  string  constants or the literal
+                         character _c if \_c is not an escape sequence.
 
-              .            matches any character (including newline).
+            .            matches any character (including newline).
 
-              ^            matches the front of a string.
+            ^            matches the front of a string.
 
-              $            matches the back of a string.
+            $            matches the back of a string.
 
-              [c1c2c3...]  matches any character in the class c1c2c3... .   An
-                           interval  of  characters  is denoted c1-c2 inside a
-                           class [...].
+            [c1c2c3...]  matches any character in the  class  c1c2c3... .   An
+                         interval  of  characters  is  denoted  c1-c2 inside a
+                         class [...].
 
-              [^c1c2c3...] matches any character not in the class c1c2c3...
+            [^c1c2c3...] matches any character not in the class c1c2c3...
 
        Regular expressions are built up from other regular expressions as fol-
        lows:
 
-              _r1_r2         matches  _r1  followed immediately by _r2 (concatena-
-                           tion).
+            _r1_r2         matches  _r1  followed  immediately  by _r2 (concatena-
+                         tion).
 
-              _r1 | _r2      matches _r1 or _r2 (alternation).
+            _r1 | _r2      matches _r1 or _r2 (alternation).
 
-              _r*           matches _r repeated zero or more times.
+            _r*           matches _r repeated zero or more times.
 
-              _r+           matches _r repeated one or more times.
+            _r+           matches _r repeated one or more times.
 
-              _r?           matches _r zero or once.
+            _r?           matches _r zero or once.
 
-              (_r)          matches _r, providing grouping.
+            (_r)          matches _r, providing grouping.
 
        The increasing precedence of operators  is  alternation,  concatenation
        and unary (*, + or ?).
@@ -328,21 +328,21 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        New expressions are composed with the following operators in  order  of
        increasing precedence.
 
-              _a_s_s_i_g_n_m_e_n_t          =  +=  -=  *=  /=  %=  ^=
-              _c_o_n_d_i_t_i_o_n_a_l         ?  :
-              _l_o_g_i_c_a_l _o_r          ||
-              _l_o_g_i_c_a_l _a_n_d         &&
-              _a_r_r_a_y _m_e_m_b_e_r_s_h_i_p    iinn
-              _m_a_t_c_h_i_n_g       ~   !~
-              _r_e_l_a_t_i_o_n_a_l          <  >   <=  >=  ==  !=
-              _c_o_n_c_a_t_e_n_a_t_i_o_n       (no explicit operator)
-              _a_d_d _o_p_s             +  -
-              _m_u_l _o_p_s             *  /  %
-              _u_n_a_r_y               +  -
-              _l_o_g_i_c_a_l _n_o_t         !
-              _e_x_p_o_n_e_n_t_i_a_t_i_o_n      ^
-              _i_n_c _a_n_d _d_e_c         ++ -- (both post and pre)
-              _f_i_e_l_d               $
+            _a_s_s_i_g_n_m_e_n_t          =  +=  -=  *=  /=  %=  ^=
+            _c_o_n_d_i_t_i_o_n_a_l         ?  :
+            _l_o_g_i_c_a_l _o_r          ||
+            _l_o_g_i_c_a_l _a_n_d         &&
+            _a_r_r_a_y _m_e_m_b_e_r_s_h_i_p    iinn
+            _m_a_t_c_h_i_n_g       ~   !~
+            _r_e_l_a_t_i_o_n_a_l          <  >   <=  >=  ==  !=
+            _c_o_n_c_a_t_e_n_a_t_i_o_n       (no explicit operator)
+            _a_d_d _o_p_s             +  -
+            _m_u_l _o_p_s             *  /  %
+            _u_n_a_r_y               +  -
+            _l_o_g_i_c_a_l _n_o_t         !
+            _e_x_p_o_n_e_n_t_i_a_t_i_o_n      ^
+            _i_n_c _a_n_d _d_e_c         ++ -- (both post and pre)
+            _f_i_e_l_d               $
 
        Assignment, conditional and exponentiation associate right to left; the
        other operators associate left to right.  Any expression can be  paren-
@@ -381,125 +381,123 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        The following variables are built-in  and  initialized  before  program
        execution.
 
-              AARRGGCC      number of command line arguments.
+            AARRGGCC      number of command line arguments.
 
-              AARRGGVV      array of command line arguments, 0..ARGC-1.
+            AARRGGVV      array of command line arguments, 0..ARGC-1.
 
-              CCOONNVVFFMMTT   format  for  internal conversion of numbers to string,
-                        initially = "%.6g".
+            CCOONNVVFFMMTT   format  for  internal  conversion  of numbers to string,
+                      initially = "%.6g".
 
-              EENNVVIIRROONN   array indexed by environment variables.   An  environ-
-                        ment  string,  _v_a_r_=_v_a_l_u_e  is  stored as EENNVVIIRROONN[_v_a_r] =
-                        _v_a_l_u_e.
+            EENNVVIIRROONN   array indexed by environment variables.  An  environment
+                      string, _v_a_r_=_v_a_l_u_e is stored as EENNVVIIRROONN[_v_a_r] = _v_a_l_u_e.
 
-              FFIILLEENNAAMMEE  name of the current input file.
+            FFIILLEENNAAMMEE  name of the current input file.
 
-              FFNNRR       current record number in FFIILLEENNAAMMEE.
+            FFNNRR       current record number in FFIILLEENNAAMMEE.
 
-              FFSS        splits records into fields as a regular expression.
+            FFSS        splits records into fields as a regular expression.
 
-              NNFF        number of fields in the current record.
+            NNFF        number of fields in the current record.
 
-              NNRR        current record number in the total input stream.
+            NNRR        current record number in the total input stream.
 
-              OOFFMMTT      format for printing numbers; initially = "%.6g".
+            OOFFMMTT      format for printing numbers; initially = "%.6g".
 
-              OOFFSS       inserted between fields on output, initially = " ".
+            OOFFSS       inserted between fields on output, initially = " ".
 
-              OORRSS       terminates each record on output, initially = "\n".
+            OORRSS       terminates each record on output, initially = "\n".
 
-              RRLLEENNGGTTHH   length set by the last call to the built-in  function,
-                        mmaattcchh(()).
+            RRLLEENNGGTTHH   length  set  by  the last call to the built-in function,
+                      mmaattcchh(()).
 
-              RRSS        input record separator, initially = "\n".
+            RRSS        input record separator, initially = "\n".
 
-              RRSSTTAARRTT    index set by the last call to mmaattcchh(()).
+            RRSSTTAARRTT    index set by the last call to mmaattcchh(()).
 
-              SSUUBBSSEEPP    used  to  build multiple array subscripts, initially =
-                        "\034".
+            SSUUBBSSEEPP    used to build multiple  array  subscripts,  initially  =
+                      "\034".
 
    88.. BBuuiilltt--iinn ffuunnccttiioonnss
        String functions
 
-              gsub(_r_,_s_,_t)  gsub(_r_,_s)
-                     Global substitution, every match of regular expression  _r
-                     in  variable  _t  is  replaced by string _s.  The number of
-                     replacements is returned.  If _t is omitted, $$00  is  used.
-                     An  &  in  the  replacement  string  _s is replaced by the
-                     matched substring of _t.  \& and \\ put  literal & and  \,
-                     respectively, in the replacement string.
+            gsub(_r_,_s_,_t)  gsub(_r_,_s)
+                   Global substitution, every match of regular expression _r in
+                   variable _t is replaced by string _s.  The number of replace-
+                   ments  is  returned.  If _t is omitted, $$00 is used.  An & in
+                   the replacement string _s is replaced by  the  matched  sub-
+                   string of _t.  \& and \\ put  literal & and \, respectively,
+                   in the replacement string.
 
-              index(_s_,_t)
-                     If  _t  is  a  substring  of  _s, then the position where _t
-                     starts is returned, else 0 is returned.  The first  char-
-                     acter of _s is in position 1.
+            index(_s_,_t)
+                   If _t is a substring of _s, then the position where _t  starts
+                   is  returned, else 0 is returned.  The first character of _s
+                   is in position 1.
 
-              length(_s)
-                     Returns the length of string or array.  _s.
+            length(_s)
+                   Returns the length of string or array.  _s.
 
-              match(_s_,_r)
-                     Returns  the  index of the first longest match of regular
-                     expression _r in string _s.  Returns 0 if no match.   As  a
-                     side  effect, RRSSTTAARRTT is set to the return value.  RRLLEENNGGTTHH
-                     is set to the length of the match or -1 if no match.   If
-                     the  empty  string is matched, RRLLEENNGGTTHH is set to 0, and 1
-                     is returned if the match is at the front, and length(_s)+1
-                     is returned if the match is at the back.
+            match(_s_,_r)
+                   Returns the index of the first  longest  match  of  regular
+                   expression  _r  in  string  _s.  Returns 0 if no match.  As a
+                   side effect, RRSSTTAARRTT is set to the return value.  RRLLEENNGGTTHH is
+                   set  to  the length of the match or -1 if no match.  If the
+                   empty string is matched, RRLLEENNGGTTHH is set  to  0,  and  1  is
+                   returned  if  the match is at the front, and length(_s)+1 is
+                   returned if the match is at the back.
 
-              split(_s_,_A_,_r)  split(_s_,_A)
-                     String _s is split into fields by regular expression _r and
-                     the fields are loaded into array _A.  The number of fields
-                     is returned.  See section 11 below for more detail.  If _r
-                     is omitted, FFSS is used.
+            split(_s_,_A_,_r)  split(_s_,_A)
+                   String _s is split into fields by regular expression  _r  and
+                   the  fields  are loaded into array _A.  The number of fields
+                   is returned.  See section 11 below for more detail.   If  _r
+                   is omitted, FFSS is used.
 
-              sprintf(_f_o_r_m_a_t_,_e_x_p_r_-_l_i_s_t)
-                     Returns a string constructed from _e_x_p_r_-_l_i_s_t according  to
-                     _f_o_r_m_a_t.  See the description of printf() below.
+            sprintf(_f_o_r_m_a_t_,_e_x_p_r_-_l_i_s_t)
+                   Returns  a  string  constructed from _e_x_p_r_-_l_i_s_t according to
+                   _f_o_r_m_a_t.  See the description of printf() below.
 
-              sub(_r_,_s_,_t)  sub(_r_,_s)
-                     Single  substitution,  same  as gsub() except at most one
-                     substitution.
+            sub(_r_,_s_,_t)  sub(_r_,_s)
+                   Single substitution, same as gsub() except at most one sub-
+                   stitution.
 
-              substr(_s_,_i_,_n)  substr(_s_,_i)
-                     Returns the substring of string _s, starting at  index  _i,
-                     of  length _n.  If _n is omitted, the suffix of _s, starting
-                     at _i is returned.
+            substr(_s_,_i_,_n)  substr(_s_,_i)
+                   Returns  the substring of string _s, starting at index _i, of
+                   length _n.  If _n is omitted, the suffix of _s, starting at  _i
+                   is returned.
 
-              tolower(_s)
-                     Returns a copy of _s with all upper case  characters  con-
-                     verted to lower case.
+            tolower(_s)
+                   Returns  a  copy  of  _s with all upper case characters con-
+                   verted to lower case.
 
-              toupper(_s)
-                     Returns  a  copy of _s with all lower case characters con-
-                     verted to upper case.
+            toupper(_s)
+                   Returns a copy of _s with all  lower  case  characters  con-
+                   verted to upper case.
 
        Time functions
 
        These are available on systems which support the corresponding C mmkkttiimmee
        and ssttrrffttiimmee functions:
 
-              mktime(_s_p_e_c_i_f_i_c_a_t_i_o_n)
-                     converts  a  date  specification  to a timestamp with the
-                     same units as  ssyyssttiimmee.   The  date  specification  is  a
-                     string  containing  the components of the date as decimal
-                     integers:
+            mktime(_s_p_e_c_i_f_i_c_a_t_i_o_n)
+                   converts a date specification to a timestamp with the  same
+                   units  as ssyyssttiimmee.  The date specification is a string con-
+                   taining the components of the date as decimal integers:
 
-                     YYYY
-                        the year, e.g., 2012
+                   YYYY
+                      the year, e.g., 2012
 
-                     MM the month of the year starting at 1
+                   MM the month of the year starting at 1
 
-                     DD the day of the month starting at 1
+                   DD the day of the month starting at 1
 
-                     HH hour (0-23)
+                   HH hour (0-23)
 
-                     MM minute (0-59)
+                   MM minute (0-59)
 
-                     SS seconds (0-59)
+                   SS seconds (0-59)
 
-                     DST
-                        tells how to treat timezone  versus  daylight  savings
-                        time:
+                   DST
+                      tells how to  treat  timezone  versus  daylight  savings
+                      time:
 
                         positive
                            DST is in effect
@@ -512,69 +510,67 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
                            tem databases to) attempt  to determine whether DST
                            is in effect at the specified time.
 
-              strftime([_f_o_r_m_a_t [, _t_i_m_e_s_t_a_m_p [, _u_t_c ]]])
-                     formats  the  given timestamp using the format (passed to
-                     the C ssttrrffttiimmee function):
+            strftime([_f_o_r_m_a_t [, _t_i_m_e_s_t_a_m_p [, _u_t_c ]]])
+                   formats the given timestamp using the format (passed to the
+                   C ssttrrffttiimmee function):
 
-                     +o   If the _f_o_r_m_a_t parameter is missing, "%c" is used.
+                   +o   If the _f_o_r_m_a_t parameter is missing, "%c" is used.
 
-                     +o   If the _t_i_m_e_s_t_a_m_p parameter is  missing,  the  current
-                         value from ssyyssttiimmee is used.
+                   +o   If the _t_i_m_e_s_t_a_m_p  parameter  is  missing,  the  current
+                       value from ssyyssttiimmee is used.
 
-                     +o   If  the  _u_t_c  parameter  is  present and nonzero, the
-                         result is in UTC.  Otherwise local time is used.
+                   +o   If the _u_t_c parameter is present and nonzero, the result
+                       is in UTC.  Otherwise local time is used.
 
-              systime()
-                     returns the current time of day as the number of  seconds
-                     since  the  Epoch  (1970-01-01 00:00:00 UTC on POSIX sys-
-                     tems).
+            systime()
+                   returns the current time of day as the  number  of  seconds
+                   since the Epoch (1970-01-01 00:00:00 UTC on POSIX systems).
 
        Arithmetic functions
 
-              atan2(_y_,_x)     Arctan of _y/_x between -pi and pi.
+            atan2(_y_,_x)     Arctan of _y/_x between -pi and pi.
 
-              cos(_x)         Cosine function, _x in radians.
+            cos(_x)         Cosine function, _x in radians.
 
-              exp(_x)         Exponential function.
+            exp(_x)         Exponential function.
 
-              int(_x)         Returns _x truncated towards zero.
+            int(_x)         Returns _x truncated towards zero.
 
-              log(_x)         Natural logarithm.
+            log(_x)         Natural logarithm.
 
-              rand()         Returns a random number between zero and one.
+            rand()         Returns a random number between zero and one.
 
-              sin(_x)         Sine function, _x in radians.
+            sin(_x)         Sine function, _x in radians.
 
-              sqrt(_x)        Returns square root of _x.
+            sqrt(_x)        Returns square root of _x.
 
-              srand(_e_x_p_r)  srand()
-                     Seeds the random number generator,  using  the  clock  if
-                     _e_x_p_r  is  omitted,  and returns the value of the previous
-                     seed.  Srand(_e_x_p_r) is useful for repeating pseudo  random
-                     sequences.
+            srand(_e_x_p_r)  srand()
+                   Seeds  the random number generator, using the clock if _e_x_p_r
+                   is omitted, and returns the value  of  the  previous  seed.
+                   Srand(_e_x_p_r)   is   useful   for   repeating  pseudo  random
+                   sequences.
 
-                     Note: mmaawwkk is normally configured to seed the random num-
-                     ber generator from the clock at startup, making it unnec-
-                     essary  to  call srand().  This feature can be suppressed
-                     via conditional compile, or overridden using the --WWrraannddoomm
-                     option.
+                   Note: mmaawwkk is normally configured to seed the random number
+                   generator  from the clock at startup, making it unnecessary
+                   to call srand().  This feature can be suppressed via condi-
+                   tional compile, or overridden using the --WWrraannddoomm option.
 
    99.. IInnppuutt aanndd oouuttppuutt
        There are two output statements, pprriinntt and pprriinnttff.
 
-              print  writes $$00  OORRSS to standard output.
+            print  writes $$00  OORRSS to standard output.
 
-              print _e_x_p_r1, _e_x_p_r2, ..., _e_x_p_rn
-                     writes _e_x_p_r1 OOFFSS _e_x_p_r2 OOFFSS ... _e_x_p_rn OORRSS to standard out-
-                     put.  Numeric expressions are converted  to  string  with
-                     OOFFMMTT.
+            print _e_x_p_r1, _e_x_p_r2, ..., _e_x_p_rn
+                   writes  _e_x_p_r1  OOFFSS _e_x_p_r2 OOFFSS ... _e_x_p_rn OORRSS to standard out-
+                   put.  Numeric expressions  are  converted  to  string  with
+                   OOFFMMTT.
 
-              printf _f_o_r_m_a_t_, _e_x_p_r_-_l_i_s_t
-                     duplicates the printf C library function writing to stan-
-                     dard output.  The complete ANSI C  format  specifications
-                     are  recognized  with conversions %c, %d, %e, %E, %f, %g,
-                     %G, %i, %o, %s, %u, %x, %X and %%, and conversion  quali-
-                     fiers h and l.
+            printf _f_o_r_m_a_t_, _e_x_p_r_-_l_i_s_t
+                   duplicates  the  printf C library function writing to stan-
+                   dard output.  The complete ANSI C format specifications are
+                   recognized with conversions %c, %d, %e, %E, %f, %g, %G, %i,
+                   %o, %s, %u, %x, %X and %%, and conversion qualifiers h  and
+                   l.
 
        The  argument  list  to  print  or printf can optionally be enclosed in
        parentheses.  Print formats numbers using OOFFMMTT or "%d" for exact  inte-
@@ -598,24 +594,24 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
        The input function ggeettlliinnee has the following variations.
 
-              getline
-                     reads into $$00, updates the fields, NNFF, NNRR and FFNNRR.
+            getline
+                   reads into $$00, updates the fields, NNFF, NNRR and FFNNRR.
 
-              getline < _f_i_l_e
-                     reads into $$00 from _f_i_l_e, updates the fields and NNFF.
+            getline < _f_i_l_e
+                   reads into $$00 from _f_i_l_e, updates the fields and NNFF.
 
-              getline _v_a_r
-                     reads the next record into _v_a_r, updates NNRR and FFNNRR.
+            getline _v_a_r
+                   reads the next record into _v_a_r, updates NNRR and FFNNRR.
 
-              getline _v_a_r < _f_i_l_e
-                     reads the next record of _f_i_l_e into _v_a_r.
+            getline _v_a_r < _f_i_l_e
+                   reads the next record of _f_i_l_e into _v_a_r.
 
-               _c_o_m_m_a_n_d | getline
-                     pipes  a  record  from  _c_o_m_m_a_n_d  into  $$00 and updates the
-                     fields and NNFF.
+            _c_o_m_m_a_n_d | getline
+                   pipes  a record from _c_o_m_m_a_n_d into $$00 and updates the fields
+                   and NNFF.
 
-               _c_o_m_m_a_n_d | getline _v_a_r
-                     pipes a record from _c_o_m_m_a_n_d into _v_a_r.
+            _c_o_m_m_a_n_d | getline _v_a_r
+                   pipes a record from _c_o_m_m_a_n_d into _v_a_r.
 
        Getline returns 0 on end-of-file, -1 on error, otherwise 1.
 
@@ -714,9 +710,9 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        slight  difference  that RRSS is really a terminator instead of a separa-
        tor.  (OORRSS is really a terminator too).
 
-              E.g., if FFSS = ":+" and $$00 = "a::b:" , then NNFF = 3 and $$11 =  "a",
-              $$22 = "b" and $$33 = "", but if "a::b:" is the contents of an input
-              file and RRSS = ":+", then there are two records "a" and "b".
+            E.g., if FFSS = ":+" and $$00 = "a::b:" , then NNFF = 3 and $$11 = "a", $$22
+            = "b" and $$33 = "", but if "a::b:" is the contents of an input file
+            and RRSS = ":+", then there are two records "a" and "b".
 
        RRSS = " " is not special.
 
@@ -731,20 +727,20 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        for  <SPACE>  above, become space and single newlines are field separa-
        tors.
 
-              For example, if
+            For example, if
 
-              +o   a file is "a b\nc\n\n",
+            +o   a file is "a b\nc\n\n",
 
-              +o   RRSS = "\n\n+" and
+            +o   RRSS = "\n\n+" and
 
-              +o   FFSS = " ",
+            +o   FFSS = " ",
 
-              then there is one record "a b\nc" with three fields "a", "b" and
-              "c":
+            then there is one record "a b\nc" with three fields "a",  "b"  and
+            "c":
 
-              +o   Changing FFSS = "\n", gives two fields "a b" and "c";
+            +o   Changing FFSS = "\n", gives two fields "a b" and "c";
 
-              +o   changing FFSS = "", gives one field identical to the record.
+            +o   changing FFSS = "", gives one field identical to the record.
 
        If  you want lines with spaces or tabs to be considered blank, set RRSS =
        "\n([ \t]*\n)+".  For compatibility with other awks, setting  RRSS  =  ""
@@ -900,15 +896,15 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
               able  BINMODE.   The  bits of the BINMODE value tell _m_a_w_k how to
               modify the RRSS and OORRSS variables:
 
-             0  set standard input to binary mode, and if BIT-2 is unset,  set
-                RRSS to "\r\n" (CR/LF) rather than "\n" (LF).
+              0  set standard input to binary mode, and if BIT-2 is unset, set
+                 RRSS to "\r\n" (CR/LF) rather than "\n" (LF).
 
-             1  set standard output to binary mode, and if BIT-2 is unset, set
-                OORRSS to "\r\n" (CR/LF) rather than "\n" (LF).
+              1  set  standard  output  to binary mode, and if BIT-2 is unset,
+                 set OORRSS to "\r\n" (CR/LF) rather than "\n" (LF).
 
-             2  suppress the assignment to RRSS and OORRSS of CR/LF, making it pos-
-                sible  to run scripts and generate output compatible with Unix
-                line-endings.
+              2  suppress the assignment to RRSS and OORRSS  of  CR/LF,  making  it
+                 possible  to  run scripts and generate output compatible with
+                 Unix line-endings.
 
        POSIX AWK is oriented to operate on files a line at a time.  RRSS can  be
        changed  from  "\n" to another single character, but it is hard to find
@@ -1042,42 +1038,43 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
              If  this  is  set,  mmaawwkk uses its value to decide what to do with
              GNU-style long options:
 
-             allow  MMaawwkk allows the option to be checked against  the  (small)
-                    set of long options it recognizes.
+               allow  MMaawwkk allows the option to be checked against the (small)
+                      set of long options it recognizes.
 
-             error  MMaawwkk  prints  an  error  message  and  exits.  This is the
-                    default.
+               error  MMaawwkk  prints  an  error  message and exits.  This is the
+                      default.
 
-             ignore MMaawwkk ignores the option.
+               ignore MMaawwkk ignores the option.
 
-             warn   Print an warning message and otherwise ignore the option.
+               warn   Print  an  warning  message  and  otherwise  ignore  the
+                      option.
 
              If the variable is unset, mmaawwkk prints an error message and exits.
 
           WHINY_USERS
-             This is an undocumented ggaawwkk feature.   It  tells  mmaawwkk  to  sort
+             This  is  an  undocumented  ggaawwkk  feature.  It tells mmaawwkk to sort
              array indices before it starts to iterate over the elements of an
              array.
 
 SSEEEE AALLSSOO
-       _e_g_r_e_p(1)
+       ggrreepp(1)
 
-       Aho, Kernighan and Weinberger, _T_h_e _A_W_K _P_r_o_g_r_a_m_m_i_n_g  _L_a_n_g_u_a_g_e,  Addison-
-       Wesley  Publishing, 1988, (the AWK book), defines the language, opening
-       with a tutorial and advancing to many interesting programs  that  delve
-       into  issues of software design and analysis relevant to programming in
+       Aho,  Kernighan  and Weinberger, _T_h_e _A_W_K _P_r_o_g_r_a_m_m_i_n_g _L_a_n_g_u_a_g_e, Addison-
+       Wesley Publishing, 1988, (the AWK book), defines the language,  opening
+       with  a  tutorial and advancing to many interesting programs that delve
+       into issues of software design and analysis relevant to programming  in
        any language.
 
-       _T_h_e _G_A_W_K _M_a_n_u_a_l, The Free Software Foundation, 1991, is a tutorial  and
-       language  reference that does not attempt the depth of the AWK book and
-       assumes the reader may be a novice  programmer.   The  section  on  AWK
+       _T_h_e  _G_A_W_K _M_a_n_u_a_l, The Free Software Foundation, 1991, is a tutorial and
+       language reference that does not attempt the depth of the AWK book  and
+       assumes  the  reader  may  be  a novice programmer.  The section on AWK
        arrays is excellent.  It also discusses POSIX requirements for AWK.
 
 BBUUGGSS
-       mmaawwkk  implements  printf() and sprintf() using the C library functions,
-       printf and sprintf, so full  ANSI  compatibility  requires  an  ANSI  C
-       library.   In practice this means the h conversion qualifier may not be
-       available.  Also mmaawwkk inherits any bugs or limitations of  the  library
+       mmaawwkk implements printf() and sprintf() using the C  library  functions,
+       printf  and  sprintf,  so  full  ANSI  compatibility requires an ANSI C
+       library.  In practice this means the h conversion qualifier may not  be
+       available.   Also  mmaawwkk inherits any bugs or limitations of the library
        functions.
 
        Implementors of the AWK language have shown a consistent lack of imagi-
@@ -1089,4 +1086,4 @@ AAUUTTHHOORR
 
 
 
-Version 1.3.4                     2016-09-18                           MAWK(1)
+Version 1.3.4                     2019-02-03                           MAWK(1)

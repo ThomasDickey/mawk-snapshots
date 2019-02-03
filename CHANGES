@@ -1,8 +1,13 @@
--- $MawkId: CHANGES,v 1.262 2019/01/29 02:02:13 tom Exp $
+-- $MawkId: CHANGES,v 1.264 2019/02/03 17:23:08 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
 
-20190128
+20190203
+	+ improve manpage formatting, e.g., for man2html
+	+ improve debug-traces
+
+20190129
+	+ eliminate non-portable tdestroy() from zmalloc no-leaks code.
 	+ updated configure macros
 	+ update config.guess and config.sub
 
