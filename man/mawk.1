@@ -1,6 +1,6 @@
-.\" $MawkId: mawk.1,v 1.31 2016/09/18 19:16:47 tom Exp $
+.\" $MawkId: mawk.1,v 1.34 2019/02/03 17:10:57 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2014,2015, Thomas E. Dickey
+.\" # copyright 2008-2016,2019, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,12 +11,13 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2016-09-18" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2019-02-03" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
 .de bP
-.IP \(bu 4
+.ie n  .IP \(bu 4
+.el    .IP \(bu 2
 ..
 .\" Escape single quotes in literal strings from groff's Unicode transform.
 .ie \n(.g .ds AQ \(aq
@@ -194,7 +195,7 @@ function definitions.
 .PP
 A pattern can be:
 .nf
-.RS
+.RS 5
 \fBBEGIN
 END\fR
 expression
@@ -237,7 +238,7 @@ A comment starts with # and extends to, but does not include
 the end of line.
 .PP
 The following statements control program flow inside blocks.
-.RS
+.RS 5
 .PP
 .B if
 ( \*(ex )
@@ -342,7 +343,7 @@ and concatenated with "hello".
 (Of course, the value and type stored in x is not changed by any conversions.)
 A string expression is converted to numeric using its longest
 numeric prefix as with
-.IR atof (3).
+\fBatof\fP(3).
 A numeric expression is converted to string by replacing
 .I expr
 with
@@ -354,9 +355,9 @@ can be represented on the host machine as an exact integer then
 it is converted to \fBsprintf\fR("%d", \*(ex).
 .B Sprintf()
 is an AWK built-in that duplicates the functionality of
-.IR sprintf (3),
+\fBsprintf\fP(3),
 and
-.B CONVFMT
+\fBCONVFMT\fP
 is a built-in variable used for internal conversion
 from number to string and initialized to "%.6g".
 Explicit type conversions can be forced,
@@ -415,16 +416,16 @@ a built-in function that expects a regular expression
 argument.
 .PP
 AWK uses extended regular expressions as with
-.IR egrep (1).
+the \fB\-E\fP option of \fBgrep\fP(1).
 The regular expression metacharacters, i.e., those with special
 meaning in regular expressions are
 .nf
 .sp
-	\ ^ $ . [ ] | ( ) * + ?
+	\\ ^ $ . [ ] | ( ) * + ?
 .sp
 .fi
 Regular expressions are built up from characters as follows:
-.RS
+.RS 5
 .TP \w'[^c\d1\uc\d2\uc\d3\u...]'u+1n
 \fIc\fR
 matches any non-metacharacter
@@ -461,7 +462,7 @@ c\d1\uc\d2\uc\d3\u...
 .sp
 Regular expressions are built up from other regular expressions
 as follows:
-.RS
+.RS 5
 .TP \w'[^c\d1\uc\d2\uc\d3\u...]'u+1n
 \fIr\fR\d1\u\fIr\fR\d2\u
 matches
@@ -618,7 +619,7 @@ New
 expressions are composed with the following operators in
 order of increasing precedence.
 .PP
-.RS
+.RS 5
 .nf
 .vs +2p  \"  open up a little
 \fIassignment\fR		=  +=  \-=  *=  /=  %=  ^=
@@ -712,7 +713,7 @@ such as
 .PP
 The following variables are built-in and initialized before program
 execution.
-.RS
+.RS 5
 .TP \w'FILENAME'u+2n
 .B ARGC
 number of command line arguments.
@@ -773,7 +774,7 @@ used to build multiple array subscripts, initially = "\e034".
 .\"
 .SS "\fB8. Built-in functions"
 String functions
-.RS
+.RS 5
 .TP
 gsub(\fIr,s,t\fR)  gsub(\fIr,s\fR)
 Global substitution, every match of regular expression
@@ -883,7 +884,7 @@ Time functions
 .PP
 These are available on systems which support the corresponding C
 \fBmktime\fP and \fBstrftime\fP functions:
-.RS
+.RS 5
 .TP
 mktime(\fIspecification\fR)
 converts a date specification to a timestamp
@@ -912,7 +913,7 @@ seconds (0-59)
 .TP 3
 DST
 tells how to treat timezone versus daylight savings time:
-.RS
+.RS 5
 .TP 3
 positive
 DST is in effect
@@ -948,7 +949,7 @@ since the Epoch (1970-01-01 00:00:00 UTC on POSIX systems).
 .RE
 .PP
 Arithmetic functions
-.RS
+.RS 5
 .PP
 .nf
 .ie n \
@@ -991,7 +992,7 @@ There are two output statements,
 .B print
 and
 .BR printf .
-.RS
+.RS 5
 .TP
 print
 writes
@@ -1055,7 +1056,7 @@ These names can also be passed to functions.
 The input function
 .B getline
 has the following variations.
-.RS
+.RS 5
 .TP
 getline
 reads into
@@ -1087,7 +1088,7 @@ reads the next record of
 into
 .IR var .
 .TP
-\fI command\fR | getline
+\fIcommand\fR | getline
 pipes a record from
 .I command
 into
@@ -1095,7 +1096,7 @@ into
 and updates the fields and
 .BR NF .
 .TP
-\fI command\fR | getline \fIvar
+\fIcommand\fR | getline \fIvar
 pipes a record from
 .I command
 into
@@ -1277,7 +1278,7 @@ slight difference that
 .B RS
 is really a terminator instead of a separator.
 (\fBORS\fR is really a terminator too).
-.RS
+.RS 5
 .PP
 E.g., if
 .B FS
@@ -1327,7 +1328,7 @@ If
 = " " (the default), then single
 newlines, by the rules for <SPACE> above, become space and
 single newlines are field separators.
-.RS
+.RS 5
 .PP
 For example, if
 .bP
@@ -1627,7 +1628,7 @@ For systems (MS-DOS or Windows) which provide a \fIsetmode\fP function,
 an environment variable MAWKBINMODE and a built-in variable BINMODE.
 The bits of the BINMODE value tell \fImawk\fP how to modify the
 \fBRS\fP and \fBORS\fP variables:
-.RS 3
+.RS
 .TP 3
 0
 set standard input to binary mode,
@@ -1778,7 +1779,7 @@ although it has been accepted for the next revision of the standard.
 .PP
 .BR Mktime ,
 .BR strftime \ and
-.BR systime
+.B systime
 are \fBgawk\fP extensions.
 .PP
 The "/dev/stdin" feature was added to \fBmawk\fP after 1.3.4,
@@ -1839,7 +1840,7 @@ MAWKBINMODE
 MAWK_LONG_OPTIONS
 If this is set, \fB\*n\fP uses its value to decide what to do with
 GNU-style long options:
-.RS
+.RS 5
 .TP
 allow
 \fB\*N\fP allows the option to be checked against the (small) set of
@@ -1865,7 +1866,8 @@ over the elements of an array.
 .RE
 .\" **************************************************************************
 .SH SEE ALSO
-.IR egrep (1)
+.PP
+\fBgrep\fP(1)
 .PP
 Aho, Kernighan and Weinberger,
 .IR "The AWK Programming Language" ,

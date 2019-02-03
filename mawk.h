@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2014,2016 Thomas E. Dickey
+copyright 2008-2016,2019 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.53 2016/09/30 22:54:27 tom Exp $
+ * $MawkId: mawk.h,v 1.54 2019/02/02 01:00:14 tom Exp $
  */
 
 /*  mawk.h  */
@@ -142,6 +142,7 @@ extern void rt_overflow(const char *, unsigned);
 extern void rt_error(const char *,...) GCC_NORETURN GCC_PRINTFLIKE(1,2);
 extern void mawk_exit(int) GCC_NORETURN;
 extern void da(INST *, FILE *);
+extern INST *da_this(INST *, INST *, FILE *);
 extern char *rm_escape(char *, size_t *);
 extern char *re_pos_match(char *, size_t, PTR, size_t *, int);
 extern int binmode(void);
@@ -204,6 +205,13 @@ extern void TraceFunc(const char *, CELL *);
 #define TRACE_FUNC(name,cp) TraceFunc(name,cp)
 #else
 #define TRACE_FUNC(name,cp)	/* nothing */
+#endif
+
+#if OPT_TRACE > 0
+extern void TraceInst(INST *, INST *);
+#define TRACE_INST(cp,base) TraceInst(cp,base)
+#else
+#define TRACE_INST(cp,base)	/* nothing */
 #endif
 
 #if OPT_TRACE > 0

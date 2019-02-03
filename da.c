@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2017,2019, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.22 2016/09/30 17:37:33 tom Exp $
+ * $MawkId: da.c,v 1.24 2019/02/02 01:25:02 tom Exp $
  */
 
 /*  da.c  */
@@ -150,224 +150,231 @@ da_string(FILE *fp, const char *str, size_t len)
     fputc('"', fp);
 }
 
-void
-da(INST * start, FILE *fp)
+INST *
+da_this(INST * p, INST * start, FILE *fp)
 {
     CELL *cp;
-    register INST *p = start;
     const char *name;
 
-    while (p->op != _HALT) {
-	/* print the relative code address (label) */
-	fprintf(fp, "%03ld ", (long) (p - start));
-	fprintf(fp, ".\t");
+    /* print the relative code address (label) */
+    fprintf(fp, "%03ld ", (long) (p - start));
+    fprintf(fp, ".\t");
 
-	switch (p++->op) {
+    switch ((MAWK_OPCODES) (p++->op)) {
 
-	case _PUSHC:
-	    cp = (CELL *) p++->ptr;
-	    switch (cp->type) {
-	    case C_RE:
-		add_to_regex_list(cp->ptr);
-		fprintf(fp, "pushc\t%p\t/%s/\n", cp->ptr,
-			re_uncompile(cp->ptr));
-		break;
-
-	    case C_SPACE:
-		fprintf(fp, "pushc\tspace split\n");
-		break;
-
-	    case C_SNULL:
-		fprintf(fp, "pushc\tnull split\n");
-		break;
-	    case C_REPL:
-		fprintf(fp, "pushc\trepl\t%s\n",
-			repl_uncompile(cp));
-		break;
-	    case C_REPLV:
-		fprintf(fp, "pushc\treplv\t%s\n",
-			repl_uncompile(cp));
-		break;
-
-	    default:
-		fprintf(fp, "pushc\tWEIRD\n");;
-		break;
-	    }
+    case _PUSHC:
+	cp = (CELL *) p++->ptr;
+	switch (cp->type) {
+	case C_RE:
+	    add_to_regex_list(cp->ptr);
+	    fprintf(fp, "pushc\t%p\t/%s/\n", cp->ptr,
+		    re_uncompile(cp->ptr));
 	    break;
 
-	case _PUSHD:
-	    fprintf(fp, "pushd\t%.6g\n", *(double *) p++->ptr);
-	    break;
-	case _PUSHS:
-	    {
-		STRING *sval = (STRING *) p++->ptr;
-		fprintf(fp, "pushs\t");
-		da_string(fp, sval->str, sval->len);
-		fprintf(fp, "\n");
-		break;
-	    }
-
-	case _MATCH0:
-	case _MATCH1:
-	    add_to_regex_list(p->ptr);
-	    fprintf(fp, "match%d\t%p\t/%s/\n",
-		    p[-1].op == _MATCH1, p->ptr,
-		    re_uncompile(p->ptr));
-	    p++;
+	case C_SPACE:
+	    fprintf(fp, "pushc\tspace split\n");
 	    break;
 
-	case _PUSHA:
-	    fprintf(fp, "pusha\t%s\n",
-		    reverse_find(ST_VAR, &p++->ptr));
+	case C_SNULL:
+	    fprintf(fp, "pushc\tnull split\n");
+	    break;
+	case C_REPL:
+	    fprintf(fp, "pushc\trepl\t%s\n",
+		    repl_uncompile(cp));
+	    break;
+	case C_REPLV:
+	    fprintf(fp, "pushc\treplv\t%s\n",
+		    repl_uncompile(cp));
 	    break;
 
-	case _PUSHI:
-	    cp = (CELL *) p++->ptr;
-	    if (cp == field)
-		fprintf(fp, "pushi\t$0\n");
-	    else if (cp == &fs_shadow)
-		fprintf(fp, "pushi\t@fs_shadow\n");
-	    else {
-		if (cp > NF && cp <= LAST_PFIELD)
-		    name = reverse_find(ST_FIELD, &cp);
-		else
-		    name = reverse_find(ST_VAR, &cp);
-
-		fprintf(fp, "pushi\t%s\n", name);
-	    }
-	    break;
-
-	case L_PUSHA:
-	    fprintf(fp, "l_pusha\t%d\n", p++->op);
-	    break;
-
-	case L_PUSHI:
-	    fprintf(fp, "l_pushi\t%d\n", p++->op);
-	    break;
-
-	case LAE_PUSHI:
-	    fprintf(fp, "lae_pushi\t%d\n", p++->op);
-	    break;
-
-	case LAE_PUSHA:
-	    fprintf(fp, "lae_pusha\t%d\n", p++->op);
-	    break;
-
-	case LA_PUSHA:
-	    fprintf(fp, "la_pusha\t%d\n", p++->op);
-	    break;
-
-	case F_PUSHA:
-	    cp = (CELL *) p++->ptr;
-	    if (cp >= NF && cp <= LAST_PFIELD)
-		fprintf(fp, "f_pusha\t%s\n",
-			reverse_find(ST_FIELD, &cp));
-	    else
-		fprintf(fp, "f_pusha\t$%d\n",
-			field_addr_to_index(cp));
-	    break;
-
-	case F_PUSHI:
-	    p++;
-	    fprintf(fp, "f_pushi\t$%d\n", p++->op);
-	    break;
-
-	case AE_PUSHA:
-	    fprintf(fp, "ae_pusha\t%s\n",
-		    reverse_find(ST_ARRAY, &p++->ptr));
-	    break;
-
-	case AE_PUSHI:
-	    fprintf(fp, "ae_pushi\t%s\n",
-		    reverse_find(ST_ARRAY, &p++->ptr));
-	    break;
-
-	case A_PUSHA:
-	    fprintf(fp, "a_pusha\t%s\n",
-		    reverse_find(ST_ARRAY, &p++->ptr));
-	    break;
-
-	case _PUSHINT:
-	    fprintf(fp, "pushint\t%d\n", p++->op);
-	    break;
-
-	case _BUILTIN:
-	    fprintf(fp, "%s\n",
-		    find_bi_name((PF_CP) p++->ptr));
-	    break;
-
-	case _PRINT:
-	    fprintf(fp, "%s\n",
-		    (PF_CP) p++->ptr == bi_printf
-		    ? "printf" : "print");
-	    break;
-
-	case _JMP:
-	    fprintf(fp, jfmt, "jmp", tab2, (p - start) + p->op);
-	    p++;
-	    break;
-
-	case _JNZ:
-	    fprintf(fp, jfmt, "jnz", tab2, (p - start) + p->op);
-	    p++;
-	    break;
-
-	case _JZ:
-	    fprintf(fp, jfmt, "jz", tab2, (p - start) + p->op);
-	    p++;
-	    break;
-
-	case _LJZ:
-	    fprintf(fp, jfmt, "ljz", tab2, (p - start) + p->op);
-	    p++;
-	    break;
-
-	case _LJNZ:
-	    fprintf(fp, jfmt, "ljnz", tab2 + 1, (p - start) + p->op);
-	    p++;
-	    break;
-
-	case SET_ALOOP:
-	    fprintf(fp, "set_al\t%03ld\n", (long) (p + p->op - start));
-	    p++;
-	    break;
-
-	case ALOOP:
-	    fprintf(fp, "aloop\t%03ld\n", (long) (p - start + p->op));
-	    p++;
-	    break;
-
-	case A_CAT:
-	    fprintf(fp, "a_cat\t%d\n", p++->op);
-	    break;
-
-	case _CALL:
-	    fprintf(fp, "call\t%s\t%d\n",
-		    ((FBLOCK *) p->ptr)->name, p[1].op);
-	    p += 2;
-	    break;
-
-	case _RANGE:
-	    fprintf(fp, "range\t%03ld %03ld %03ld\n",
-	    /* label for pat2, action, follow */
-		    (long) (p - start + p[1].op),
-		    (long) (p - start + p[2].op),
-		    (long) (p - start + p[3].op));
-	    p += 4;
-	    break;
 	default:
-	    {
-		const OP_NAME *q = simple_code;
-		int k = (p - 1)->op;
-
-		while (q->op != _HALT && q->op != k)
-		    q++;
-
-		fprintf(fp, "%s\n",
-			q->op != _HALT ? q->name : "bad instruction");
-	    }
+	    fprintf(fp, "pushc\tWEIRD\n");;
 	    break;
 	}
+	break;
+
+    case _PUSHD:
+	fprintf(fp, "pushd\t%.6g\n", *(double *) p++->ptr);
+	break;
+    case _PUSHS:
+	{
+	    STRING *sval = (STRING *) p++->ptr;
+	    fprintf(fp, "pushs\t");
+	    da_string(fp, sval->str, sval->len);
+	    fprintf(fp, "\n");
+	    break;
+	}
+
+    case _MATCH0:
+    case _MATCH1:
+	add_to_regex_list(p->ptr);
+	fprintf(fp, "match%d\t%p\t/%s/\n",
+		p[-1].op == _MATCH1, p->ptr,
+		re_uncompile(p->ptr));
+	p++;
+	break;
+
+    case _PUSHA:
+	fprintf(fp, "pusha\t%s\n",
+		reverse_find(ST_VAR, &p++->ptr));
+	break;
+
+    case _PUSHI:
+	cp = (CELL *) p++->ptr;
+	if (cp == field)
+	    fprintf(fp, "pushi\t$0\n");
+	else if (cp == &fs_shadow)
+	    fprintf(fp, "pushi\t@fs_shadow\n");
+	else {
+	    if (cp > NF && cp <= LAST_PFIELD)
+		name = reverse_find(ST_FIELD, &cp);
+	    else
+		name = reverse_find(ST_VAR, &cp);
+
+	    fprintf(fp, "pushi\t%s\n", name);
+	}
+	break;
+
+    case L_PUSHA:
+	fprintf(fp, "l_pusha\t%d\n", p++->op);
+	break;
+
+    case L_PUSHI:
+	fprintf(fp, "l_pushi %d\t# frame-number\n", p++->op);
+	break;
+
+    case LAE_PUSHI:
+	fprintf(fp, "lae_pushi\t%d\n", p++->op);
+	break;
+
+    case LAE_PUSHA:
+	fprintf(fp, "lae_pusha\t%d\n", p++->op);
+	break;
+
+    case LA_PUSHA:
+	fprintf(fp, "la_pusha\t%d\n", p++->op);
+	break;
+
+    case F_PUSHA:
+	cp = (CELL *) p++->ptr;
+	if (cp >= NF && cp <= LAST_PFIELD)
+	    fprintf(fp, "f_pusha\t%s\n",
+		    reverse_find(ST_FIELD, &cp));
+	else
+	    fprintf(fp, "f_pusha\t$%d\n",
+		    field_addr_to_index(cp));
+	break;
+
+    case F_PUSHI:
+	p++;
+	fprintf(fp, "f_pushi\t$%d\n", p++->op);
+	break;
+
+    case AE_PUSHA:
+	fprintf(fp, "ae_pusha\t%s\n",
+		reverse_find(ST_ARRAY, &p++->ptr));
+	break;
+
+    case AE_PUSHI:
+	fprintf(fp, "ae_pushi\t%s\n",
+		reverse_find(ST_ARRAY, &p++->ptr));
+	break;
+
+    case A_PUSHA:
+	fprintf(fp, "a_pusha\t%s\n",
+		reverse_find(ST_ARRAY, &p++->ptr));
+	break;
+
+    case _PUSHINT:
+	fprintf(fp, "pushint\t%d\n", p++->op);
+	break;
+
+    case _BUILTIN:
+	fprintf(fp, "%s\n",
+		find_bi_name((PF_CP) p++->ptr));
+	break;
+
+    case _PRINT:
+	fprintf(fp, "%s\n",
+		(PF_CP) p++->ptr == bi_printf
+		? "printf" : "print");
+	break;
+
+    case _JMP:
+	fprintf(fp, jfmt, "jmp", tab2, (p - start) + p->op);
+	p++;
+	break;
+
+    case _JNZ:
+	fprintf(fp, jfmt, "jnz", tab2, (p - start) + p->op);
+	p++;
+	break;
+
+    case _JZ:
+	fprintf(fp, jfmt, "jz", tab2, (p - start) + p->op);
+	p++;
+	break;
+
+    case _LJZ:
+	fprintf(fp, jfmt, "ljz", tab2, (p - start) + p->op);
+	p++;
+	break;
+
+    case _LJNZ:
+	fprintf(fp, jfmt, "ljnz", tab2 + 1, (p - start) + p->op);
+	p++;
+	break;
+
+    case SET_ALOOP:
+	fprintf(fp, "set_al\t%03ld\n", (long) (p + p->op - start));
+	p++;
+	break;
+
+    case ALOOP:
+	fprintf(fp, "aloop\t%03ld\n", (long) (p - start + p->op));
+	p++;
+	break;
+
+    case A_CAT:
+	fprintf(fp, "a_cat\t%d\n", p++->op);
+	break;
+
+    case _CALL:
+	fprintf(fp, "call\t%s\t%d\n",
+		((FBLOCK *) p->ptr)->name, p[1].op);
+	p += 2;
+	break;
+
+    case _RANGE:
+	fprintf(fp, "range\t%03ld %03ld %03ld\n",
+	/* label for pat2, action, follow */
+		(long) (p - start + p[1].op),
+		(long) (p - start + p[2].op),
+		(long) (p - start + p[3].op));
+	p += 4;
+	break;
+    default:
+	{
+	    const OP_NAME *q = simple_code;
+	    int k = (p - 1)->op;
+
+	    while (q->op != _HALT && q->op != k)
+		q++;
+
+	    fprintf(fp, "%s\n",
+		    q->op != _HALT ? q->name : "bad instruction");
+	}
+	break;
+    }
+    return p;
+}
+
+void
+da(INST * p, FILE *fp)
+{
+    INST *base = p;
+    while (p->op != _HALT) {
+	p = da_this(p, base, fp);
     }
     fflush(fp);
 }

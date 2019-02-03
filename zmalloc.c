@@ -1,6 +1,6 @@
 /********************************************
 zmalloc.c
-copyright 2008-2012,2013, Thomas E. Dickey
+copyright 2008-2013,2019, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,49 +11,15 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.29 2013/02/19 11:54:10 tom Exp $
- * @Log: zmalloc.c,v @
- * Revision 1.6  1995/06/06  00:18:35  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.5  1995/03/08  00:06:26  mike
- * add a pointer cast
- *
- * Revision 1.4  1993/07/14  12:45:15  mike
- * run thru indent
- *
- * Revision 1.3	 1993/07/07  00:07:54  mike
- * more work on 1.2
- *
- * Revision 1.2	 1993/07/03  21:15:35  mike
- * bye bye yacc_mem
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:23  mike
- * move source to cvs
- *
- * Revision 5.4	 1993/02/13  21:57:38  mike
- * merge patch3
- *
- * Revision 5.3	 1993/01/14  13:12:33  mike
- * casts in front of malloc
- *
- * Revision 5.1.1.1  1993/02/06	 11:12:19  mike
- * fix bug in reuse of parser table memory
- * for most users ifdef the mess out
- *
- * Revision 5.1	 1991/12/05  07:56:35  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: zmalloc.c,v 1.31 2019/01/30 01:30:02 tom Exp $
+ */
 
 /*  zmalloc.c  */
 #include  "mawk.h"
 #include  "zmalloc.h"
 
-#ifdef NO_LEAKS
-#if defined(HAVE_TDESTROY) && defined(HAVE_TSEARCH)
+#if defined(NO_LEAKS) && defined(HAVE_TSEARCH)
 #define USE_TSEARCH 1
-#endif
 #endif
 
 #ifdef USE_TSEARCH
@@ -348,7 +314,11 @@ zmalloc_leaks(void)
 {
 #ifdef USE_TSEARCH
     TRACE(("zmalloc_leaks\n"));
-    tdestroy(ptr_data, free_ptr_data);
+    while (ptr_data != 0) {
+	PTR_DATA *data = *(PTR_DATA **) ptr_data;
+	tdelete(data, &ptr_data, compare_ptr_data);
+	free_ptr_data(data);
+    }
 #endif
 }
 #endif

@@ -1,6 +1,6 @@
 /********************************************
 files.c
-copyright 2008-2012,2016.  Thomas E. Dickey
+copyright 2008-2016,2019.  Thomas E. Dickey
 copyright 1991-1994,1996.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.32 2016/09/18 18:52:52 tom Exp $
+ * $MawkId: files.c,v 1.33 2019/01/30 00:37:08 tom Exp $
  */
 
 /* files.c */
@@ -206,6 +206,7 @@ file_close(STRING * sval)
     char *name = sval->str;
     int retval = -1;
 
+    TRACE(("file_close(%s)\n", name));
     p = file_list;
     while (p) {
 	if (strcmp(name, p->name->str) == 0) {
@@ -530,6 +531,7 @@ wait_for(int pid)
     struct child *p;
     int id;
 
+    TRACE(("wait_for %d\n", pid));
     if (pid == 0) {
 	id = wait(&exit_status);
 	add_to_child_list(id, exit_status);

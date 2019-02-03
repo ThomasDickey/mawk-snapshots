@@ -1,6 +1,6 @@
 /********************************************
 code.c
-copyright 2009-2013,2016, Thomas E. Dickey
+copyright 2009-2016,2019, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.38 2016/09/30 13:23:08 tom Exp $
+ * $MawkId: code.c,v 1.39 2019/02/02 01:09:45 tom Exp $
  */
 
 #include "mawk.h"
@@ -262,11 +262,7 @@ free_codes(const char *tag, INST * base, size_t size)
     TRACE(("free_codes(%s) base %p, size %lu\n", tag, (void *) base, size));
     if (base != 0 && size != 0) {
 	for (cdp = base; cdp < last; ++cdp) {
-	    TRACE(("code %03d:%s (%d %#x)\n",
-		   (int) (cdp - base),
-		   da_op_name(cdp),
-		   cdp->op,
-		   cdp->op));
+	    TRACE_INST(cdp, base);
 
 	    switch ((MAWK_OPCODES) (cdp->op)) {
 	    case AE_PUSHA:
@@ -274,10 +270,7 @@ free_codes(const char *tag, INST * base, size_t size)
 		++cdp;		/* skip pointer */
 		cp = (CELL *) (cdp->ptr);
 		if (cp != 0) {
-		    TRACE(("\tparam %p type %d\n", (void *) cp, cp->type));
 		    free_cell_data(cp);
-		} else {
-		    TRACE(("\tparam %p type ??\n", (void *) cp));
 		}
 		break;
 	    case _MATCH0:
@@ -289,7 +282,6 @@ free_codes(const char *tag, INST * base, size_t size)
 	    case LA_PUSHA:
 	    case A_CAT:
 		++cdp;		/* skip value */
-		TRACE(("\tparam %d\n", cdp->op));
 		break;
 	    case A_PUSHA:
 	    case L_PUSHA:
@@ -300,31 +292,24 @@ free_codes(const char *tag, INST * base, size_t size)
 	    case _PUSHI:
 	    case _PUSHINT:
 		++cdp;		/* skip value */
-		TRACE(("\tparam %p\n", cdp->ptr));
 		break;
 	    case _PUSHD:
 		++cdp;		/* skip value */
-		TRACE(("\tparam %p\n", cdp->ptr));
 		if (cdp->ptr != &double_one && cdp->ptr != &double_zero)
 		    zfree(cdp->ptr, sizeof(double));
 		break;
 	    case F_PUSHI:
 		++cdp;		/* skip pointer */
-		TRACE(("\tparam %p type %d\n",
-		       (void *) ((CELL *) (cdp->ptr)),
-		       ((CELL *) (cdp->ptr))->type));
 		++cdp;		/* skip integer */
 		break;
 	    case _PUSHS:
 		++cdp;		/* skip value */
-		TRACE(("\tparam %p\n", cdp->ptr));
 		free_STRING((STRING *) (cdp->ptr));
 		break;
 	    case _RANGE:
 		cdp += 4;	/* PAT1 */
 		break;
 	    case _CALL:
-		TRACE(("\tskipping %d\n", 1 + cdp[2].op));
 		cdp += 1 + cdp[2].op;
 		break;
 	    case A_DEL:

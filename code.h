@@ -1,6 +1,6 @@
 /********************************************
 code.h
-copyright 2009-2010,2012, Thomas E. Dickey
+copyright 2009-2012,2019, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,33 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.h,v 1.10 2012/11/03 13:36:38 tom Exp $
- * @Log: code.h,v @
- * Revision 1.5  1995/06/18  19:42:15  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.4  1994/12/13  00:13:01  mike
- * delete A statement to delete all of A at once
- *
- * Revision 1.3  1993/12/01  14:25:06  mike
- * reentrant array loops
- *
- * Revision 1.2  1993/07/22  00:04:01  mike
- * new op code _LJZ _LJNZ
- *
- * Revision 1.1.1.1  1993/07/03  18:58:10  mike
- * move source to cvs
- *
- * Revision 5.3  1993/01/14  13:11:11  mike
- * code2() -> xcode2()
- *
- * Revision 5.2  1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.1  1991/12/05  07:59:07  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: code.h,v 1.11 2019/01/30 00:49:25 tom Exp $
+ */
 
 /*  code.h  */
 
@@ -96,7 +71,6 @@ void dump_code(void);
 
 /*  the machine opcodes  */
 /* to avoid confusion with a ptr FE_PUSHA must have op code 0 */
-/* unfortunately enums are less portable than defines */
 
 typedef enum {
     FE_PUSHA = 0

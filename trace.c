@@ -1,6 +1,6 @@
 /********************************************
 trace.c
-copyright 2012-2014,2016 Thomas E. Dickey
+copyright 2012-2016,2019 Thomas E. Dickey
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -10,15 +10,16 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.12 2016/09/30 17:11:26 tom Exp $
+ * $MawkId: trace.c,v 1.16 2019/02/02 02:02:33 tom Exp $
  */
 #include <mawk.h>
 #include <repl.h>
+#include <code.h>
 
 static FILE *trace_fp;
 
 void
-Trace(const char *format,...)
+Trace(const char *format, ...)
 {
     va_list args;
 
@@ -78,6 +79,8 @@ TraceCell(CELL *cp)
 	    TRACE(("a vector replacement, count %d at %p\n", cp->vcnt, cp->ptr));
 	    break;
 	case NUM_CELL_TYPES:
+	    /* FALLTHRU */
+	default:
 	    TRACE(("unknown type %d\n", cp->type));
 	    break;
 	}
@@ -96,6 +99,127 @@ TraceFunc(const char *name, CELL *sp)
     for (n = 0; n < nargs; ++n) {
 	TRACE(("...arg%d: ", n));
 	TraceCell(sp + n - nargs);
+    }
+}
+
+void
+TraceInst(INST * p, INST * base)
+{
+    INST *q = da_this(p, base, trace_fp);
+    TRACE(("	...%ld\n", (long) (q - p)));
+    if (p++ != q) {
+	switch ((MAWK_OPCODES) (base->op)) {
+	case AE_PUSHA:
+	case AE_PUSHI:
+	case A_PUSHA:
+	    TRACE(("\tST_ARRAY *%p\n", p->ptr));
+	    break;
+	case F_PUSHA:
+	    TRACE(("\tST_FIELD *%p\n", p->ptr));
+	    break;
+	case _BUILTIN:
+	case _PRINT:
+	    TRACE(("\tPF_CP *%p\n", p->ptr));
+	    break;
+	case _CALL:
+	    TRACE(("\tFBLOCK *%p\n", p->ptr));
+	    break;
+	case _MATCH0:
+	case _MATCH1:
+	    TRACE(("\tregex *%p\n", p->ptr));
+	    break;
+	case _PUSHA:
+	    TRACE(("\tST_VAR *%p\n", p->ptr));
+	    break;
+	case _PUSHC:
+	case _PUSHI:
+	    TRACE(("\tCELL *%p\n", p->ptr));
+	    break;
+	case _PUSHD:
+	    TRACE(("\tdouble *%p\n", p->ptr));
+	    break;
+	case _PUSHS:
+	    TRACE(("\tSTRING *%p\n", p->ptr));
+	    break;
+	case ALOOP:
+	case A_CAT:
+	case A_DEL:
+	case A_LENGTH:
+	case A_TEST:
+	case DEL_A:
+	case FE_PUSHA:
+	case FE_PUSHI:
+	case F_ADD_ASG:
+	case F_ASSIGN:
+	case F_DIV_ASG:
+	case F_MOD_ASG:
+	case F_MUL_ASG:
+	case F_POST_DEC:
+	case F_POST_INC:
+	case F_POW_ASG:
+	case F_PRE_DEC:
+	case F_PRE_INC:
+	case F_PUSHI:
+	case F_SUB_ASG:
+	case LAE_PUSHA:
+	case LAE_PUSHI:
+	case LA_PUSHA:
+	case L_PUSHA:
+	case L_PUSHI:
+	case NF_PUSHI:
+	case OL_GL:
+	case OL_GL_NR:
+	case POP_AL:
+	case SET_ALOOP:
+	case _ADD:
+	case _ADD_ASG:
+	case _ASSIGN:
+	case _CAT:
+	case _DIV:
+	case _DIV_ASG:
+	case _EQ:
+	case _EXIT0:
+	case _EXIT:
+	case _GT:
+	case _GTE:
+	case _HALT:
+	case _JMAIN:
+	case _JMP:
+	case _JNZ:
+	case _JZ:
+	case _LJNZ:
+	case _LJZ:
+	case _LT:
+	case _LTE:
+	case _MATCH2:
+	case _MOD:
+	case _MOD_ASG:
+	case _MUL:
+	case _MUL_ASG:
+	case _NEQ:
+	case _NEXT:
+	case _NEXTFILE:
+	case _NOT:
+	case _OMAIN:
+	case _POP:
+	case _POST_DEC:
+	case _POST_INC:
+	case _POW:
+	case _POW_ASG:
+	case _PRE_DEC:
+	case _PRE_INC:
+	case _PUSHINT:
+	case _RANGE:
+	case _RET0:
+	case _RET:
+	case _STOP:
+	case _SUB:
+	case _SUB_ASG:
+	case _TEST:
+	case _UMINUS:
+	case _UPLUS:
+	    break;
+	}
     }
 }
 
