@@ -1,8 +1,7 @@
-dnl $MawkId: configure.in,v 1.58 2015/05/03 22:39:11 tom Exp $
+dnl $MawkId: configure.in,v 1.59 2019/12/31 19:13:23 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
-dnl configure.in
-dnl copyright 2008-2014,2015, Thomas E. Dickey
+dnl copyright 2008-2015,2019, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -12,37 +11,7 @@ dnl Mawk is distributed without warranty under the terms of
 dnl the GNU General Public License, version 2, 1991.
 dnl ###########################################################################
 dnl
-dnl @Log: configure.in,v @
-dnl Revision 1.13  1995/10/16  12:25:00  mike
-dnl configure cleanup
-dnl
-dnl Revision 1.12  1995/04/20  20:26:51  mike
-dnl beta improvements from Carl Mascott
-dnl
-dnl Revision 1.11  1995/01/09  01:22:30  mike
-dnl check sig handler ret type to make fpe_check.c more robust
-dnl
-dnl Revision 1.10  1994/12/18  20:46:24  mike
-dnl fpe_check -> ./fpe_check
-dnl
-dnl Revision 1.9  1994/12/14  14:42:55  mike
-dnl more explicit that "   " MATHLIB means none
-dnl
-dnl Revision 1.8  1994/12/11  21:26:25  mike
-dnl tweak egrep for [fs]printf prototypes
-dnl
-dnl Revision 1.7  1994/10/16  18:38:23  mike
-dnl use sed on defines.out
-dnl
-dnl Revision 1.6  1994/10/11  02:49:06  mike
-dnl systemVr4 siginfo
-dnl
-dnl Revision 1.5  1994/10/11  00:39:25  mike
-dnl fpe check stuff
-dnl
-dnl
-dnl
-AC_PREREQ(2.52.20011201)
+AC_PREREQ(2.52.20190901)
 AC_INIT(mawk.h)
 
 AC_CONFIG_HEADER(config.h:config_h.in)
@@ -96,7 +65,7 @@ AC_MSG_RESULT($with_builtin_srand)
 
 if test "x${with_builtin_srand}" = xno; then
     CF_SRAND(mawk_)
-	AC_DEFINE_UNQUOTED(NAME_RANDOM, "$cf_cv_srand_func")
+	AC_DEFINE_UNQUOTED(NAME_RANDOM, "$cf_cv_srand_func", [Define to the name of the random-function])
 fi
 ###############################################################################
 AC_MSG_CHECKING(if you want mawk to initialize random numbers at startup)
