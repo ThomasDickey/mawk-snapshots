@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.34 2019/02/03 17:10:57 tom Exp $
+.\" $MawkId: mawk.1,v 1.36 2019/12/31 19:29:31 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2016,2019, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2019-02-03" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2019-12-31" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -84,7 +84,7 @@ The input is broken into records as determined by the
 record separator variable, \fBRS\fR.
 Initially,
 .B RS
-= "\en" and records are synonymous with lines.
+= \*(``\en\*('' and records are synonymous with lines.
 Each record is compared against each
 .I pattern
 and if it matches, the program text for
@@ -132,9 +132,9 @@ and this is the last option.
 .IP
 This is a useful alternative to \-\fBf\fP on systems that support the
 .B #!
-"magic number" convention for executable scripts.
+\*(``magic number\*('' convention for executable scripts.
 Those implicitly pass the pathname of the script itself as the final 
-parameter, and expect no more than one "\-" option on the \fB#!\fP line.
+parameter, and expect no more than one \*(``\-\*('' option on the \fB#!\fP line.
 Because \fB\*n\fP can combine multiple \-\fBW\fP options separated by
 commas, you can use this option when an additional \-\fBW\fP option is needed.
 .TP
@@ -183,7 +183,7 @@ allows multiple \fB\-W\fP options to be combined by separating the options
 with commas, e.g., \-Wsprint=2000,posix.
 This is useful for executable
 .B #!
-"magic number" invocations in which only one argument is supported,
+\*(``magic number\*('' invocations in which only one argument is supported,
 e.g., \-\fBWinteractive,exec\fP.
 .\" **************************************************************************
 .SH "THE AWK LANGUAGE"
@@ -196,8 +196,8 @@ function definitions.
 A pattern can be:
 .nf
 .RS 5
-\fBBEGIN
-END\fR
+\fBBEGIN\fR
+\fBEND\fR
 expression
 expression , expression
 .sp
@@ -390,13 +390,13 @@ Regular expressions are enclosed in slashes, and
 	\*(ex ~ /\fIr\fR/
 .sp
 .fi
-is an AWK expression that evaluates to 1 if \*(ex "matches"
+is an AWK expression that evaluates to 1 if \*(ex \*(``matches\*(''
 .IR r ,
 which means a substring of \*(ex is in the set of strings
 defined by
 .IR r .
 With no match the expression evaluates to 0; replacing
-~ with the "not match" operator, !~ , reverses the meaning.
+~ with the \*(``not match\*('' operator, !~ , reverses the meaning.
 As  pattern-action pairs,
 .nf
 .sp
@@ -952,10 +952,8 @@ Arithmetic functions
 .RS 5
 .PP
 .nf
-.ie n \
-.ds Pi pi
-.el \
-.ds Pi \\(*p
+.ie n .ds Pi pi
+.el   .ds Pi \\(*p
 atan2(\fIy,x\fR)	Arctan of \fIy\fR/\fIx\fR between \-\*(Pi and \*(Pi.
 .PP
 cos(\fIx\fR)		Cosine function, \fIx\fR in radians.
@@ -1282,21 +1280,21 @@ is really a terminator instead of a separator.
 .PP
 E.g., if
 .B FS
-= ":+" and
+= \*(``:+\*('' and
 .B $0
-= "a::b:" , then
+= \*(``a::b:\*('' , then
 .B NF
 = 3 and
 .B $1
-= "a",
+= \*(``a\*('',
 .B $2
-= "b" and
+= \*(``b\*('' and
 .B $3
 = "", but
-if "a::b:" is the contents of an input file and
+if \*(``a::b:\*('' is the contents of an input file and
 .B RS
-= ":+", then
-there are two records "a" and "b".
+= \*(``:+\*('', then
+there are two records \*(``a\*('' and \*(``b\*(''.
 .RE
 .PP
 .B RS
@@ -1338,38 +1336,38 @@ a file is "a\ b\enc\en\en",
 .bP
 \fBFS\fP = "\ ",
 .PP
-then there is one record "a\ b\enc" with three
-fields "a", "b" and "c":
+then there is one record \*(``a\ b\enc\*('' with three
+fields \*(``a\*('', \*(``b\*('' and \*(``c\*('':
 .bP
 Changing
 .B FS
-= "\en", gives two
-fields "a b" and "c";
+= \*(``\en\*('', gives two
+fields \*(``a b\*('' and \*(``c\*('';
 .bP
 changing
 .B FS
-= "", gives one field
+= \*(``\*('', gives one field
 identical to the record.
 .RE
 .PP
 If you want lines with spaces or tabs to be considered blank,
 set
 .B RS
-= "\en([\ \et]*\en)+".
+= \*(``\en([\ \et]*\en)+\*(''.
 For compatibility with other awks, setting
 .B RS
 = "" has the same
 effect as if blank lines are stripped from the
 front and back of files and then records are determined as if
 .B RS
-= "\en\en+".
-POSIX requires that "\en" always separates records when
+= \*(``\en\en+\*(''.
+POSIX requires that \*(``\en\*('' always separates records when
 .B RS
 = "" regardless of the value of
 .BR FS .
 \fB\*n\fP
 does not support this convention, because defining
-"\en" as <SPACE> makes it unnecessary.
+\*(``\en\*('' as <SPACE> makes it unnecessary.
 .\"
 .PP
 Most of the time when you change
@@ -1377,7 +1375,7 @@ Most of the time when you change
 for multi-line records, you
 will also want to change
 .B ORS
-to "\en\en" so the record spacing is preserved on output.
+to \*(``\en\en\*('' so the record spacing is preserved on output.
 .\"
 .SS "\fB13. Program execution"
 This section describes the order of program execution.
@@ -1562,7 +1560,7 @@ or subsequent error.
 
 	END{ print NR, words, chars }
 
-3. count the number of unique "real words".
+3. count the number of unique \*(``real words\*(''.
 
 	BEGIN { FS = "[^A\-Za\-z]+" }
 
