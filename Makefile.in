@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.49 2016/09/30 11:21:47 tom Exp $
+# $MawkId: Makefile.in,v 1.52 2020/01/06 23:31:17 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2015,2016 Thomas E. Dickey
+# copyright 2009-2016,2020 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -19,7 +19,6 @@ SHELL=/bin/sh
 ####################################
 
 srcdir		= @srcdir@
-srcdir_sl	= @srcdir@/
 VPATH		= @srcdir@
 
 x               = @EXEEXT@
@@ -28,8 +27,6 @@ o               = .@OBJEXT@
 prefix          = @prefix@
 exec_prefix     = @exec_prefix@
 datarootdir     = @datarootdir@
-
-srcdir		= @srcdir@
 
 manext		= 1
 bindir		= @bindir@
@@ -102,7 +99,7 @@ all :	$(PROG)
 check :  mawk_test fpe_test
 
 $(PROG) : $(OBJS)
-	@ECHO_LD@$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	@ECHO_LD@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 CHECK	= MAWK=`pwd`/$(PROG); export MAWK; cd $(srcdir)/test; echo "** $@"
 
@@ -132,7 +129,7 @@ array.h : array.w
 	notangle -R'"array.h"' array.w | $(NOIDENT) | cpif array.h
 
 scancode.c :  $(srcdir)/makescan.c  scancode.h nstd.h config.h
-	@ECHO_LD@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -o makescan$x $(srcdir)/makescan.c
+	@ECHO_LD@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o makescan$x $(srcdir)/makescan.c
 	rm -f scancode.c
 	./makescan$x > scancode.c
 	rm makescan$x
@@ -142,7 +139,7 @@ MAWK_MAN = $(MANDIR)/$(actual_PROG).$(manext)
 
 install :  $(BINDIR) $(MANDIR) $(PROG)
 	$(INSTALL_PROGRAM) $(PROG) $(MAWK_BIN)
-	$(INSTALL_DATA) man/mawk.1 $(MAWK_MAN)
+	$(INSTALL_DATA) $(srcdir)/man/mawk.1 $(MAWK_MAN)
 
 uninstall :
 	rm -f $(MAWK_BIN)

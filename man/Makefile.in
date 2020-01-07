@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.1 2015/05/03 23:10:06 tom Exp $
+# $MawkId: Makefile.in,v 1.2 2020/01/06 10:18:49 tom Exp $
 ###############################################################################
 # copyright 2010,2015 Thomas E. Dickey
 #
@@ -11,6 +11,9 @@
 # produce alternate forms from mawk's documentation.
 
 SHELL=/bin/sh
+
+srcdir		= @srcdir@
+VPATH		= @srcdir@
 
 PROG	= mawk
 manext	= 1
