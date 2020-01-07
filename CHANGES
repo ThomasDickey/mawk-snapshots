@@ -1,6 +1,17 @@
--- $MawkId: CHANGES,v 1.265 2019/12/31 18:58:40 tom Exp $
+-- $MawkId: CHANGES,v 1.270 2020/01/07 02:12:10 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20200106
+	+ correct line-number shown in too-many-arguments error message for
+	  the case where the function is a forward reference (report by
+	  "mukti").
+	+ fix install for manpage when configure --srcdir option is used
+	  (report by Rajeev V Pillai).
+	+ use both CFLAGS/LDFLAGS when linking in makefile (report by
+	  Rajeev V Pillai).
+	+ fix clang-9 warning in bi_funct.c (report by Rajeev V Pillai).
+	+ minor improvement to gcc warning options, from vile
 
 20191231
 	+ updated configure macros

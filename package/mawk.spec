@@ -1,8 +1,8 @@
 Summary: mawk - pattern scanning and text processing language
 %define AppProgram mawk
 %define AppVersion 1.3.4
-%define AppRelease 20191231
-# $MawkId: mawk.spec,v 1.65 2019/12/31 18:58:22 tom Exp $
+%define AppRelease 20200106
+# $MawkId: mawk.spec,v 1.67 2020/01/06 10:15:35 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppRelease}
@@ -25,7 +25,7 @@ prototyping and experimenting with algorithms.
 %build
 
 INSTALL_PROGRAM='${INSTALL}' \
-	./configure \
+	%configure \
 		--target %{_target_platform} \
 		--prefix=%{_prefix} \
 		--bindir=%{_bindir} \
@@ -37,7 +37,7 @@ make
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
-make install                    DESTDIR=$RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
 
 strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 
@@ -51,6 +51,9 @@ strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Jan 06 2020 Thomas Dickey
+- use hardening flags
 
 * Sat Oct 27 2012 Thomas Dickey
 - cancel any debug-rpm

@@ -1,6 +1,6 @@
 /********************************************
 version.c
-copyright 2008-2018,2019  Thomas E. Dickey
+copyright 2008-2019,2020  Thomas E. Dickey
 copyright 1991-1996,2014   Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: version.c,v 1.26 2019/01/29 02:23:07 tom Exp $
+ * $MawkId: version.c,v 1.27 2020/01/06 10:03:06 tom Exp $
  */
 
 #include "mawk.h"
@@ -20,7 +20,7 @@ the GNU General Public License, version 2, 1991.
 
 #define	 VERSION_STRING	 \
   "mawk %d.%d%s %s\n\
-Copyright 2008-2018,2019, Thomas E. Dickey\n\
+Copyright 2008-2019,2020, Thomas E. Dickey\n\
 Copyright 1991-1996,2014, Michael D. Brennan\n\n"
 
 #define FMT_N "%-20s%.0f\n"

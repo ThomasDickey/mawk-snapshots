@@ -1,6 +1,6 @@
 /********************************************
 fcall.c
-copyright 2009-2010,2012 Thomas E. Dickey
+copyright 2009-2012,2020 Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,42 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.10 2012/11/26 11:58:27 tom Exp $
- * @Log: fcall.c,v @
- * Revision 1.7  1995/08/27  15:46:47  mike
- * change some errmsgs to compile_errors
- *
- * Revision 1.6  1995/06/09  22:58:24  mike
- * cast to shutup solaris cc on comparison of short to ushort
- *
- * Revision 1.5  1995/06/06  00:18:26  mike
- * change mawk_exit(1) to mawk_exit(2)
- *
- * Revision 1.4  1995/04/21  14:20:14  mike
- * move_level variable to fix bug in arglist patching of moved code.
- *
- * Revision 1.3  1995/02/19  22:15:37  mike
- * Always set the call_offset field in a CA_REC (for obscure
- * reasons in fcall.c (see comments) there.)
- *
- * Revision 1.2  1993/07/17  13:22:52  mike
- * indent and general code cleanup
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:11  mike
- * move source to cvs
- *
- * Revision 5.4	 1993/01/09  19:03:44  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.3	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.2	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.1	 1991/12/05  07:55:54  brennan
- * 1.1 pre-release
- *
+ * $MawkId: fcall.c,v 1.11 2020/01/07 00:47:38 tom Exp $
  */
 
 #include "mawk.h"
@@ -170,11 +135,13 @@ call_arg_check(FBLOCK * callee,
 	    q->link = exit_list;
 	    exit_list = q;
 	} else {		/* type known */
-	    if (callee->typev[q->arg_num] == ST_LOCAL_NONE)
+	    if (callee->typev[q->arg_num] == ST_LOCAL_NONE) {
 		callee->typev[q->arg_num] = (char) q->type;
-	    else if (q->type != callee->typev[q->arg_num])
+	    } else if (q->type != callee->typev[q->arg_num]) {
+		token_lineno = q->call_lineno;
 		compile_error("type error in arg(%d) in call to %s",
 			      q->arg_num + 1, callee->name);
+	    }
 
 	    ZFREE(q);
 	    check_progress = 1;
@@ -189,6 +156,7 @@ arg_cnt_ok(FBLOCK * fbp,
 	   CA_REC * q)
 {
     if ((int) q->arg_num >= (int) fbp->nargs) {
+	token_lineno = q->call_lineno;
 	compile_error("too many arguments in call to %s", fbp->name);
 	return 0;
     } else

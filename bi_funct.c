@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.110 2016/11/07 21:43:45 tom Exp $
+ * $MawkId: bi_funct.c,v 1.111 2020/01/06 10:01:20 tom Exp $
  */
 
 #include <mawk.h>
@@ -948,7 +948,7 @@ bi_getline(CELL *sp)
     CELL tc;
     CELL *cp = 0;
     char *p = 0;
-    size_t len;
+    size_t len = 0;
     FIN *fin_p;
 
     TRACE_FUNC("bi_getline", sp);

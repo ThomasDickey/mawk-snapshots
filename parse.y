@@ -1,6 +1,6 @@
 /********************************************
 parse.y
-copyright 2008-2012,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.20 2016/09/29 23:19:54 tom Exp $
+ * $MawkId: parse.y,v 1.21 2020/01/07 00:44:39 tom Exp $
  */
 
 %{
@@ -1079,6 +1079,7 @@ call_args  :   LPAREN   RPAREN
                { $$ = $2 ;
                  $$->link = $1 ;
                  $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
+		 $$->call_lineno = token_lineno;
                }
            ;
 
@@ -1098,12 +1099,14 @@ ca_front   :  LPAREN
                 $$->type = CA_EXPR  ;
                 $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
                 $$->call_offset = code_offset ;
+		$$->call_lineno = token_lineno;
               }
            |  ca_front  ID   COMMA
               { $$ = ZMALLOC(CA_REC) ;
                 $$->type = ST_NONE ;
                 $$->link = $1 ;
                 $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
+		$$->call_lineno = token_lineno;
 
                 code_call_id($$, $2) ;
               }
@@ -1191,6 +1194,7 @@ save_arglist(const char *s)
 	saveit->link = 0;
 	saveit->type = ST_LOCAL_NONE;
 	saveit->arg_num = (short) arg_num;
+	saveit->call_lineno = token_lineno;
 	saveit->sym_p = result;
 	if (q != 0) {
 	    q->link = saveit;

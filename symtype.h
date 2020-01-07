@@ -1,6 +1,6 @@
 /********************************************
 symtype.h
-copyright 2009-2012,2016, Thomas E. Dickey
+copyright 2009-2016,2020, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.18 2016/09/30 13:22:32 tom Exp $
+ * $MawkId: symtype.h,v 1.20 2020/01/07 02:20:06 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -111,6 +111,7 @@ typedef struct ca_rec {
 /* happens if argument is an ID or type ST_NONE or ST_LOCAL_NONE */
 
     int call_offset;
+    unsigned call_lineno;
 /* where the type is stored */
     SYMTAB *sym_p;		/* if type is ST_NONE  */
     char *type_p;		/* if type  is ST_LOCAL_NONE */
