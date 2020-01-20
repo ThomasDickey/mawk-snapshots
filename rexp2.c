@@ -1,6 +1,6 @@
 /********************************************
 rexp2.c
-copyright 2009-2016,2017, Thomas E. Dickey
+copyright 2009-2017,2020, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.26 2017/10/17 01:19:15 tom Exp $
+ * $MawkId: rexp2.c,v 1.28 2020/01/20 15:11:15 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -24,7 +24,7 @@ the GNU General Public License, version 2, 1991.
 RT_STATE *RE_run_stack_base;
 RT_STATE *RE_run_stack_limit;
 
-/* Large model DOS segment arithemetic breaks the current stack.
+/* Large model DOS segment arithmetic breaks the current stack.
    This hack fixes it without rewriting the whole thing, 5/31/91 */
 RT_STATE *RE_run_stack_empty;
 
@@ -373,7 +373,9 @@ REtest(char *str,		/* string to test */
 	}
 	/* FALLTHRU */
 
-      CASE_UANY(M_2JB):	/* take the jump branch */
+    case (M_2JB) + U_OFF:	/* take the jump branch */
+	/* FALLTHRU */
+    case (M_2JB) + U_ON:
 	/* don't stack an ACCEPT */
 	if ((tm = m + 1)->s_type == M_ACCEPT) {
 	    return 1;

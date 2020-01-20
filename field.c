@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2014,2016 Thomas E. Dickey
+copyright 2008-2016,2020 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.35 2016/11/21 02:15:47 tom Exp $
+ * $MawkId: field.c,v 1.36 2020/01/20 11:47:26 tom Exp $
  */
 
 /* field.c */
@@ -260,7 +260,7 @@ split_field0(void)
 
     }
     /* the above xxx_split() function put the fields in an anonyous
-     * buffer that will be pulled into the fields with a transer call */
+     * buffer that will be pulled into the fields with a transfer call */
 
     /* we are done with cp0 */
     if (cp0 == &hold0)

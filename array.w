@@ -1,21 +1,7 @@
-% @Log: array.w,v @
-% Revision 1.4  1996/09/18 00:37:25  mike
-% 1) Fix stupid bozo in A[expr], expr is numeric and not integer.
-% 2) Add static for non-ansi compilers.
-% 3) Minor tweaks to documentation.
-%
-% Revision 1.3  1996/07/28 21:55:32  mike
-% trivial change -- add extra {}
-%
-% Revision 1.2  1996/02/25  23:42:25  mike
-% Fix zfree bug in array_clear.
-% Clean up documentation.
-%
-
 \input mwebmac
 \input ctmac
 
-\RCSID{$Id: array.w,v 1.18 2014/08/14 23:34:44 mike Exp $}
+\RCSID{$MawkId: array.w,v 1.21 2020/01/20 11:54:19 tom Exp $}
 
 \TOC{Mawk Arrays}
 
@@ -931,7 +917,7 @@ STRING** array_loop_vector(
       if (!(A->type & AY_STR)) add_string_associations(A) ;
       ret = (STRING**) zmalloc(A->size*sizeof(STRING*)) ;
       <<for each [[ANODE]] in [[A]], put one string in [[ret]]>>
-      if (getenv("WHINY_USERS") != NULL)	/* gawk compability */
+      if (getenv("WHINY_USERS") != NULL)	/* gawk compatibility */
 	qsort(ret, A->size, sizeof(STRING*), string_compare);
       return ret ;
    }
@@ -1086,9 +1072,9 @@ return sp ;
 
 <<blurb>>=
 /*
-$MawkId: array.w,v 1.18 2014/08/14 23:34:44 mike Exp $
+$MawkId: array.w,v 1.21 2020/01/20 11:54:19 tom Exp $
 
-copyright 2009,2010, Thomas E. Dickey
+copyright 2009-2019,2020 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of

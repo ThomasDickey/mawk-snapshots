@@ -19,7 +19,7 @@ function middle(x,y,z)  #return middle of 3
 
 function  isort(A , n,    i, j, hold)
 {
-  # if needed a sentinal at A[0] will be created
+  # if needed a sentinel at A[0] will be created
 
   for( i = 2 ; i <= n ; i++)
   {

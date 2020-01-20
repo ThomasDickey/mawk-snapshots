@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.86 2020/01/06 01:04:12 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.88 2020/01/20 11:39:30 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -31,6 +31,10 @@ dnl holders shall not be used in advertising or otherwise to promote the
 dnl sale, use or other dealings in this Software without prior written
 dnl authorization.
 dnl
+dnl ---------------------------------------------------------------------------
+dnl See
+dnl     https://invisible-island.net/autoconf/autoconf.html
+dnl     https://invisible-island.net/autoconf/my-autoconf.html
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
 dnl CF_ACVERSION_CHECK version: 5 updated: 2014/06/04 19:11:49
@@ -504,7 +508,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -Qunused-arguments"
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 1 updated: 2019/04/08 17:50:29
+dnl CF_CONST_X_STRING version: 3 updated: 2020/01/11 18:39:22
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -525,6 +529,10 @@ dnl when compiling the library and compiling using the library, to tell the
 dnl compiler that String is const.
 AC_DEFUN([CF_CONST_X_STRING],
 [
+AC_REQUIRE([AC_PATH_XTRA])
+
+CF_SAVE_XTRA_FLAGS([CF_CONST_X_STRING])
+
 AC_TRY_COMPILE(
 [
 #include <stdlib.h>
@@ -545,6 +553,8 @@ AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 			cf_cv_const_x_string=yes
 		])
 ])
+
+CF_RESTORE_XTRA_FLAGS([CF_CONST_X_STRING])
 
 case $cf_cv_const_x_string in
 (no)
@@ -1346,7 +1356,7 @@ int main(void)
     return 0 ;
  }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 14 updated: 2015/05/02 07:59:43
+dnl CF_MAWK_RUN_FPE_TESTS version: 15 updated: 2020/01/18 12:30:33
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -1491,7 +1501,7 @@ EOF
 	Please report this so I can fix this script to do it automatically.
 	CF_MAWK_MAINTAINER
 	You can continue with the build and the resulting mawk will be
-	useable, but getting FPE_TRAPS_ON correct eventually is best.
+	usable, but getting FPE_TRAPS_ON correct eventually is best.
 EOF
 fi
     ;;
@@ -1508,7 +1518,7 @@ EOF
     cat 1>&2 <<-EOF
     The program \`fpe_check' will not work for cross-compiling.
     You can continue with the build and the resulting mawk will be
-    useable, but getting FPE_TRAPS_ON correct eventually is best.
+    usable, but getting FPE_TRAPS_ON correct eventually is best.
 EOF
 	fi
     ;;
@@ -1875,6 +1885,42 @@ define([CF_REMOVE_DEFINE],
 $1=`echo "$2" | \
 	sed	-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[[ 	]]/ /g' \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_RESTORE_XTRA_FLAGS version: 1 updated: 2020/01/11 16:47:45
+dnl ---------------------
+dnl Restore flags saved in CF_SAVE_XTRA_FLAGS
+dnl $1 = name of current macro
+define([CF_RESTORE_XTRA_FLAGS],
+[
+LIBS="$cf_save_LIBS_$1"
+CFLAGS="$cf_save_CFLAGS_$1"
+CPPFLAGS="$cf_save_CPPFLAGS_$1"
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_SAVE_XTRA_FLAGS version: 1 updated: 2020/01/11 16:46:44
+dnl ------------------
+dnl Use this macro to save CFLAGS/CPPFLAGS/LIBS before checks against X headers
+dnl and libraries which do not update those variables.
+dnl
+dnl $1 = name of current macro
+define([CF_SAVE_XTRA_FLAGS],
+[
+cf_save_LIBS_$1="$LIBS"
+cf_save_CFLAGS_$1="$CFLAGS"
+cf_save_CPPFLAGS_$1="$CPPFLAGS"
+LIBS="$LIBS ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS}"
+for cf_X_CFLAGS in $X_CFLAGS
+do
+	case "x$cf_X_CFLAGS" in
+	x-[[IUD]]*)
+		CPPFLAGS="$CPPFLAGS $cf_X_CFLAGS"
+		;;
+	*)
+		CFLAGS="$CFLAGS $cf_X_CFLAGS"
+		;;
+	esac
+done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SET_MATH_LIB_VERSION version: 1 updated: 2013/12/26 20:21:00

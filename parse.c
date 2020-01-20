@@ -1419,7 +1419,7 @@ code_call_id(CA_REC * p, SYMTAB * ip)
     static CELL dummy;
 
     p->call_offset = code_offset;
-    /* This always get set now.  So that fcall:relocate_arglist
+    /* This always gets set now.  So that fcall:relocate_arglist
        works. */
 
     switch (ip->type) {

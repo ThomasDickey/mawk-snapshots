@@ -1,7 +1,7 @@
-dnl $MawkId: configure.in,v 1.59 2019/12/31 19:13:23 tom Exp $
+dnl $MawkId: configure.in,v 1.60 2020/01/20 11:43:28 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
-dnl copyright 2008-2015,2019, Thomas E. Dickey
+dnl copyright 2008-2019,2020, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -19,6 +19,7 @@ CF_CHECK_CACHE
 
 AC_ARG_PROGRAM
 
+AC_DEFUN([AC_PATH_XTRA],[])
 CF_PROG_CC
 AC_PROG_MAKE_SET
 CF_MAKEFLAGS

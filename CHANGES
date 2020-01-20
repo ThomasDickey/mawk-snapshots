@@ -1,6 +1,12 @@
--- $MawkId: CHANGES,v 1.270 2020/01/07 02:12:10 tom Exp $
+-- $MawkId: CHANGES,v 1.273 2020/01/20 11:44:41 tom Exp $
 
 Changes by Thomas E Dickey <dickey@invisible-island.net>
+
+20200120
+	+ resync with my-autoconf.
+	+ fix typos found with codespell.
+	+ when reading input in interactive mode, provide for extending the
+	  buffer size for very long lines (Original-Mawk #59).
 
 20200106
 	+ correct line-number shown in too-many-arguments error message for

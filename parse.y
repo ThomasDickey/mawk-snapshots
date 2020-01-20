@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.21 2020/01/07 00:44:39 tom Exp $
+ * $MawkId: parse.y,v 1.23 2020/01/20 11:49:54 tom Exp $
  */
 
 %{
@@ -747,7 +747,7 @@ statement  :  array_loop_front  statement
 
 /*  fields
     D_ID is a special token , same as an ID, but yylex()
-    only returns it after a '$'.  In essense,
+    only returns it after a '$'.  In essence,
     DOLLAR D_ID is really one token.
 */
 
@@ -1337,7 +1337,7 @@ code_call_id(CA_REC * p, SYMTAB * ip)
     static CELL dummy;
 
     p->call_offset = code_offset;
-    /* This always get set now.  So that fcall:relocate_arglist
+    /* This always gets set now.  So that fcall:relocate_arglist
        works. */
 
     switch (ip->type) {
