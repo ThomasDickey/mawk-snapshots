@@ -1,6 +1,6 @@
 /********************************************
 fin.c
-copyright 2008-2014,2018.  Thomas E. Dickey
+copyright 2008-2018,2020.  Thomas E. Dickey
 copyright 1991-1995,1996.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.44 2018/11/15 00:31:57 tom Exp $
+ * $MawkId: fin.c,v 1.47 2020/01/20 01:56:30 tom Exp $
  */
 
 /* fin.c */
@@ -176,25 +176,67 @@ FINgets(FIN * fin, size_t *len_p)
 	}
 
 	if (fin->fp) {
-	    /* line buffering */
-	    if (!fgets(fin->buff, BUFFSZ + 1, fin->fp)) {
-		fin->flags |= EOF_FLAG;
-		fin->buff[0] = 0;
-		fin->buffp = fin->buff;
-		fin->limit = fin->buffp;
-		goto restart;	/* might be main_fin */
-	    } else {		/* return this line */
-		/* find eol */
-		p = fin->buff;
-		while (*p != '\n' && *p != 0)
-		    p++;
+	    int have_nl = 0;
+	    int got_any = 0;
+	    char *my_buff = fin->buff;
 
-		*p = 0;
-		*len_p = (unsigned) (p - fin->buff);
-		fin->buffp = p;
-		fin->limit = fin->buffp + strlen(fin->buffp);
-		return fin->buff;
-	    }
+	    do {
+		/* line buffering */
+		if (!fgets(my_buff, BUFFSZ + 1, fin->fp)) {
+		    if (got_any) {
+			/* no newline, but we have data -- okay */
+			break;
+		    }
+		    fin->flags |= EOF_FLAG;
+		    fin->buff[0] = 0;
+		    fin->buffp = fin->buff;
+		    fin->limit = fin->buffp;
+		    goto restart;	/* might be main_fin */
+		} else {	/* return this line */
+		    /*
+		     * Using fgets, we cannot detect embedded nulls in the
+		     * input.  Assume that a null is the one added by fgets
+		     * after reading data.  If we have a newline, that is
+		     * better, since fgets has the complete line.
+		     */
+		    p = my_buff;
+		    while (*p != '\n' && *p != 0)
+			p++;
+
+		    if (*p == '\n') {
+			have_nl = 1;
+			*p = 0;
+		    } else {
+			/*
+			 * Increase the buffer size to allow reading more data,
+			 * and point 'my_buff' to the beginning of the extra
+			 * space.  Doing it this way assumes very-long lines
+			 * are rare.
+			 */
+			size_t old_size = (size_t) (fin->nbuffs++ * BUFFSZ + 1);
+			size_t new_size = old_size + BUFFSZ;
+			char *new_buff = (char *) zmalloc(new_size);
+			size_t my_size = (size_t) (p - fin->buff);
+			if (new_buff != fin->buff) {
+			    memcpy(new_buff, fin->buff, my_size);
+			    zfree(fin->buff, old_size);
+			    fin->buff = new_buff;
+			}
+			my_buff = my_size + fin->buff;
+			p = my_buff;
+			got_any = 1;
+		    }
+		}
+	    } while (!have_nl);
+
+	    /*
+	     * At this point, 'p' points to the terminating null for the
+	     * input line.  Fill in the FIN structure details.
+	     */
+	    *len_p = (size_t) (p - fin->buff);
+	    fin->buffp = p;
+	    fin->limit = fin->buffp + strlen(fin->buffp);
+	    return fin->buff;
 	} else {
 	    /* block buffering */
 	    r = fillbuff(fin->fd, fin->buff, (size_t) (fin->nbuffs * BUFFSZ));

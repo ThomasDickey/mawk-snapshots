@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2016,2019 Thomas E. Dickey
+copyright 2008-2019,2020 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.54 2019/02/02 01:00:14 tom Exp $
+ * $MawkId: mawk.h,v 1.55 2020/01/20 14:15:55 tom Exp $
  */
 
 /*  mawk.h  */
@@ -152,10 +152,12 @@ extern char *str_str(char *, size_t, const char *, size_t);
 #endif
 
 extern void parse(void);
-extern int yylex(void);
-extern int yyparse(void);
-extern void yyerror(const char *);
 extern void scan_cleanup(void);
+
+#ifndef YYBYACC 
+extern int yylex(void);
+#endif
+extern void yyerror(const char *);
 
 extern void bozo(const char *) GCC_NORETURN;
 extern void errmsg(int, const char *,...) GCC_PRINTFLIKE(2,3);

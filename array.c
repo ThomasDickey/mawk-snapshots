@@ -1,8 +1,8 @@
 /* array.c */
 /*
-@MawkId: array.w,v 1.18 2014/08/14 23:34:44 mike Exp @
+@MawkId: array.w,v 1.21 2020/01/20 11:54:19 tom Exp @
 
-copyright 2009,2010, Thomas E. Dickey
+copyright 2009-2019,2020 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -270,7 +270,7 @@ STRING** array_loop_vector(
          }
       }
 
-      if (getenv("WHINY_USERS") != NULL)        /* gawk compability */
+      if (getenv("WHINY_USERS") != NULL)        /* gawk compatibility */
         qsort(ret, A->size, sizeof(STRING*), string_compare);
       return ret ;
    }

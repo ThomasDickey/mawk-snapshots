@@ -1,6 +1,6 @@
 /********************************************
 rexp3.c
-copyright 2008-2016,2017, Thomas E. Dickey
+copyright 2008-2017,2020, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.40 2017/10/17 01:19:15 tom Exp $
+ * $MawkId: rexp3.c,v 1.41 2020/01/20 15:16:04 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -391,15 +391,17 @@ REmatch(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
-      CASE_UANY(M_2JC):	/* take the jump branch if position changed */
+    case (M_2JC) + U_OFF:	/* take the jump branch if position changed */
+    case (M_2JC) + U_ON:
 	/* see REtest */
 	if (RE_pos_pop(&sp, stackp) == s) {
 	    m++;
 	    RE_CASE();
 	}
 	/* FALLTHRU */
-
-      CASE_UANY(M_2JB):	/* take the jump branch */
+    case (M_2JB) + U_OFF:	/* take the jump branch */
+	/* FALLTHRU */
+    case (M_2JB) + U_ON:
 	push(m + 1, s, sp, ss, u_flag);
 	m += m->s_data.jump;
 	RE_CASE();

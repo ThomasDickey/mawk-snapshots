@@ -1,6 +1,6 @@
 /********************************************
 split.c
-copyright 2008-2010,2014 Thomas E. Dickey
+copyright 2008-2014,2020 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.29 2014/09/14 21:35:23 tom Exp $
+ * $MawkId: split.c,v 1.30 2020/01/20 11:22:11 tom Exp $
  * @Log: split.c,v @
  * Revision 1.3  1996/02/01  04:39:42  mike
  * dynamic array scheme
@@ -168,7 +168,7 @@ re_pos_match(char *str, size_t str_len, PTR re, size_t *lenp, int no_bol)
 		return match;
 	    } else {
 		/* match but zero length, move str forward and try again */
-		/* note this match must have occured at front of str */
+		/* note this match must have occurred at front of str */
 		str = match + 1;
 		no_bol = 1;
 	    }

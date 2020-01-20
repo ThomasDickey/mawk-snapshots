@@ -1,6 +1,6 @@
 /********************************************
 print.c
-copyright 2008-2012,2016.  Thomas E. Dickey
+copyright 2008-2016,2020.  Thomas E. Dickey
 copyright 1991-1996,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.27 2016/09/27 09:29:19 tom Exp $
+ * $MawkId: print.c,v 1.28 2020/01/20 14:08:41 tom Exp $
  */
 
 #include "mawk.h"
@@ -274,8 +274,8 @@ make_sfmt(const char *format,
     return success;
 }
 
-#define SprintfOverflow(buffer, need) \
-    if (buffer + need + 1 >= sprintf_limit) { \
+#define SprintfOverflow(bfr, need) \
+    if (bfr + need + 1 >= sprintf_limit) { \
 	    rt_overflow("sprintf buffer", \
 			(unsigned) (sprintf_limit - sprintf_buff)); \
     }

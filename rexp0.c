@@ -1,6 +1,6 @@
 /********************************************
 rexp0.c
-copyright 2008-2010,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1994,1996, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.33 2016/11/21 00:26:41 tom Exp $
+ * $MawkId: rexp0.c,v 1.34 2020/01/20 11:46:45 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -729,7 +729,7 @@ store_bvp(BV * bvp)
 	bv_limit = bv_next + BV_GROWTH;
     }
 
-    /* put bvp in bv_next as a sentinal */
+    /* put bvp in bv_next as a sentinel */
     *bv_next = bvp;
     p = bv_base;
     while (memcmp(*p, bvp, sizeof(BV)))
