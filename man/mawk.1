@@ -1,6 +1,6 @@
-.\" $MawkId: mawk.1,v 1.36 2019/12/31 19:29:31 tom Exp $
+.\" $MawkId: mawk.1,v 1.42 2020/07/08 23:32:53 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2016,2019, Thomas E. Dickey
+.\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2019-12-31" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-07-08" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -689,10 +689,10 @@ causes
 \*(ae
 not to exist.
 \fB\*n\fP
-supports an extension,
+supports the
 .B delete
-.IR array ,
-which deletes all elements of
+.I array
+feature, which deletes all elements of
 .IR array .
 .PP
 Multidimensional arrays are synthesized with concatenation using
@@ -1736,20 +1736,27 @@ sequences in strings.
 Unlike ANSI C,
 \fB\*n\fP limits the number of digits that follows \ex to two as the current
 implementation only supports 8 bit characters.
-The built-in
-.B fflush
-first appeared in a recent (1993) AT&T awk released to netlib, and is
-not part of the POSIX standard.
-Aggregate deletion with
-.B delete
-.I array
-is not part of the POSIX standard.
 .PP
 POSIX explicitly leaves the behavior of
 .B FS
 = "" undefined, and mentions splitting the record into characters as
 a possible interpretation, but currently this use is not portable
 across implementations.
+.PP
+Some features were not part of the POSIX standard until long after
+their introduction in \fB\*n\fP and other implementations.
+These have been approved, though still (as of July 2020),
+are not part of a published standard:
+.bP
+The built-in
+.B fflush
+first appeared in a 1993 AT&T awk released to netlib.
+It was approved for the POSIX standard in 2012.
+.bP
+Aggregate deletion with
+.B delete
+.I array
+was approved in 2018.
 .SS "Random numbers"
 .PP
 POSIX does not prescribe a method for initializing random numbers at startup.
@@ -1771,9 +1778,9 @@ this feature may be suppressed using conditional compilation.
 .SS "Extensions added for compatibility for GAWK and BWK"
 .PP
 .B Nextfile
-is a \fBgawk\fP extension (also implemented by BWK awk),
-is not yet part of the POSIX standard (as of October 2012),
-although it has been accepted for the next revision of the standard.
+is a \fBgawk\fP extension (also implemented by BWK awk).
+It was approved for the POSIX standard in September 2012,
+and is expected to be part of the next revision of the standard.
 .PP
 .BR Mktime ,
 .BR strftime \ and
