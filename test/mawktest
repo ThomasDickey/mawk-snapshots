@@ -1,7 +1,7 @@
 #!/bin/sh
-# $MawkId: mawktest,v 1.36 2014/09/07 22:05:34 tom Exp $
+# $MawkId: mawktest,v 1.37 2020/07/12 14:28:13 tom Exp $
 ###############################################################################
-# copyright 2008-2012,2014, Thomas E. Dickey
+# copyright 2008-2014,2020, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2010, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -91,7 +91,9 @@ trap 'echo mawk_test failed ; rm -f $STDOUT $STDERR; exit 1'  0
 $PROG -W version
 
 NULLS=`$PROG -W version 2>&1 |fgrep regex |fgrep 'internal' 2>/dev/null`
+
 #################################
+
 Begin "testing input and field splitting"
 
 LC_ALL=C $PROG -f wc.awk $dat | cmp -s - wc-awk.out || Fail "wc.awk"
@@ -102,19 +104,21 @@ LC_ALL=C $PROG -F 'a*b' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 2"
 
 LC_ALL=C $PROG -F '(a?)+b' -f wc.awk $dat > $STDOUT
 LC_ALL=C $PROG -F 'a*b' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 3"
+LC_ALL=C $PROG -Wre -F 'a{0,}b' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 3b"
 
 LC_ALL=C $PROG -F '[^^]' -f wc.awk $dat > $STDOUT
 LC_ALL=C $PROG -F '(.)' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 4"
 
 LC_ALL=C $PROG -F '[^]]' -f wc.awk $dat > $STDOUT
-LC_ALL=C $PROG -F '[[#a-zA-Z0-9/*!=<>+,;.&_%(){}" -]' -f wc.awk $dat |
-	cmp -s - $STDOUT || Fail "case 5"
+LC_ALL=C $PROG -F '[[#a-zA-Z0-9/*!=<>+,;.&_%(){}" -]' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 5"
 
 LC_ALL=C $PROG -F '[a[]' -f wc.awk $dat > $STDOUT
 LC_ALL=C $PROG -F '[[a]' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 6"
+LC_ALL=C $PROG -F 'a|\[' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 6b"
 
 LC_ALL=C $PROG -F '(])' -f wc.awk $dat > $STDOUT
 LC_ALL=C $PROG -F '[]]' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 7"
+LC_ALL=C $PROG -F '\]' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 7b"
 
 # check that the regexp [\ does not make mawk segfault
 LC_ALL=C $PROG -F '[\' 2> $STDERR || Fail "case 8"
@@ -124,6 +128,10 @@ LC_ALL=C $PROG -F ')' -f wc.awk $dat | cmp -s - $STDOUT || Fail "case 9"
 
 echo baaab | LC_ALL=C $PROG -F 'a*+' '{print NF}' > $STDOUT
 echo baaab | LC_ALL=C $PROG -F 'a*' '{print NF}' | cmp -s - $STDOUT || Fail "case 10"
+
+#LC_ALL=C $PROG -F '[\\\\]' -f wc.awk $dat  > $STDOUT
+#LC_ALL=C $PROG -F '(\\\\)' -f wc.awk | cmp -s - $STDOUT || Fail "case 11"
+#LC_ALL=C $PROG -F '\\\\' -f wc.awk | cmp -s - $STDOUT || Fail "case 11b"
 
 if test -n "$NULLS" ; then
 	LC_ALL=C $PROG -F '\000'    -f nulls0.awk $nulldat > $STDOUT
@@ -196,7 +204,7 @@ fi
 
 Begin "testing arrays and flow of control"
 
-LC_ALL=C $PROG -f wfrq0.awk $dat | cmp -s - wfrq-awk.out || Fail
+LC_ALL=C $PROG -f wfrq0.awk $dat | cmp -s - wfrq-awk.out || Fail "wfrq-awk"
 
 Finish "array test"
 
@@ -204,7 +212,7 @@ Finish "array test"
 
 Begin "testing nextfile"
 
-LC_ALL=C $PROG -f nextfile.awk full-awk.dat $dat | cmp -s - nextfile.out || Fail
+LC_ALL=C $PROG -f nextfile.awk full-awk.dat $dat | cmp -s - nextfile.out || Fail "nextfile.awk"
 
 Finish "nextfile test"
 
@@ -212,11 +220,23 @@ Finish "nextfile test"
 
 Begin "testing function calls and general stress test"
 
-LC_ALL=C $PROG -f $SRC/examples/decl.awk $dat | cmp -s - decl-awk.out || Fail
+LC_ALL=C $PROG -f $SRC/examples/decl.awk $dat | cmp -s - decl-awk.out || Fail "examples/decl.awk"
 
 Finish "general stress test"
 
-Summary "tested $PROG"
+#################################
+
+Begin "testing r{n,m} repetitions"
+
+LC_ALL=C $PROG -Wre -f repetitions.awk repetitions.dat | cmp -s - repetitions.out || Fail "repetitions.awk"
+
+Finish "repetitions test"
+
+#################################
+
+
+Summary "\n##################################################\ntested $PROG"
+echo "##################################################"
 
 trap 0
 rm -f $STDOUT

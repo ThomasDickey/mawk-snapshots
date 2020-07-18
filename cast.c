@@ -1,6 +1,6 @@
 /********************************************
 cast.c
-copyright 2009-2014,2016, Thomas E. Dickey
+copyright 2009-2016,2020, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.21 2016/09/30 11:51:20 tom Exp $
+ * $MawkId: cast.c,v 1.22 2020/07/14 00:44:33 tom Exp $
  */
 
 /*  cast.c  */
@@ -258,7 +258,11 @@ cast_to_RE(CELL *cp)
 void
 cast_for_split(CELL *cp)
 {
+#ifndef NO_INTERVAL_EXPR
+    static const char meta[] = "^$.*+?|[](){}";
+#else
     static const char meta[] = "^$.*+?|[]()";
+#endif
     static char xbuff[] = "\\X";
     int c;
     size_t len;

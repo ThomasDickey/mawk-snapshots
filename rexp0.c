@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.34 2020/01/20 11:46:45 tom Exp $
+ * $MawkId: rexp0.c,v 1.35 2020/07/18 00:51:56 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -32,6 +32,10 @@ static int do_str(int, char **, MACHINE *);
 static int do_class(char **, MACHINE *);
 static int escape(char **);
 static BV *store_bvp(BV *);
+
+#ifndef NO_INTERVAL_EXPR
+static int do_intervals(char **);
+#endif
 
 /* make next array visible */
 /* *INDENT-OFF* */
@@ -53,7 +57,7 @@ char char2token[] =
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*67*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*6f*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*77*/
-    T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_OR,   T_CHAR, T_CHAR, T_CHAR,	/*7f*/
+    T_CHAR, T_CHAR, T_CHAR, T_LB,   T_OR,   T_RB,   T_CHAR, T_CHAR,     /*7f*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*87*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*8f*/
     T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR, T_CHAR,	/*97*/
@@ -77,9 +81,14 @@ char char2token[] =
 
 static int prev;
 static size_t nest;
-static char *lp;		/*  ptr to reg exp string  */
+char *lp;			/*  ptr to reg exp string  */
 static char *re_str;		/*  base of 'lp' */
 static size_t re_len;
+
+#ifndef NO_INTERVAL_EXPR
+int intrvalmin;
+int intrvalmax;
+#endif
 
 void
 RE_lex_init(char *re, size_t len)
@@ -88,6 +97,10 @@ RE_lex_init(char *re, size_t len)
     re_len = len + 1;
     prev = NOT_STARTED;
     nest = 0;
+#ifndef NO_INTERVAL_EXPR
+    intrvalmin = 0;
+    intrvalmax = 0;		/* {n,} sets max to -1 */
+#endif
     RE_run_stack_init();
     RE_pos_stack_init();
 }
@@ -99,8 +112,8 @@ RE_lex_init(char *re, size_t len)
  * before returning the appropriate token, this will write the
  * corresponding machine to *mp.
  *
- * For the rest (T_PLUS, T_STAR, T_OR, T_Q, T_RP, T_LP, and T_CAT), *mp
- * is left alone.
+ * For the rest (T_PLUS, T_STAR, T_OR, T_Q, T_RP, T_LP, T_LB,
+ *                T_RB, T_CAT),  *mp is left alone.
  *
  * Returns 0 for end of regexp.
  */
@@ -118,7 +131,14 @@ RE_lex(MACHINE * mp)
 	return 0;
     }
 
-    switch (c = char2token[(UChar) (*lp)]) {
+    c = char2token[(UChar) (*lp)];
+#ifndef NO_INTERVAL_EXPR
+    if (!repetitions_flag && (c == T_LB || c == T_RB)) {
+	c = T_CHAR;
+    }
+#endif
+
+    switch (c) {
     case T_PLUS:
     case T_STAR:
 	if (prev == T_START)
@@ -129,6 +149,13 @@ RE_lex(MACHINE * mp)
     case T_Q:
 	lp++;
 	return prev = c;
+
+#ifndef NO_INTERVAL_EXPR
+    case T_LB:
+	lp++;
+	prev = T_LB;
+	break;
+#endif
 
     case T_RP:
 	if (!nest) {
@@ -157,11 +184,19 @@ RE_lex(MACHINE * mp)
 	case T_U:
 	    return prev = T_CAT;
 
+#ifndef NO_INTERVAL_EXPR
+	case T_RB:
+	    if (!repetitions_flag) {
+		return prev = T_CAT;
+	    }
+	    /* FALLTHRU */
+#endif
+
 	default:
 	    nest++;
 	    lp++;
 	    return prev = T_LP;
-	}
+	}			/* T_LP switch */
     }
 
     /*  *lp  is  an operand, but implicit cat op is possible   */
@@ -227,8 +262,18 @@ RE_lex(MACHINE * mp)
 
 	default:
 	    RE_panic("bad switch in RE_lex");
-	}
+	}			/* T_CAT switch */
 	break;
+
+#ifndef NO_INTERVAL_EXPR
+    case T_LB:
+	/* get interval expression numbers until closing T_RB */
+	prev = do_intervals(&lp);
+	return prev = T_RB;
+
+    case T_RB:
+	/* FALLTHRU */
+#endif
 
     default:
 	/* don't advance the pointer */
@@ -270,7 +315,14 @@ do_str(
     while ((1 + p - re_str) < (int) re_len) {
 	char *save;
 
-	switch (char2token[(UChar) (*p)]) {
+	c = char2token[(UChar) (*p)];
+#ifndef NO_INTERVAL_EXPR
+	if (!repetitions_flag && (c == T_LB || c == T_RB)) {
+	    c = T_CHAR;
+	}
+#endif
+
+	switch (c) {
 	case T_CHAR:
 	    pt = p;
 	    *s++ = *p++;
@@ -291,7 +343,11 @@ do_str(
 
   out:
     /* if len > 1 and we stopped on a ? + or * , need to back up */
-    if (len > 1 && (*p == '*' || *p == '+' || *p == '?')) {
+    if (len > 1 && (*p == '*' || *p == '+' || *p == '?'
+#ifndef NO_INTERVAL_EXPR
+		    || (repetitions_flag == 1 && *p == '{')
+#endif
+	)) {
 	len--;
 	p = pt;
 	s--;
@@ -302,6 +358,85 @@ do_str(
     *mp = RE_str((char *) RE_realloc(str, len + 1), len);
     return T_STR;
 }
+
+#ifndef NO_INTERVAL_EXPR
+/*
+  Collect two numbers between T_LB and T_RB, saving
+  the values in intrvalmin and intrvalmax.
+  
+  There are three ways the interval expressions are formed:
+  {n}   => previous regexp is repeated n times
+  {n,m} => previous regexp is repeated n to m times
+  {n,}  => previous regexp is repeated n or more times
+  {,m}  => {0,m}
+  Note: awk doesn't define  {,m}
+  
+  returns: T_RB, or on error T_CHAR
+*/
+
+static int
+do_intervals(
+		char **pp)	/* where to put the re_char pointer on exit */
+{
+    register char *p;		/* runs thru the input */
+
+    p = *pp;
+
+    intrvalmin = 0;
+    intrvalmax = 0;
+    if (!isdigit(*p) && *p != ',')	/* error */
+    {
+	RE_error_trap(-E7);
+    }
+
+    if (*p != ',') {
+	intrvalmin = intrvalmin * 10 + *p++ - '0';
+
+	while (*p != '\0') {
+	    if (isdigit((UChar) * p)) {
+		intrvalmin = intrvalmin * 10 + *p++ - '0';
+	    } else if ((UChar) * p == '}') {
+		p++;
+		*pp = p;
+		intrvalmax = intrvalmin;	/* {n} */
+		return T_RB;
+	    } else if ((UChar) * p == ',') {
+		if ((UChar) * ++p == '}') {
+		    p++;
+		    *pp = p;
+		    intrvalmax = INT_MAX;
+		    return T_RB;	/* {n,} */
+		}
+		break;
+	    } else {
+		p++;
+		*pp = p;
+		RE_error_trap(-E7);
+	    }
+	}
+    } else {
+	p++;
+    }
+    while (*p != '\0') {
+	if (isdigit((UChar) * p)) {
+	    intrvalmax = intrvalmax * 10 + *p++ - '0';
+	} else if ((UChar) * p == '}') {
+	    if (intrvalmax < intrvalmin) {
+		RE_error_trap(-E7);
+	    }
+	    p++;
+	    break;
+	} else {
+	    p++;
+	    *pp = p;
+	    RE_error_trap(-E7);
+	}
+    }
+
+    *pp = p;
+    return T_RB;
+}
+#endif /* ! NO_INTERVAL_EXPR */
 
 /*--------------------------------------------
   BUILD A CHARACTER CLASS

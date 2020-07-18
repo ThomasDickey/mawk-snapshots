@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.28 2016/09/30 19:02:09 tom Exp $
+ * $MawkId: rexp.h,v 1.29 2020/07/14 23:03:35 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -62,6 +62,10 @@ typedef struct {
 	BV *bvp;		/*  class  */
 	int jump;
     } s_data;
+#ifndef NO_INTERVAL_EXPR
+    int it_max;			/* used for s_type == M_2JC */
+    int it_cnt;
+#endif
 } STATE;
 
 #define  STATESZ  (sizeof(STATE))
@@ -71,22 +75,31 @@ typedef struct {
 } MACHINE;
 
 /*  tokens   */
-#define  T_NONE   0		/* no token */
-#define  T_OR     1		/* | */
-#define  T_CAT    2		/* binary operator */
-#define  T_STAR   3		/* * */
-#define  T_PLUS   4		/* + */
-#define  T_Q      5		/* ? */
-#define  T_LP     6		/* ( */
-#define  T_RP     7		/* ) */
-#define  T_START  8		/* ^ */
-#define  T_END    9		/* $ */
-#define  T_ANY   10		/* . */
-#define  T_CLASS 11		/* starts with [ */
-#define  T_SLASH 12		/*  \  */
-#define  T_CHAR  13		/* all the rest */
-#define  T_STR   14		/* string built of other tokens */
-#define  T_U     15
+typedef enum {
+    T_NONE = 0			/* no token */
+    ,T_OR			/* | */
+    ,T_CAT			/* binary operator */
+    ,T_STAR			/* * */
+    ,T_PLUS			/* + */
+    ,T_Q			/* ? */
+    ,T_LP			/* ( */
+    ,T_RP			/* ) */
+    ,T_START			/* ^ */
+    ,T_END			/* $ */
+    ,T_ANY			/* . */
+    ,T_CLASS			/* starts with [ */
+    ,T_SLASH			/*  \  */
+    ,T_CHAR			/* all the rest */
+    ,T_STR			/* string built of other tokens */
+#ifdef NO_INTERVAL_EXPR
+#define T_LB	T_CHAR		/* { */
+#define T_RB	T_CHAR		/* } */
+#else
+    ,T_LB			/* { */
+    ,T_RB			/* } */
+#endif
+    ,T_U
+} MAWK_TOKEN;
 
 /*  precedences and error codes  */
 #define  L   0
@@ -147,6 +160,13 @@ extern void RE_close(MACHINE *);
 extern void RE_poscl(MACHINE *);
 extern void RE_01(MACHINE *);
 extern void RE_panic(const char *) GCC_NORETURN;
+extern void RE_panic2(const char *, char *) GCC_NORETURN;
+
+#ifndef NO_INTERVAL_EXPR
+extern void RE_close_limit(MACHINE *, int);
+extern void RE_poscl_limit(MACHINE *, int);
+extern void duplicate_m(MACHINE *, MACHINE *);
+#endif
 
 #ifndef MAWK_H
 extern char *str_str(char *, size_t, char *, size_t);
@@ -166,6 +186,10 @@ extern RT_STATE *RE_run_stack_empty;
 extern RT_POS_ENTRY *RE_pos_stack_base;
 extern RT_POS_ENTRY *RE_pos_stack_limit;
 extern RT_POS_ENTRY *RE_pos_stack_empty;
+
+extern int intrvalmin;
+extern int intrvalmax;
+extern char *lp;
 
 #ifdef LOCAL_REGEXP
 static /* inline */ RT_POS_ENTRY *
@@ -197,6 +221,38 @@ RE_pos_pop(RT_POS_ENTRY ** head, const RT_STATE * current)
 
     return prev->pos;
 }
+
+#ifndef NO_INTERVAL_EXPR
+/* reset it_cnt to zero for the M_2JC state
+ *  which is where loop count is checked
+ */
+static void
+RE_init_it_cnt(STATE * s)
+{
+    STATE *p = s;
+    while (p->s_type < M_ACCEPT) {
+	if (p->s_type == M_2JC)
+	    p->it_cnt = 0;
+	p++;
+    }
+}
+#else
+#define RE_init_it_cnt(s)	/* nothing */
+#endif
+
+#ifndef NO_INTERVAL_EXPR
+static void
+RE_set_limit(STATE * s, int limit)
+{
+    STATE *p = s;
+    while (p->s_type < M_ACCEPT) {
+	if (p->s_type == M_2JC)
+	    p->it_max = limit;
+	p++;
+    }
+}
+#endif /* ! NO_INTERVAL_EXPR */
+
 #endif /* LOCAL_REGEXP */
 
 #endif /* REXP_H  */

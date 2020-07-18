@@ -1,9 +1,9 @@
 @echo off
-rem $MawkId: mawktest.bat,v 1.12 2014/08/20 20:01:16 tom Exp $
+rem $MawkId: mawktest.bat,v 1.13 2020/07/12 14:28:25 tom Exp $
 rem vile:rs=lf
 rem
 rem  ##########################################################################
-rem  copyright 2010-2012,2014 Thomas E. Dickey
+rem  copyright 2010-2014,2020 Thomas E. Dickey
 rem  copyright 1996, Michael D. Brennan
 rem 
 rem  This is a source file for mawk, an implementation of
@@ -91,6 +91,12 @@ rem ######################################
 	call :begin testing nextfile
 	%PROG% -f nextfile.awk full-awk.dat %dat% > %STDOUT%
 	call :compare "nextfile-test" %STDOUT% nextfile.out
+
+rem ######################################
+
+	call :begin testing intervals
+	%PROG% -f intervals.awk intervals.dat > %STDOUT%
+	call :compare "intervals-test" %STDOUT% intervals.out
 
 rem ################################
 

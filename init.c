@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2016,2017, Thomas E. Dickey
+copyright 2008-2017,2020, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.45 2017/10/17 01:19:15 tom Exp $
+ * $MawkId: init.c,v 1.46 2020/07/14 19:44:47 tom Exp $
  */
 
 /* init.c */
@@ -40,6 +40,9 @@ typedef enum {
     W_RANDOM,
     W_SPRINTF,
     W_POSIX_SPACE,
+#ifndef NO_INTERVAL_EXPR
+    W_REPETITIONS,
+#endif
     W_USAGE
 } W_OPTIONS;
 
@@ -94,8 +97,12 @@ initialize(int argc, char **argv)
 #endif
 }
 
-int dump_code_flag;		/* if on dump internal code */
-short posix_space_flag;
+int dump_code_flag = 0;		/* if on dump internal code */
+short posix_space_flag = 0;
+
+#ifndef NO_INTERVAL_EXPR
+short repetitions_flag = 0;
+#endif
 
 #ifdef	 DEBUG
 int dump_RE = 1;		/* if on dump compiled REs  */
@@ -150,9 +157,12 @@ usage(void)
 	"    -W help          show this message and exit.",
 	"    -W interactive   set unbuffered output, line-buffered input.",
 	"    -W exec file     use file as program as well as last option.",
-	"    -W random=number set initial random seed.",
-	"    -W sprintf=number adjust size of sprintf buffer.",
 	"    -W posix_space   do not consider \"\\n\" a space.",
+	"    -W random=number set initial random seed.",
+#ifndef NO_INTERVAL_EXPR
+	"    -W repetitions   enable Extended RE expressions: r{n,m}.",
+#endif
+	"    -W sprintf=number adjust size of sprintf buffer.",
 	"    -W usage         show this message and exit.",
     };
     size_t n;
@@ -255,6 +265,9 @@ parse_w_opt(char *source, char **next)
 	    DATA(RANDOM),
 	    DATA(SPRINTF),
 	    DATA(POSIX_SPACE),
+#ifndef NO_INTERVAL_EXPR
+	    DATA(REPETITIONS),
+#endif
 	    DATA(USAGE)
     };
 #undef DATA
@@ -388,6 +401,12 @@ process_cmdline(int argc, char **argv)
 		case W_POSIX_SPACE:
 		    posix_space_flag = 1;
 		    break;
+
+#ifndef NO_INTERVAL_EXPR
+		case W_REPETITIONS:
+		    repetitions_flag = 1;
+		    break;
+#endif
 
 		case W_RANDOM:
 		    if (haveValue(optNext)) {

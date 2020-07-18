@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.28 2020/01/20 14:08:41 tom Exp $
+ * $MawkId: print.c,v 1.29 2020/07/14 00:41:31 tom Exp $
  */
 
 #include "mawk.h"
@@ -142,7 +142,7 @@ typedef enum {
 #define	 AST(num,type)	((PF_last)*(num)+(type))
 
 /* some picky ANSI compilers go berserk without this */
-typedef int (*PRINTER) (PTR, const char *,...);
+typedef int (*PRINTER) (PTR, const char *, ...);
 
 /*-------------------------------------------------------*/
 
@@ -538,8 +538,13 @@ do_printf(
 		break;
 
 	    case C_STRING:
+#ifndef NO_INTERVAL_EXPR
+		/* fall thru to check for bad number formats */
+		/* fall thru */
+#else
 		Ival = string(cp)->str[0];
 		break;
+#endif
 
 	    case C_MBSTRN:
 		check_strnum(cp);

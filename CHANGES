@@ -1,6 +1,13 @@
--- $MawkId: CHANGES,v 1.277 2020/07/08 23:32:27 tom Exp $
+-- $MawkId: CHANGES,v 1.278 2020/07/17 22:42:29 tom Exp $
 
-Changes by Thomas E Dickey <dickey@invisible-island.net>
+20200717
+	+ add configure option "--disable-interval-expr"
+	> integrated/adapted changes by James Parkinson (jlp765):
+	+ add regexp intervals, 
+	+ add tests for intervals to test/mawktest and associated 
+	  test/repetitions files, 
+	+ add -W repetitions to enable r{m,n}
+	+ add man page updates to man/mawk.1
 
 20200708
 	+ update manpage comment about "nextfile" (AustinGroup #607).

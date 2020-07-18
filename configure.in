@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.60 2020/01/20 11:43:28 tom Exp $
+dnl $MawkId: configure.in,v 1.61 2020/07/14 00:05:00 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2019,2020, Thomas E. Dickey
@@ -45,7 +45,7 @@ AC_ARG_WITH([builtin-regex],
 ])
 if test "x${with_builtin_regex}" != xno; then
 	with_builtin_regex=yes
-    CPPFLAGS="$CPPFLAGS -DLOCAL_REGEXP"
+    AC_DEFINE(LOCAL_REGEXP,1,[define to 1 to use mawk's own regular-expressions engine])
 fi
 AC_MSG_RESULT($with_builtin_regex)
 
@@ -77,9 +77,22 @@ CF_ARG_DISABLE([init-srand],
 if test "x${with_init_srand}" != xno; then
 	with_init_srand=yes
 else
-    CPPFLAGS="$CPPFLAGS -DNO_INIT_SRAND"
+    AC_DEFINE(NO_INIT_SRAND,1,[define to 1 to suppress automatic initialization of random numbers])
 fi
 AC_MSG_RESULT($with_init_srand)
+
+###############################################################################
+AC_MSG_CHECKING(if you want mawk to support regex interval expressions {m[,]n})
+CF_ARG_DISABLE([interval-expr],
+[  --disable-interval-expr suppress regex interval expressions {m,n}],
+	[with_interval_expr=no],
+	[with_interval_expr=yes])
+if test "x${with_interval_expr}" != xno; then
+	with_interval_expr=yes
+else
+    AC_DEFINE(NO_INTERVAL_EXPR,1,[define to 1 to suppress regex interval expressions {m,n}])
+fi
+AC_MSG_RESULT($with_interval_expr)
 
 ###############################################################################
 
@@ -125,4 +138,5 @@ CF_SET_MATH_LIB_VERSION
 CF_MAWK_FIND_MAX_INT
 CF_MAWK_RUN_FPE_TESTS
 
-AC_OUTPUT(Makefile man/Makefile)
+AC_CONFIG_FILES([Makefile man/Makefile])
+AC_OUTPUT

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: version.c,v 1.27 2020/01/06 10:03:06 tom Exp $
+ * $MawkId: version.c,v 1.28 2020/07/12 20:22:00 tom Exp $
  */
 
 #include "mawk.h"
@@ -47,13 +47,18 @@ print_version(void)
     fprintf(stderr, FMT_S, SHOW_REGEXP, "external");
 #endif
 
-    fprintf(stderr, "compiled limits:\n");
+    fprintf(stderr, "\ncompiled limits:\n");
     fprintf(stderr, FMT_N, "sprintf buffer", (double) SPRINTF_LIMIT);
     fprintf(stderr, FMT_N, "maximum-integer", (double) MAX__INT);
 #if 0
     /* we could show these, but for less benefit: */
     fprintf(stderr, FMT_N, "maximum-unsigned", (double) MAX__UINT);
     fprintf(stderr, FMT_N, "maximum-long", (double) MAX__LONG);
+#endif
+
+    fprintf(stderr, "\ncompiled extras:\n");
+#ifndef NO_INTERVAL_EXPR
+    fprintf(stderr, FMT_S, "RE intervals: ", "enabled by -W repetitions");
 #endif
     mawk_exit(0);
 }
