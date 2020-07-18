@@ -11,10 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.30 2020/01/20 11:22:11 tom Exp $
- * @Log: split.c,v @
- * Revision 1.3  1996/02/01  04:39:42  mike
- * dynamic array scheme
+ * $MawkId: split.c,v 1.31 2020/07/14 00:43:07 tom Exp $
  */
 
 /* split.c */
@@ -111,6 +108,9 @@ space_split(const char *s, size_t slen)
     /* not reached */
 }
 
+/*
+ * re is an (RE_DATA *) with compiled PTR holding the compiled RE
+ */
 size_t
 re_split(char *s, size_t slen, PTR re)
 {

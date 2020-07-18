@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2016,2017, Thomas E. Dickey
+copyright 2008-2017,2020, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.21 2017/10/17 01:19:15 tom Exp $
+ * $MawkId: rexp.c,v 1.22 2020/07/18 00:54:46 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -28,12 +28,15 @@ const char *const REerrlist[] =
  /* 3  */ "bad class -- [], [^] or [",
  /* 4  */ "missing operand",
  /* 5  */ "resource exhaustion -- regular expression too large",
- /* 6  */ "syntax error ^* or ^+"
+ /* 6  */ "syntax error ^* or ^+",
+ /* 7  */ "bad interval expression",
+ /* 8  */ ""
 };
 /* E5 is very unlikely to occur */
 
 /* This table drives the operator precedence parser */
 /* *INDENT-OFF* */
+#ifdef NO_INTERVAL_EXPR
 static  short  table[8][8] = {
 /*        0   |   CAT  *   +   ?   (   )   */
 /* 0 */  {0,  L,  L,   L,  L,  L,  L,  E1},
@@ -44,6 +47,20 @@ static  short  table[8][8] = {
 /* ? */  {G,  G,  G,   G,  G,  G,  E7, G},
 /* ( */  {E2, L,  L,   L,  L,  L,  L,  EQ},
 /* ) */  {G , G,  G,   G,  G,  G,  E7, G}};
+#else
+static  short  table[10][10]  =  {
+/*        0    |   CAT   *   +   ?   (   )   {   }  */
+/* 0 */   {0,  L,  L,    L,  L,  L,  L,  E1, E7, L},
+/* | */   {G,  G,  L,    L,  L,  L,  L,  G,  G,  G},
+/* CAT*/  {G,  G,  G,    L,  L,  L,  L,  G,  L,  G},
+/* * */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
+/* + */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
+/* ? */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
+/* ( */   {E2, L,  L,    L,  L,  L,  L,  EQ, G,  G},
+/* ) */   {G , G,  G,    G,  G,  G,  E7, G,  E7, G},
+/* { */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  EQ},
+/* } */   {G , G,  G,    G,  G,  G,  E7, G,  E7, G}   };
+#endif
 /* *INDENT-ON* */
 
 #define	 STACKSZ   64
@@ -72,6 +89,10 @@ token_name(int token)
 	CASE(T_SLASH);
 	CASE(T_CHAR);
 	CASE(T_STR);
+#ifndef NO_INTERVAL_EXPR
+	CASE(T_LB);
+	CASE(T_RB);
+#endif
 	CASE(T_U);
     default:
 	result = "?";
@@ -136,6 +157,69 @@ REcompile(char *re, size_t len)
 	    m_ptr++;
 	    break;
 
+#ifndef NO_INTERVAL_EXPR
+	case T_RB:
+	    if (!repetitions_flag) {
+		goto default_case;
+	    }
+	    /* interval expression {n,m}
+	     * eg, 
+	     *   convert m{3} to mmm
+	     *   convert m{3,} to mmm* (with a limit of MAX_INT)
+	     *   convert m{3,10} to mm* with a limit of 10
+	     */
+	    if (intrvalmin == 0) {	/* zero or more */
+		switch (intrvalmax) {
+		case 0:
+		    /* user stupidity: m{0} or m{0,0} 
+		     * don't add this re token
+		     */
+		    if (op_ptr != op_stack) {
+			/* no previous re */
+			RE_free(m_ptr->start);
+			m_ptr--;
+			op_ptr--;
+		    } else if (*lp == '\0') {
+			/* this was the only re expr
+			   so leave one M_ACCEPT as the machine */
+			m_ptr->start->s_type = M_ACCEPT;
+		    } else {
+			RE_free(m_ptr->start);
+			m_ptr--;
+		    }
+		    TRACE(("RE_lex token %s\n",
+			   "of zero interval is ignored!"));
+		    break;
+		case 1:
+		    RE_01(m_ptr);	/* m{0,1} which is m? */
+		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
+		    break;
+		default:
+		    RE_close_limit(m_ptr, intrvalmax);
+		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
+		}
+	    } else if (intrvalmin == 1) {	/* one or more */
+		RE_poscl_limit(m_ptr, intrvalmax);
+		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
+	    } else {		/* n or more */
+		register int i;
+		/* copy 2 copies of m_ptr, use 2nd copy to replace
+		   the first copy that gets swallowed by concat */
+		MACHINE *result_mp = m_ptr;
+		MACHINE *concat_mp = (MACHINE *) (m_ptr + 1);
+		MACHINE *new_mp = (MACHINE *) (m_ptr + 2);
+		duplicate_m(concat_mp, result_mp);
+		duplicate_m(new_mp, result_mp);
+		for (i = 2; i <= intrvalmin; i++) {
+		    RE_cat(result_mp, concat_mp);
+		    duplicate_m(concat_mp, new_mp);
+		}
+		/* don't need 2nd copy in new_mp */
+		RE_free(new_mp->start);
+	    }
+	    break;
+#endif /* ! NO_INTERVAL_EXPR */
+
 	case 0:		/*  end of reg expr   */
 	    if (op_ptr->token == 0) {
 		/*  done   */
@@ -143,13 +227,16 @@ REcompile(char *re, size_t len)
 		    return (PTR) m_ptr->start;
 		} else {
 		    /* machines still on the stack  */
-		    RE_panic("values still on machine stack");
+		    RE_panic2("values still on machine stack for ", re);
 		}
 	    }
 	    /* FALLTHRU */
 
 	    /*  otherwise, default is operator case  */
 
+#ifndef NO_INTERVAL_EXPR
+	  default_case:
+#endif
 	default:
 
 	    if ((op_ptr->prec = table[op_ptr->token][t]) == G) {
@@ -262,9 +349,29 @@ RE_panic(const char *s)
     mawk_exit(100);
 }
 
+void
+RE_panic2(const char *s1, char *s2)
+{
+    fprintf(stderr, "REcompile() - panic:  %s %s\n", s1, s2);
+    mawk_exit(100);
+}
+
 /* getting regexp error message */
 const char *
 REerror(void)
 {
     return REerrlist[REerrno];
 }
+
+#ifndef NO_INTERVAL_EXPR
+/* duplicate a machine, oldmp into newmp */
+void
+duplicate_m(MACHINE * newmp, MACHINE * oldmp)
+{
+    register STATE *p;
+    p = (STATE *) RE_malloc(2 * STATESZ);
+    memcpy(p, oldmp->start, 2 * STATESZ);
+    newmp->start = (STATE *) p;
+    newmp->stop = (STATE *) (p + 1);
+}
+#endif /* NO_INTERVAL_EXPR */

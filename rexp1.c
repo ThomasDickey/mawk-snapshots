@@ -1,6 +1,6 @@
 /********************************************
 rexp1.c
-copyright 2009-2010,2016, Thomas E. Dickey
+copyright 2009-2016,2020, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.16 2016/09/30 21:11:29 tom Exp $
+ * $MawkId: rexp1.c,v 1.17 2020/07/14 23:03:35 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -28,6 +28,10 @@ new_TWO(
     mp->stop = mp->start + 1;
     mp->start->s_type = (SType) type;
     mp->stop->s_type = M_ACCEPT;
+#ifndef NO_INTERVAL_EXPR
+    mp->start->it_max = INT_MAX;
+    mp->start->it_cnt = 0;
+#endif
 }
 
 /*  build a machine that recognizes any	 */
@@ -163,9 +167,30 @@ ignore_star_star(MACHINE * mp)
     return 0;
 }
 
+#ifndef NO_INTERVAL_EXPR
+/*  replace m with m*  limited to the max iterations 
+        (variation of m*   closure)   */
+void
+RE_close_limit(MACHINE * mp, int ilimit)
+{
+    RE_close(mp);
+    RE_set_limit(mp->start, ilimit);
+}
+
+/*  replace m with m+  limited to the max iterations 
+     which is one or more, limited
+        (variation of m+   positive closure)   */
+void
+RE_poscl_limit(MACHINE * mp, int ilimit)
+{
+    RE_poscl(mp);
+    RE_set_limit(mp->start, ilimit);
+}
+#endif /* ! NO_INTERVAL_EXPR */
+
 /*  UNARY  OPERATIONS	  */
 
-/*  replace m by m*   */
+/*  replace m by m*  (zero or more) */
 
 void
 RE_close(MACHINE * mp)
@@ -194,11 +219,14 @@ RE_close(MACHINE * mp)
     p->s_data.jump = (int) (sz + 2);
     (++p)->s_type = M_SAVE_POS;
     (p += sz)->s_type = M_2JC;
+#ifndef NO_INTERVAL_EXPR
+    p->it_max = INT_MAX;
+#endif
     p->s_data.jump = -(int) sz;
     (p + 1)->s_type = M_ACCEPT;
 }
 
-/*  replace m  by  m+  (positive closure)   */
+/*  replace m  by  m+  (positive closure - one or more)  */
 
 void
 RE_poscl(MACHINE * mp)
@@ -224,6 +252,9 @@ RE_poscl(MACHINE * mp)
     p++->s_type = M_SAVE_POS;
     p += sz - 1;
     p->s_type = M_2JC;
+#ifndef NO_INTERVAL_EXPR
+    p->it_max = INT_MAX;
+#endif
     p->s_data.jump = -((int) sz);
     (p + 1)->s_type = M_ACCEPT;
 }
@@ -236,6 +267,12 @@ RE_01(MACHINE * mp)
     size_t sz;
     register STATE *p;
 
+    /* 
+     *          2JB end (jump desirable if not found) 
+     *          m
+     * end:
+     *          ACCEPT
+     */
     sz = (size_t) (mp->stop - mp->start + 1);
     p = (STATE *) RE_malloc((sz + 1) * STATESZ);
     memcpy(p + 1, mp->start, sz * STATESZ);

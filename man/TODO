@@ -1,4 +1,4 @@
--- $MawkId: TODO,v 1.6 2009/09/18 09:27:06 tom Exp $
+-- $MawkId: TODO,v 1.7 2020/07/12 20:20:37 tom Exp $
 mawk was implemented to conform with POSIX 1003.2-1992
 
 According to
@@ -54,8 +54,9 @@ EXTENDED DESCRIPTION
 	mawk complies
 
 >Regular Expressions
-	mawk's built-in regular expressions do not support brace expressions
-	(used to denote minimum/maximum number of matches).
+	mawk's built-in regular expressions supports brace expressions
+	(used to denote minimum/maximum number of matches) with the
+	-Wrepetitions command line option.
 
 	mawk can be built with an external regular-expression library.
 	However, POSIX regular expressions do not support matches of

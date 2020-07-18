@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.42 2020/07/08 23:32:53 tom Exp $
+.\" $MawkId: mawk.1,v 1.44 2020/07/12 23:14:02 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-07-08" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-07-12" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -164,6 +164,10 @@ bytes.
 More than rare use of this option indicates
 \fB\*n\fP
 should be recompiled.
+.TP
+\-\fBW \fRrepetitions
+enables extended regular rexpression syntax for 
+repetitions like \fBr{n,m}\fR
 .TP
 \-\fBW \fRusage
 prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRhelp\*('').
@@ -424,6 +428,15 @@ meaning in regular expressions are
 	\\ ^ $ . [ ] | ( ) * + ?
 .sp
 .fi
+With the \fI-W repetitions\fR command line option (or permanently
+configured at comnpile time), 
+.nf
+.sp
+	{ }
+.sp
+are also regular expression metacharacters, and in this mode,
+require escaping to be a literal character.
+
 Regular expressions are built up from characters as follows:
 .RS 5
 .TP \w'[^c\d1\uc\d2\uc\d3\u...]'u+1n
@@ -432,13 +445,10 @@ matches any non-metacharacter
 .IR c .
 .TP
 \e\fIc\fR
-matches a character defined by the same escape sequences used
+matches a character defined by the same
+escape sequences used
 in string constants or the literal
-character
-.I c
-if
-\e\fIc\fR
-is not an escape sequence.
+character \fIc\fR if \e\fIc\fR is not an escape sequence.
 .TP
 \&\.
 matches any character (including newline).
@@ -469,13 +479,15 @@ matches
 \fIr\fR\d1\u
 followed immediately by
 \fIr\fR\d2\u
-(concatenation).
+(\fIconcatenation\fR).
+.sp
 .TP
 \fIr\fR\d1\u | \fIr\fR\d2\u
 matches
 \fIr\fR\d1\u or
 \fIr\fR\d2\u
-(alternation).
+(\fIalternation\fR).
+.sp
 .TP
 \fIr\fR*
 matches \fIr\fR repeated zero or more times.
@@ -485,14 +497,34 @@ matches \fIr\fR repeated one or more times.
 .TP
 \fIr\fR?
 matches \fIr\fR zero or once.
+(\fIrepetition\fR).
 .TP
 (\fIr\fR)
-matches \fIr\fR, providing grouping.
-.RE
+matches \fIr\fR
+(\fIgrouping\fR).
 .sp
-The increasing precedence of operators is alternation,
-concatenation and
-unary (*, + or ?).
+.TP
+\fIr\fR{n}
+matches \fIr\fR exactly n times.
+These require the \fB-W repetitions\fR command line option.
+.TP
+\fIr\fR{n,}
+matches \fIr\fR repeated n or more times.
+.TP
+\fIr\fR{n,m}
+matches \fIr\fR repeated n to m (inclusive) times.
+.TP
+\fIr\fR{,m}
+matches \fIr\fR repeated 0 to m times (a non-standard option).
+(\fIrepetitions\fR).
+.RE
+.PP
+The increasing \fBprecedence of operators\fR is:
+.nf
+.sp
+alternation concatenation repetition grouping
+.sp
+.fi
 .PP
 For example,
 .nf
@@ -773,7 +805,7 @@ used to build multiple array subscripts, initially = "\e034".
 .RE
 .\"
 .SS "\fB8. Built-in functions"
-String functions
+.B String functions
 .RS 5
 .TP
 gsub(\fIr,s,t\fR)  gsub(\fIr,s\fR)
@@ -789,7 +821,9 @@ If
 is omitted,
 .B $0
 is used.
-An & in the replacement string
+An
+.IR &
+in the replacement string
 .I s
 is replaced by the matched substring of
 .IR t .
@@ -880,7 +914,7 @@ Returns a copy of
 with all lower case characters converted to upper case.
 .RE
 .PP
-Time functions
+.B Time functions
 .PP
 These are available on systems which support the corresponding C
 \fBmktime\fP and \fBstrftime\fP functions:
@@ -893,25 +927,25 @@ The date specification is a string containing the components of the
 date as decimal integers:
 .RS
 .TP 3
-YYYY
+.B YYYY
 the year, e.g., 2012
 .TP 3
-MM
+.B MM
 the month of the year starting at 1
 .TP 3
-DD
+.B DD
 the day of the month starting at 1
 .TP 3
-HH
+.B HH
 hour (0-23)
 .TP 3
-MM
+.B MM
 minute (0-59)
 .TP 3
-SS
+.B SS
 seconds (0-59)
 .TP 3
-DST
+.B DST
 tells how to treat timezone versus daylight savings time:
 .RS 5
 .TP 3
@@ -948,30 +982,38 @@ returns the current time of day as the number of seconds
 since the Epoch (1970-01-01 00:00:00 UTC on POSIX systems).
 .RE
 .PP
-Arithmetic functions
+.B Arithmetic functions
 .RS 5
-.PP
-.nf
 .ie n .ds Pi pi
 .el   .ds Pi \\(*p
-atan2(\fIy,x\fR)	Arctan of \fIy\fR/\fIx\fR between \-\*(Pi and \*(Pi.
-.PP
-cos(\fIx\fR)		Cosine function, \fIx\fR in radians.
-.PP
-exp(\fIx\fR)		Exponential function.
-.PP
-int(\fIx\fR)		Returns \fIx\fR truncated towards zero.
-.PP
-log(\fIx\fR)		Natural logarithm.
-.PP
-rand()		Returns a random number between zero and one.
-.PP
-sin(\fIx\fR)		Sine function, \fIx\fR in radians.
-.PP
-sqrt(\fIx\fR)		Returns square root of \fIx\fR.
-.fi
 .TP
-srand(\fIexpr\fR)  srand()
+atan2(\fIy,x\fR)
+Arctan of \fIy\fR/\fIx\fR between \-\*(Pi and \*(Pi.
+.TP
+cos(\fIx\fR)
+Cosine function, \fIx\fR in radians.
+.TP
+exp(\fIx\fR)
+Exponential function.
+.TP
+int(\fIx\fR)
+Returns \fIx\fR truncated towards zero.
+.TP
+log(\fIx\fR)
+Natural logarithm.
+.TP
+rand()
+Returns a random number between zero and one.
+.TP
+sin(\fIx\fR)
+Sine function, \fIx\fR in radians.
+.TP
+sqrt(\fIx\fR)
+Returns square root of \fIx\fR.
+.TP
+srand(\fIexpr\fR)
+.TP
+srand()
 Seeds the random number generator,
 using the clock if \fIexpr\fP is omitted,
 and returns the value of the previous seed.
@@ -1789,7 +1831,36 @@ are \fBgawk\fP extensions.
 .PP
 The "/dev/stdin" feature was added to \fBmawk\fP after 1.3.4,
 for compatibility with \fBgawk\fP and BWK awk.
-The corresponding "-" (alias for /dev/stdin) was present in \*n 1.3.3.
+The corresponding "-" (alias for /dev/stdin) was present in \fB\*n\fR 1.3.3.
+.PP
+Interval expressions,
+e.g., a range \fI{m,n}\fP in Extended Regular Expressions (EREs),
+were not supported in awk (or even the original \*(``nawk\*(''):
+.bP
+Gawk provided this feature in 1991 (and later, in 1998,
+options for turning it off,
+for compatibility with \*(``traditional awk\*('').
+.bP
+Interval expressions,
+were introduced into \fIawk\fP regular expressions
+in IEEE 1003.1-2001 (also known as Unix 03),
+along with some internationalization features.
+.bP
+Apple modified its copy of the original awk in April 2006,
+making this version of awk support interval expressions.
+.IP
+The updated source provides for compatibility with
+older \*(``legacy\*('' versions using an environment variable,
+making this \*(``Unix 2003\*('' feature
+(perhaps meant as Unix 03)
+the default.
+.bP
+NetBSD developers copied this change in January 2018,
+omitting the compatibility option,
+and then applied it to BWK awk.
+.bP
+The interval expression implementation in \fBmawk\fP
+is based on changes proposed by James Parkinson in April 2016.
 .
 .SS "Subtle Differences not in POSIX or the AWK Book"
 .PP
@@ -1834,6 +1905,7 @@ actions,
 the fields and
 .B NF
 have their value unaltered from the last record.
+.RE
 .\" **************************************************************************
 .SH ENVIRONMENT VARIABLES
 \fB\*N\fP recognizes these variables:
@@ -1893,10 +1965,11 @@ It also discusses POSIX requirements for AWK.
 .SH BUGS
 .PP
 \fB\*n\fP
-implements printf() and sprintf() using the C library functions,
+implements \fBprintf()\fR and \fBsprintf()\fR using the C library functions,
 printf and sprintf, so full ANSI compatibility requires an ANSI
 C library.
 In practice this means the h conversion qualifier may not be available.
+.sp
 Also \fB\*n\fP inherits any bugs or limitations of the library functions.
 .PP
 Implementors of the AWK language have shown a consistent lack

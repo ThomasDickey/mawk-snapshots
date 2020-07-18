@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.55 2020/01/20 14:15:55 tom Exp $
+ * $MawkId: mawk.h,v 1.56 2020/07/13 21:56:57 tom Exp $
  */
 
 /*  mawk.h  */
@@ -63,7 +63,12 @@ extern int dump_RE;
 #define USE_BINMODE 0
 #endif
 
-extern short posix_space_flag, interactive_flag;
+extern short posix_space_flag;
+extern short interactive_flag;
+
+#ifndef NO_INTERVAL_EXPR
+extern short repetitions_flag;
+#endif
 
 /*----------------
  *  GLOBAL VARIABLES
