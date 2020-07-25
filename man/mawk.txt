@@ -1084,33 +1084,34 @@ COMPATIBILITY ISSUES
            proposed by James Parkinson in April 2016.
 
        Mawk also recognizes a  few  gawk-specific  command  line  options  for
-       script  compatibility  (e.g.,  --posix, -r, --re-interval, and --tradi-
-       tional).
+       script compatibility:
+
+            --help, --posix, -r, --re-interval, --traditional, --version
 
    Subtle Differences not in POSIX or the AWK Book
-       Finally, here is how mawk handles exceptional cases  not  discussed  in
-       the  AWK  book  or the POSIX draft.  It is unsafe to assume consistency
+       Finally,  here  is  how mawk handles exceptional cases not discussed in
+       the AWK book or the POSIX draft.  It is unsafe  to  assume  consistency
        across awks and safe to skip to the next section.
 
-          o   substr(s, i, n) returns the characters of s in the  intersection
+          o   substr(s,  i, n) returns the characters of s in the intersection
               of the closed interval [1, length(s)] and the half-open interval
-              [i, i+n).  When this intersection is empty, the empty string  is
+              [i,  i+n).  When this intersection is empty, the empty string is
               returned; so substr("ABC", 1, 0) = "" and substr("ABC", -4, 6) =
               "A".
 
-          o   Every string, including the  empty  string,  matches  the  empty
-              string  at  the  front so, s ~ // and s ~ "", are always 1 as is
+          o   Every  string,  including  the  empty  string, matches the empty
+              string at the front so, s ~ // and s ~ "", are always  1  as  is
               match(s, //) and match(s, "").  The last two set RLENGTH to 0.
 
-          o   index(s, t) is always the same as match(s, t1) where t1  is  the
-              same  as  t with metacharacters escaped.  Hence consistency with
-              match requires that index(s, "") always  returns  1.   Also  the
-              condition,  index(s,t)  !=  0 if and only t is a substring of s,
+          o   index(s,  t)  is always the same as match(s, t1) where t1 is the
+              same as t with metacharacters escaped.  Hence  consistency  with
+              match  requires  that  index(s,  "") always returns 1.  Also the
+              condition, index(s,t) != 0 if and only t is a  substring  of  s,
               requires index("","") = 1.
 
-          o   If getline encounters end  of  file,  getline  var,  leaves  var
-              unchanged.   Similarly,  on  entry  to  the END actions, $0, the
-              fields and NF have their value unaltered from the last record.
+          o   If  getline  encounters end of file, getline var, leaves var un-
+              changed.  Similarly, on entry to the END actions, $0, the fields
+              and NF have their value unaltered from the last record.
 
 ENVIRONMENT VARIABLES
        Mawk recognizes these variables:
@@ -1119,45 +1120,45 @@ ENVIRONMENT VARIABLES
              (see COMPATIBILITY ISSUES)
 
           MAWK_LONG_OPTIONS
-             If this is set, mawk uses its value to decide  what  to  do  with
+             If  this  is  set,  mawk uses its value to decide what to do with
              GNU-style long options:
 
                allow  Mawk allows the option to be checked against the (small)
                       set of long options it recognizes.
 
-               error  Mawk prints an error message and  exits.   This  is  the
-                      default.
+               error  Mawk prints an error message and exits.  This is the de-
+                      fault.
 
                ignore Mawk ignores the option.
 
-               warn   Print  an  warning  message  and  otherwise  ignore  the
-                      option.
+               warn   Print an warning message and otherwise  ignore  the  op-
+                      tion.
 
              If the variable is unset, mawk prints an error message and exits.
 
           WHINY_USERS
-             This is a gawk 3.1.0 feature, removed in the 4.0.0  release.   It
+             This  is  a gawk 3.1.0 feature, removed in the 4.0.0 release.  It
              tells mawk to sort array indices before it starts to iterate over
              the elements of an array.
 
 SEE ALSO
        grep(1)
 
-       Aho, Kernighan and Weinberger, The AWK Programming  Language,  Addison-
-       Wesley  Publishing, 1988, (the AWK book), defines the language, opening
-       with a tutorial and advancing to many interesting programs  that  delve
-       into  issues of software design and analysis relevant to programming in
+       Aho,  Kernighan  and Weinberger, The AWK Programming Language, Addison-
+       Wesley Publishing, 1988, (the AWK book), defines the language,  opening
+       with  a  tutorial and advancing to many interesting programs that delve
+       into issues of software design and analysis relevant to programming  in
        any language.
 
-       The GAWK Manual, The Free Software Foundation, 1991, is a tutorial  and
-       language  reference that does not attempt the depth of the AWK book and
-       assumes the reader may be a novice  programmer.   The  section  on  AWK
-       arrays is excellent.  It also discusses POSIX requirements for AWK.
+       The  GAWK Manual, The Free Software Foundation, 1991, is a tutorial and
+       language reference that does not attempt the depth of the AWK book  and
+       assumes  the reader may be a novice programmer.  The section on AWK ar-
+       rays is excellent.  It also discusses POSIX requirements for AWK.
 
 BUGS
-       mawk  implements  printf() and sprintf() using the C library functions,
-       printf and sprintf, so full  ANSI  compatibility  requires  an  ANSI  C
-       library.   In practice this means the h conversion qualifier may not be
+       mawk implements printf() and sprintf() using the C  library  functions,
+       printf  and  sprintf, so full ANSI compatibility requires an ANSI C li-
+       brary.  In practice this means the h conversion qualifier  may  not  be
        available.
 
        Also mawk inherits any bugs or limitations of the library functions.
@@ -1171,4 +1172,4 @@ AUTHOR
 
 
 
-Version 1.3.4                     2020-07-19                           MAWK(1)
+Version 1.3.4                     2020-07-25                           MAWK(1)

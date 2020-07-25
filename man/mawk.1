@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.47 2020/07/19 14:31:54 tom Exp $
+.\" $MawkId: mawk.1,v 1.49 2020/07/25 14:48:03 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-07-19" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-07-25" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -1866,12 +1866,20 @@ The interval expression implementation in \fB\*n\fP
 is based on changes proposed by James Parkinson in April 2016.
 .PP
 \fB\*N\fP also recognizes a few gawk-specific command line options
-for script compatibility
-(e.g.,
+for script compatibility:
+.RS 5
+.sp
+.hy 0
+.na
+\fB\-\-help\fP,
 \fB\-\-posix\fP,
 \fB\-r\fP,
-\fB\-\-re\-interval\fP, and
-\fB\-\-traditional\fP).
+\fB\-\-re\-interval\fP,
+\fB\-\-traditional\fP,
+\fB\-\-version\fP
+.ad
+.hy
+.RE
 .
 .SS "Subtle Differences not in POSIX or the AWK Book"
 .PP
