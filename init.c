@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.49 2020/07/19 17:41:12 tom Exp $
+ * $MawkId: init.c,v 1.50 2020/07/25 14:37:45 tom Exp $
  */
 
 /* init.c */
@@ -206,17 +206,21 @@ bad_option(char *s)
 #ifndef NO_GAWK_OPTIONS
     enum {
 	GLOP_POSIX = 0
+	,GLOP_HELP
 	,GLOP_RE_INTERVAL
 	,GLOP_TRADITIONAL
+	,GLOP_VERSION
     };
 #define DATA(name,code) { "--" name, code }
     static const struct {
 	const char name[15];
 	int code;
     } table[] = {
-	DATA("posix", GLOP_POSIX),
+	DATA("help", GLOP_HELP),
+	    DATA("posix", GLOP_POSIX),
 	    DATA("re-interval", GLOP_RE_INTERVAL),
 	    DATA("traditional", GLOP_TRADITIONAL),
+	    DATA("version", GLOP_VERSION),
     };
 #undef DATA
     int match = -1;
@@ -229,6 +233,9 @@ bad_option(char *s)
     }
     if (match >= 0) {
 	switch (match) {
+	case GLOP_HELP:
+	    usage();
+	    break;
 	case GLOP_POSIX:
 	    posix_space_flag = 1;
 	    break;
@@ -238,6 +245,9 @@ bad_option(char *s)
 	    break;
 	case GLOP_RE_INTERVAL:
 	    enable_repetitions(1);
+	    break;
+	case GLOP_VERSION:
+	    print_version();
 	    break;
 	}
 	return;

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: config_h.in,v 1.31 2020/07/12 23:25:11 tom Exp $
+ * $MawkId: config_h.in,v 1.32 2020/07/25 14:52:05 tom Exp $
  * template for config.h
  */
 
@@ -54,6 +54,7 @@ the GNU General Public License, version 2, 1991.
 #undef MAX__UINT
 #undef NAME_RANDOM
 #undef NOINFO_SIGFPE
+#undef NO_GAWK_OPTIONS
 #undef NO_INIT_SRAND
 #undef NO_INTERVAL_EXPR
 #undef NO_LEAKS

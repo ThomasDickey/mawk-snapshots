@@ -1,4 +1,7 @@
--- $MawkId: CHANGES,v 1.286 2020/07/24 08:14:10 tom Exp $
+-- $MawkId: CHANGES,v 1.287 2020/07/25 14:49:06 tom Exp $
+
+20200725
+	+ add --help and --version options
 
 20200724
 	+ modify logic for "{0}" in rexp.c so that a left-parenthesis is not
