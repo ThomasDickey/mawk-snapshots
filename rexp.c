@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.22 2020/07/18 00:54:46 tom Exp $
+ * $MawkId: rexp.c,v 1.26 2020/07/25 00:02:25 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -110,16 +110,18 @@ RE_error_trap(int x)
     longjmp(err_buf, 1);
 }
 
+typedef struct {
+    int token;
+    int prec;
+} OPS;
+
 PTR
 REcompile(char *re, size_t len)
 {
     MACHINE m_stack[STACKSZ];
-    struct op {
-	int token;
-	int prec;
-    } op_stack[STACKSZ];
+    OPS op_stack[STACKSZ];
     register MACHINE *m_ptr;
-    register struct op *op_ptr;
+    register OPS *op_ptr;
     register int t;
 
     /* do this first because it also checks if we have a
@@ -178,8 +180,28 @@ REcompile(char *re, size_t len)
 			/* no previous re */
 			RE_free(m_ptr->start);
 			m_ptr--;
-			op_ptr--;
-		    } else if (*lp == '\0') {
+			switch (op_ptr->token) {
+			case T_RP:
+			    while (op_ptr != op_stack) {
+				--op_ptr;
+				if (op_ptr->token == T_LP) {
+				    if (op_ptr == op_stack) {
+					op_ptr->token = T_NONE;
+				    } else {
+					--op_ptr;
+				    }
+				    break;
+				}
+			    }
+			    op_ptr = op_stack + 1;
+			    break;
+			case T_LP:
+			    break;
+			default:
+			    op_ptr--;
+			    break;
+			}
+		    } else if (*re_exp == '\0') {
 			/* this was the only re expr
 			   so leave one M_ACCEPT as the machine */
 			m_ptr->start->s_type = M_ACCEPT;

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.46 2020/07/14 19:44:47 tom Exp $
+ * $MawkId: init.c,v 1.49 2020/07/19 17:41:12 tom Exp $
  */
 
 /* init.c */
@@ -29,20 +29,18 @@ the GNU General Public License, version 2, 1991.
 
 typedef enum {
     W_UNKNOWN = 0,
+    W_VERSION,
 #if USE_BINMODE
     W_BINMODE,
 #endif
-    W_VERSION,
+    W_COMPAT,
     W_DUMP,
+    W_EXEC,
     W_HELP,
     W_INTERACTIVE,
-    W_EXEC,
+    W_POSIX,
     W_RANDOM,
     W_SPRINTF,
-    W_POSIX_SPACE,
-#ifndef NO_INTERVAL_EXPR
-    W_REPETITIONS,
-#endif
     W_USAGE
 } W_OPTIONS;
 
@@ -101,25 +99,15 @@ int dump_code_flag = 0;		/* if on dump internal code */
 short posix_space_flag = 0;
 
 #ifndef NO_INTERVAL_EXPR
-short repetitions_flag = 0;
+#define enable_repetitions(flag) repetitions_flag = flag
+short repetitions_flag = 1;
+#else
+#define enable_repetitions(flag)	/* nothing */
 #endif
 
 #ifdef	 DEBUG
 int dump_RE = 1;		/* if on dump compiled REs  */
 #endif
-
-static void
-bad_option(char *s)
-{
-    errmsg(0, "not an option: %s", s);
-    if (strcmp(s, "--lint") &&
-	strcmp(s, "--lint-old") &&
-	strcmp(s, "--posix") &&
-	strcmp(s, "--re-interval") &&
-	strcmp(s, "--traditional")) {
-	mawk_exit(2);
-    }
-}
 
 static void
 no_program(void)
@@ -153,20 +141,18 @@ usage(void)
 #if USE_BINMODE
 	"    -W binmode",
 #endif
+	"    -W compat        pre-POSIX 2001.",
 	"    -W dump          show assembler-like listing of program and exit.",
 	"    -W help          show this message and exit.",
 	"    -W interactive   set unbuffered output, line-buffered input.",
 	"    -W exec file     use file as program as well as last option.",
-	"    -W posix_space   do not consider \"\\n\" a space.",
+	"    -W posix         stricter POSIX checking.",
 	"    -W random=number set initial random seed.",
-#ifndef NO_INTERVAL_EXPR
-	"    -W repetitions   enable Extended RE expressions: r{n,m}.",
-#endif
 	"    -W sprintf=number adjust size of sprintf buffer.",
 	"    -W usage         show this message and exit.",
     };
     size_t n;
-    for (n = 0; n < sizeof(msg) / sizeof(msg[0]); ++n) {
+    for (n = 0; n < TABLESIZE(msg); ++n) {
 	fprintf(stderr, "%s\n", msg[n]);
     }
     mawk_exit(0);
@@ -214,6 +200,62 @@ haveValue(char *value)
     return result;
 }
 
+static void
+bad_option(char *s)
+{
+#ifndef NO_GAWK_OPTIONS
+    enum {
+	GLOP_POSIX = 0
+	,GLOP_RE_INTERVAL
+	,GLOP_TRADITIONAL
+    };
+#define DATA(name,code) { "--" name, code }
+    static const struct {
+	const char name[15];
+	int code;
+    } table[] = {
+	DATA("posix", GLOP_POSIX),
+	    DATA("re-interval", GLOP_RE_INTERVAL),
+	    DATA("traditional", GLOP_TRADITIONAL),
+    };
+#undef DATA
+    int match = -1;
+    size_t n;
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (!strcmp(s, table[n].name)) {
+	    match = table[n].code;
+	    break;
+	}
+    }
+    if (match >= 0) {
+	switch (match) {
+	case GLOP_POSIX:
+	    posix_space_flag = 1;
+	    break;
+	case GLOP_TRADITIONAL:
+	    posix_space_flag = 0;
+	    enable_repetitions(0);
+	    break;
+	case GLOP_RE_INTERVAL:
+	    enable_repetitions(1);
+	    break;
+	}
+	return;
+    }
+#endif
+    errmsg(0, "not an option: %s", s);
+    if (strcmp(s, "--lint")
+	&& strcmp(s, "--lint-old")
+#ifndef NO_GAWK_OPTIONS
+	&& strcmp(s, "--posix")
+	&& strcmp(s, "--re-interval")
+	&& strcmp(s, "--traditional")
+#endif
+	) {
+	mawk_exit(2);
+    }
+}
+
 static int
 allow_long_options(char *arg)
 {
@@ -249,7 +291,6 @@ static W_OPTIONS
 parse_w_opt(char *source, char **next)
 {
 #define DATA(name) { W_##name, #name }
-#define DATA2(name) { W_##name, name }
     static const struct {
 	W_OPTIONS code;
 	const char *name;
@@ -258,16 +299,14 @@ parse_w_opt(char *source, char **next)
 #if USE_BINMODE
 	    DATA(BINMODE),
 #endif
+	    DATA(COMPAT),
 	    DATA(DUMP),
+	    DATA(EXEC),
 	    DATA(HELP),
 	    DATA(INTERACTIVE),
-	    DATA(EXEC),
+	    DATA(POSIX),
 	    DATA(RANDOM),
 	    DATA(SPRINTF),
-	    DATA(POSIX_SPACE),
-#ifndef NO_INTERVAL_EXPR
-	    DATA(REPETITIONS),
-#endif
 	    DATA(USAGE)
     };
 #undef DATA
@@ -286,7 +325,7 @@ parse_w_opt(char *source, char **next)
 	while (*source != '\0' && *source != ',' && *source != '=') {
 	    ++source;
 	}
-	for (n = 0; n < (int) (sizeof(w_options) / sizeof(w_options[0])); ++n) {
+	for (n = 0; n < (int) TABLESIZE(w_options); ++n) {
 	    if (ok_abbrev(w_options[n].name, first, (int) (source - first))) {
 		if (match >= 0) {
 		    errmsg(0, "? ambiguous -W value: %s vs %s\n",
@@ -294,6 +333,15 @@ parse_w_opt(char *source, char **next)
 			   w_options[n].name);
 		} else {
 		    match = n;
+		}
+	    }
+	}
+	if (match < 0 && ok_abbrev("POSIX_SPACE", first, (int) (source - first))) {
+	    errmsg(0, "deprecated option, use -W posix");
+	    for (n = 0; n < (int) TABLESIZE(w_options); ++n) {
+		if (w_options[n].code == W_POSIX) {
+		    match = n;
+		    break;
 		}
 	    }
 	}
@@ -373,6 +421,11 @@ process_cmdline(int argc, char **argv)
 		    }
 		    break;
 #endif
+		case W_COMPAT:
+		    enable_repetitions(0);
+		    posix_space_flag = 0;
+		    break;
+
 		case W_DUMP:
 		    dump_code_flag = 1;
 		    break;
@@ -398,15 +451,9 @@ process_cmdline(int argc, char **argv)
 		    setbuf(stdout, (char *) 0);
 		    break;
 
-		case W_POSIX_SPACE:
+		case W_POSIX:
 		    posix_space_flag = 1;
 		    break;
-
-#ifndef NO_INTERVAL_EXPR
-		case W_REPETITIONS:
-		    repetitions_flag = 1;
-		    break;
-#endif
 
 		case W_RANDOM:
 		    if (haveValue(optNext)) {
@@ -461,6 +508,12 @@ process_cmdline(int argc, char **argv)
 		}
 	    }
 	    break;
+
+#ifndef NO_INTERVAL_EXPR
+	case 'r':
+	    enable_repetitions(1);
+	    break;
+#endif
 
 	case 'v':
 	    if (!is_cmdline_assign(optArg)) {

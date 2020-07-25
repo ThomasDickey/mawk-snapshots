@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.17 2020/07/14 23:03:35 tom Exp $
+ * $MawkId: rexp1.c,v 1.18 2020/07/21 21:42:40 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -103,10 +103,18 @@ RE_cat(MACHINE * mp, MACHINE * np)
     sz1 = (size_t) (mp->stop - mp->start);
     sz2 = (size_t) (np->stop - np->start + 1);
     sz = sz1 + sz2;
-
+#ifndef NO_INTERVAL_EXPR
+    ++sz;			/* allocate dummy for workaround */
+#endif
     mp->start = (STATE *) RE_realloc(mp->start, sz * STATESZ);
+#ifndef NO_INTERVAL_EXPR
+    --sz;
+#endif
     mp->stop = mp->start + (sz - 1);
     memcpy(mp->start + sz1, np->start, sz2 * STATESZ);
+#ifndef NO_INTERVAL_EXPR
+    mp->start[sz].s_type = M_ACCEPT;	/* this is needed in RE_init_it_cnt */
+#endif
     RE_free(np->start);
 }
 

@@ -1,6 +1,6 @@
 /*
 regexp_system.c
-copyright 2009-2010,2014 Thomas E. Dickey
+copyright 2009-2014,2020 Thomas E. Dickey
 copyright 2005, Aleksey Cheusov
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: regexp_system.c,v 1.36 2014/09/11 23:41:31 tom Exp $
+ * $MawkId: regexp_system.c,v 1.37 2020/07/19 15:48:15 tom Exp $
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -260,16 +260,28 @@ prepare_regexp(char *regexp, const char *source, size_t limit)
 		*tail++ = ch;
 		break;
 	    case '{':
-		if (range == 0 &&
-		    ((tail == regexp) ||
-		     (tail[-1] == '*') ||
-		     (tail[-1] == '?'))) {
+#ifndef NO_INTERVAL_EXPR
+		if (repetitions_flag) {
+		    *tail++ = ch;
+		    break;
+		} else
+#endif
+		    if (range == 0 &&
+			((tail == regexp) ||
+			 (tail[-1] == '*') ||
+			 (tail[-1] == '?'))) {
 		    *tail++ = '\\';
 		    *tail++ = ch;
 		    break;
 		}
 		/* FALLTHRU */
 	    case '}':
+#ifndef NO_INTERVAL_EXPR
+		if (repetitions_flag) {
+		    *tail++ = ch;
+		    break;
+		} else
+#endif
 		if (range == 0)
 		    *tail++ = '\\';
 		*tail++ = ch;
@@ -325,6 +337,7 @@ REcompile(char *regexp, size_t len)
 	    re = NULL;
 	}
     }
+    TRACE(("REcompile(%s) ->%p\n", regexp, re));
     return re;
 }
 
@@ -344,7 +357,7 @@ REtest(char *str, size_t str_len GCC_UNUSED, PTR q)
 {
     mawk_re_t *re = (mawk_re_t *) q;
 
-    TRACE(("REtest:  \"%s\" ~ /%s/", str, re->regexp));
+    TRACE(("REtest:  \"%s\" ~ /%s/ @%p", str, re->regexp, re));
 
     last_used_regexp = re;
 

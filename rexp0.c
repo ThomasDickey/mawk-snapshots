@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.35 2020/07/18 00:51:56 tom Exp $
+ * $MawkId: rexp0.c,v 1.40 2020/07/23 00:46:59 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -32,10 +32,6 @@ static int do_str(int, char **, MACHINE *);
 static int do_class(char **, MACHINE *);
 static int escape(char **);
 static BV *store_bvp(BV *);
-
-#ifndef NO_INTERVAL_EXPR
-static int do_intervals(char **);
-#endif
 
 /* make next array visible */
 /* *INDENT-OFF* */
@@ -81,19 +77,122 @@ char char2token[] =
 
 static int prev;
 static size_t nest;
-char *lp;			/*  ptr to reg exp string  */
-static char *re_str;		/*  base of 'lp' */
+char *re_exp;			/*  ptr to reg exp string  */
+static char *re_str;		/*  base of 're_exp' */
 static size_t re_len;
 
 #ifndef NO_INTERVAL_EXPR
 int intrvalmin;
 int intrvalmax;
-#endif
+
+/*
+ * Given a string beginning with T_LB, check if that is an interval expression.
+ */
+static int
+ok_intervals(const char *p)
+{
+    int result = 0;
+    int comma = 0;
+    int ch;
+    while ((ch = (UChar) * ++p) != '\0') {
+	if (ch == R_CURL) {
+	    result = 1;
+	    break;
+	} else if (isdigit(ch)) {
+	    ;			/* zero or more digits */
+	} else if (ch == ',') {
+	    if (++comma > 1) {
+		break;		/* zero or one commas */
+	    }
+	} else {
+	    break;
+	}
+    }
+    return result;
+}
+
+/*
+  Collect two numbers between T_LB and T_RB, saving
+  the values in intrvalmin and intrvalmax.
+  
+  There are three ways the interval expressions are formed:
+  {n}   => previous regexp is repeated n times
+  {n,m} => previous regexp is repeated n to m times
+  {n,}  => previous regexp is repeated n or more times
+  {,m}  => {0,m}
+  Note: awk doesn't define  {,m}
+  
+  returns: T_RB, or on error T_CHAR
+*/
+
+static int
+do_intervals(
+		char **pp)	/* where to put the re_char pointer on exit */
+{
+    register char *p;		/* runs thru the input */
+
+    p = *pp;
+
+    intrvalmin = 0;
+    intrvalmax = 0;
+    if (!isdigit(*p) && *p != ',')	/* error */
+    {
+	RE_error_trap(-E7);
+    }
+
+    if (*p != ',') {
+	intrvalmin = intrvalmin * 10 + *p++ - '0';
+
+	while (*p != '\0') {
+	    if (isdigit((UChar) * p)) {
+		intrvalmin = intrvalmin * 10 + *p++ - '0';
+	    } else if ((UChar) * p == R_CURL) {
+		p++;
+		*pp = p;
+		intrvalmax = intrvalmin;	/* {n} */
+		return T_RB;
+	    } else if ((UChar) * p == ',') {
+		if ((UChar) * ++p == R_CURL) {
+		    p++;
+		    *pp = p;
+		    intrvalmax = INT_MAX;
+		    return T_RB;	/* {n,} */
+		}
+		break;
+	    } else {
+		p++;
+		*pp = p;
+		RE_error_trap(-E7);
+	    }
+	}
+    } else {
+	p++;
+    }
+    while (*p != '\0') {
+	if (isdigit((UChar) * p)) {
+	    intrvalmax = intrvalmax * 10 + *p++ - '0';
+	} else if ((UChar) * p == R_CURL) {
+	    if (intrvalmax < intrvalmin) {
+		RE_error_trap(-E7);
+	    }
+	    p++;
+	    break;
+	} else {
+	    p++;
+	    *pp = p;
+	    RE_error_trap(-E7);
+	}
+    }
+
+    *pp = p;
+    return T_RB;
+}
+#endif /* ! NO_INTERVAL_EXPR */
 
 void
 RE_lex_init(char *re, size_t len)
 {
-    re_str = lp = re;
+    re_str = re_exp = re;
     re_len = len + 1;
     prev = NOT_STARTED;
     nest = 0;
@@ -121,20 +220,25 @@ int
 RE_lex(MACHINE * mp)
 {
     /*
-     * lp records the current position while parsing.
+     * re_exp records the current position while parsing.
      * nest records the parenthesis nesting level.
      * prev records the last token returned.
      */
     register int c;
 
-    if ((unsigned) (1 + lp - re_str) >= re_len) {
+    if ((unsigned) (1 + re_exp - re_str) >= re_len) {
 	return 0;
     }
 
-    c = char2token[(UChar) (*lp)];
+    c = char2token[(UChar) (*re_exp)];
 #ifndef NO_INTERVAL_EXPR
-    if (!repetitions_flag && (c == T_LB || c == T_RB)) {
-	c = T_CHAR;
+    if (repetitions_flag) {
+	if (c == T_LB && !ok_intervals(re_exp))
+	    c = T_CHAR;
+    } else {
+	if (c == T_LB || c == T_RB) {
+	    c = T_CHAR;
+	}
     }
 #endif
 
@@ -147,12 +251,12 @@ RE_lex(MACHINE * mp)
 
     case T_OR:
     case T_Q:
-	lp++;
+	re_exp++;
 	return prev = c;
 
 #ifndef NO_INTERVAL_EXPR
     case T_LB:
-	lp++;
+	re_exp++;
 	prev = T_LB;
 	break;
 #endif
@@ -164,7 +268,7 @@ RE_lex(MACHINE * mp)
 	    break;
 	}
 	nest--;
-	lp++;
+	re_exp++;
 	return prev = c;
 
     case 0:
@@ -194,12 +298,12 @@ RE_lex(MACHINE * mp)
 
 	default:
 	    nest++;
-	    lp++;
+	    re_exp++;
 	    return prev = T_LP;
 	}			/* T_LP switch */
     }
 
-    /*  *lp  is  an operand, but implicit cat op is possible   */
+    /*  *re_exp  is  an operand, but implicit cat op is possible   */
     switch (prev) {
     case NOT_STARTED:
     case T_OR:
@@ -211,19 +315,19 @@ RE_lex(MACHINE * mp)
 	    {
 		static int plus_is_star_flag = 0;
 
-		if (*++lp == '*') {
-		    lp++;
+		if (*++re_exp == '*') {
+		    re_exp++;
 		    *mp = RE_u();
 		    return prev = T_U;
-		} else if (*lp == '+') {
+		} else if (*re_exp == '+') {
 		    if (plus_is_star_flag) {
-			lp++;
+			re_exp++;
 			*mp = RE_u();
 			plus_is_star_flag = 0;
 			return prev = T_U;
 		    } else {
 			plus_is_star_flag = 1;
-			lp--;
+			re_exp--;
 			*mp = RE_any();
 			return prev = T_ANY;
 		    }
@@ -235,28 +339,32 @@ RE_lex(MACHINE * mp)
 	    break;
 
 	case T_SLASH:
-	    lp++;
-	    c = escape(&lp);
-	    prev = do_str(c, &lp, mp);
+	    re_exp++;
+	    c = escape(&re_exp);
+	    prev = do_str(c, &re_exp, mp);
 	    break;
 
+#ifndef NO_INTERVAL_EXPR
+	case T_LB:
+	case T_RB:
+#endif
 	case T_CHAR:
-	    c = *lp++;
-	    prev = do_str(c, &lp, mp);
+	    c = *re_exp++;
+	    prev = do_str(c, &re_exp, mp);
 	    break;
 
 	case T_CLASS:
-	    prev = do_class(&lp, mp);
+	    prev = do_class(&re_exp, mp);
 	    break;
 
 	case T_START:
 	    *mp = RE_start();
-	    lp++;
+	    re_exp++;
 	    prev = T_START;
 	    break;
 
 	case T_END:
-	    lp++;
+	    re_exp++;
 	    *mp = RE_end();
 	    return prev = T_END;
 
@@ -268,7 +376,7 @@ RE_lex(MACHINE * mp)
 #ifndef NO_INTERVAL_EXPR
     case T_LB:
 	/* get interval expression numbers until closing T_RB */
-	prev = do_intervals(&lp);
+	prev = do_intervals(&re_exp);
 	return prev = T_RB;
 
     case T_RB:
@@ -281,9 +389,9 @@ RE_lex(MACHINE * mp)
     }
 
     /* check for end character */
-    if (*lp == '$') {
+    if (*re_exp == '$') {
 	mp->start->s_type = (SType) (mp->start->s_type + END_ON);
-	lp++;
+	re_exp++;
     }
 
     return prev;
@@ -345,7 +453,7 @@ do_str(
     /* if len > 1 and we stopped on a ? + or * , need to back up */
     if (len > 1 && (*p == '*' || *p == '+' || *p == '?'
 #ifndef NO_INTERVAL_EXPR
-		    || (repetitions_flag == 1 && *p == '{')
+		    || (repetitions_flag == 1 && *p == L_CURL)
 #endif
 	)) {
 	len--;
@@ -358,85 +466,6 @@ do_str(
     *mp = RE_str((char *) RE_realloc(str, len + 1), len);
     return T_STR;
 }
-
-#ifndef NO_INTERVAL_EXPR
-/*
-  Collect two numbers between T_LB and T_RB, saving
-  the values in intrvalmin and intrvalmax.
-  
-  There are three ways the interval expressions are formed:
-  {n}   => previous regexp is repeated n times
-  {n,m} => previous regexp is repeated n to m times
-  {n,}  => previous regexp is repeated n or more times
-  {,m}  => {0,m}
-  Note: awk doesn't define  {,m}
-  
-  returns: T_RB, or on error T_CHAR
-*/
-
-static int
-do_intervals(
-		char **pp)	/* where to put the re_char pointer on exit */
-{
-    register char *p;		/* runs thru the input */
-
-    p = *pp;
-
-    intrvalmin = 0;
-    intrvalmax = 0;
-    if (!isdigit(*p) && *p != ',')	/* error */
-    {
-	RE_error_trap(-E7);
-    }
-
-    if (*p != ',') {
-	intrvalmin = intrvalmin * 10 + *p++ - '0';
-
-	while (*p != '\0') {
-	    if (isdigit((UChar) * p)) {
-		intrvalmin = intrvalmin * 10 + *p++ - '0';
-	    } else if ((UChar) * p == '}') {
-		p++;
-		*pp = p;
-		intrvalmax = intrvalmin;	/* {n} */
-		return T_RB;
-	    } else if ((UChar) * p == ',') {
-		if ((UChar) * ++p == '}') {
-		    p++;
-		    *pp = p;
-		    intrvalmax = INT_MAX;
-		    return T_RB;	/* {n,} */
-		}
-		break;
-	    } else {
-		p++;
-		*pp = p;
-		RE_error_trap(-E7);
-	    }
-	}
-    } else {
-	p++;
-    }
-    while (*p != '\0') {
-	if (isdigit((UChar) * p)) {
-	    intrvalmax = intrvalmax * 10 + *p++ - '0';
-	} else if ((UChar) * p == '}') {
-	    if (intrvalmax < intrvalmin) {
-		RE_error_trap(-E7);
-	    }
-	    p++;
-	    break;
-	} else {
-	    p++;
-	    *pp = p;
-	    RE_error_trap(-E7);
-	}
-    }
-
-    *pp = p;
-    return T_RB;
-}
-#endif /* ! NO_INTERVAL_EXPR */
 
 /*--------------------------------------------
   BUILD A CHARACTER CLASS

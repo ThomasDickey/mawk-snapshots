@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.44 2020/07/12 23:14:02 tom Exp $
+.\" $MawkId: mawk.1,v 1.47 2020/07/19 14:31:54 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-07-12" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-07-19" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -119,7 +119,11 @@ Implementation specific options are prefaced with
 .BR \-W .
 \fB\*n\fP
 provides these:
-.TP \w'\-\fBW'u+\w'\fRsprintf=\fInum\fR'u+2n
+.TP
+\-\fBW \fRcompat
+Omit features such as interval expressions which were not supported by
+traditional \fIawk\fP.
+.TP
 \-\fBW \fRdump
 writes an assembler like listing of the internal
 representation of the program to stdout and exits 0
@@ -146,10 +150,16 @@ sets unbuffered writes to stdout and line buffered reads from stdin.
 Records from stdin are lines regardless of the value of
 .BR RS .
 .TP
-\-\fBW \fRposix_space
+\-\fBW \fRposix
+modifies \fB\*n\fP's behavior to be more POSIX-compliant:
+.RS
+.bP
 forces
 \fB\*n\fP
 not to consider '\en' to be space.
+.RE
+.IP
+The original \*(``posix_space\*('' is recognized, but deprecated.
 .TP
 \-\fBW \fRrandom=\fInum\fR
 calls \fBsrand\fP with the given parameter
@@ -164,10 +174,6 @@ bytes.
 More than rare use of this option indicates
 \fB\*n\fP
 should be recompiled.
-.TP
-\-\fBW \fRrepetitions
-enables extended regular rexpression syntax for 
-repetitions like \fBr{n,m}\fR
 .TP
 \-\fBW \fRusage
 prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRhelp\*('').
@@ -425,11 +431,10 @@ The regular expression metacharacters, i.e., those with special
 meaning in regular expressions are
 .nf
 .sp
-	\\ ^ $ . [ ] | ( ) * + ?
+	\\ ^ $ . [ ] | ( ) * + ? { }
 .sp
 .fi
-With the \fI-W repetitions\fR command line option (or permanently
-configured at comnpile time), 
+If the command line option \fI-W compat\fP is used, these are omitted:
 .nf
 .sp
 	{ }
@@ -506,7 +511,6 @@ matches \fIr\fR
 .TP
 \fIr\fR{n}
 matches \fIr\fR exactly n times.
-These require the \fB-W repetitions\fR command line option.
 .TP
 \fIr\fR{n,}
 matches \fIr\fR repeated n or more times.
@@ -516,7 +520,6 @@ matches \fIr\fR repeated n to m (inclusive) times.
 .TP
 \fIr\fR{,m}
 matches \fIr\fR repeated 0 to m times (a non-standard option).
-(\fIrepetitions\fR).
 .RE
 .PP
 The increasing \fBprecedence of operators\fR is:
@@ -1175,13 +1178,13 @@ uses the C runtime \fBsystem\fP call to execute
 and returns the corresponding wait status of the command as follows:
 .bP
 if the \fBsystem\fP call failed, setting the status to -1,
-\fImawk\fP returns that value.
+\fB\*n\fP returns that value.
 .bP
 if the command exited normally,
-\fImawk\fP returns its exit-status.
+\fB\*n\fP returns its exit-status.
 .bP
 if the command exited due to a signal such as \fBSIGHUP\fP,
-\fImawk\fP returns the signal number plus 256.
+\fB\*n\fP returns the signal number plus 256.
 .PP
 Changes made to the
 .B ENVIRON
@@ -1666,7 +1669,7 @@ implementation options as arguments to \-W.
 .bP
 For systems (MS-DOS or Windows) which provide a \fIsetmode\fP function,
 an environment variable MAWKBINMODE and a built-in variable BINMODE.
-The bits of the BINMODE value tell \fImawk\fP how to modify the
+The bits of the BINMODE value tell \fB\*n\fP  how to modify the
 \fBRS\fP and \fBORS\fP variables:
 .RS
 .TP 3
@@ -1829,7 +1832,7 @@ and is expected to be part of the next revision of the standard.
 .B systime
 are \fBgawk\fP extensions.
 .PP
-The "/dev/stdin" feature was added to \fBmawk\fP after 1.3.4,
+The "/dev/stdin" feature was added to \fB\*n\fP after 1.3.4,
 for compatibility with \fBgawk\fP and BWK awk.
 The corresponding "-" (alias for /dev/stdin) was present in \fB\*n\fR 1.3.3.
 .PP
@@ -1859,8 +1862,16 @@ NetBSD developers copied this change in January 2018,
 omitting the compatibility option,
 and then applied it to BWK awk.
 .bP
-The interval expression implementation in \fBmawk\fP
+The interval expression implementation in \fB\*n\fP 
 is based on changes proposed by James Parkinson in April 2016.
+.PP
+\fB\*N\fP also recognizes a few gawk-specific command line options
+for script compatibility
+(e.g.,
+\fB\-\-posix\fP,
+\fB\-r\fP,
+\fB\-\-re\-interval\fP, and
+\fB\-\-traditional\fP).
 .
 .SS "Subtle Differences not in POSIX or the AWK Book"
 .PP
@@ -1937,7 +1948,7 @@ Print an warning message and otherwise ignore the option.
 If the variable is unset, \fB\*n\fP prints an error message and exits.
 .TP
 WHINY_USERS
-This is an undocumented \fBgawk\fP feature.
+This is a \fBgawk\fP 3.1.0 feature, removed in the 4.0.0 release.
 It tells \fB\*n\fP to sort array indices before it starts to iterate
 over the elements of an array.
 .RE

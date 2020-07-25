@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2017,2019, Thomas E. Dickey
+copyright 2008-2019,2020, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.24 2019/02/02 01:25:02 tom Exp $
+ * $MawkId: da.c,v 1.25 2020/07/19 12:55:52 tom Exp $
  */
 
 /*  da.c  */
@@ -493,7 +493,7 @@ da_type_name(CELL *cdp)
     int n;
     const char *result = "?";
 
-    for (n = 0; n < (int) (sizeof(type_names) / sizeof(type_names[0])); ++n) {
+    for (n = 0; n < (int) TABLESIZE(type_names); ++n) {
 	if (cdp->type == (int) type_names[n].op) {
 	    result = type_names[n].name;
 	    break;
