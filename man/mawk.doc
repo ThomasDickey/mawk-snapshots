@@ -46,57 +46,68 @@ OOPPTTIIOONNSS
        tation  of  AWK.  Implementation specific options are prefaced with --WW.
        mmaawwkk provides these:
 
-       -WW dump        writes an assembler like listing of the internal  repre-
-                      sentation  of the program to stdout and exits 0 (on suc-
-                      cessful compilation).
+       -WW compat
+              Omit features such as interval expressions which were  not  sup-
+              ported by traditional _a_w_k.
 
-       -WW exec _f_i_l_e   Program text is read from _f_i_l_e  and  this  is  the  last
-                      option.
+       -WW dump
+              writes  an assembler like listing of the internal representation
+              of the program to stdout and exits  0  (on  successful  compila-
+              tion).
 
-                      This  is a useful alternative to -ff on systems that sup-
-                      port the ##!!  "magic number"  convention  for  executable
-                      scripts.   Those  implicitly  pass  the  pathname of the
-                      script itself as the final parameter, and expect no more
-                      than  one  "-"  option on the ##!! line.  Because mmaawwkk can
-                      combine multiple -WW options separated by commas, you can
-                      use this option when an additional -WW option is needed.
+       -WW exec _f_i_l_e
+              Program text is read from _f_i_l_e and this is the last option.
 
-       -WW help        prints  a  usage  message  to  stderr and exits (same as
-                      "-WW usage").
+              This  is  a useful alternative to -ff on systems that support the
+              ##!!  "magic number" convention  for  executable  scripts.   Those
+              implicitly  pass  the pathname of the script itself as the final
+              parameter, and expect no more than one  "-"  option  on  the  ##!!
+              line.  Because mmaawwkk can combine multiple -WW options separated by
+              commas, you can use this option when an additional -WW option  is
+              needed.
 
-       -WW interactive sets unbuffered writes to stdout and line buffered reads
-                      from  stdin.  Records from stdin are lines regardless of
-                      the value of RRSS.
+       -WW help
+              prints a usage message to stderr and exits (same as "-WW usage").
 
-       -WW posix_space forces mmaawwkk not to consider '\n' to be space.
+       -WW interactive
+              sets  unbuffered  writes  to stdout and line buffered reads from
+              stdin.  Records from stdin are lines regardless of the value  of
+              RRSS.
 
-       -WW random=_n_u_m  calls ssrraanndd with the given parameter (and overrides  the
-                      auto-seeding behavior).
+       -WW posix
+              modifies mmaawwkk's behavior to be more POSIX-compliant:
 
-       -WW sprintf=_n_u_m adjusts  the  size  of mmaawwkk's internal sprintf buffer to
-                      _n_u_m bytes.  More than rare use of this option  indicates
-                      mmaawwkk should be recompiled.
+              +o   forces mmaawwkk not to consider '\n' to be space.
 
-       -WW repetitions enables  extended regular rexpression syntax for repeti-
-                      tions like rr{{nn,,mm}}
+              The original "posix_space" is recognized, but deprecated.
 
-       -WW usage       prints a usage message to  stderr  and  exits  (same  as
-                      "-WW help").
+       -WW random=_n_u_m
+              calls  ssrraanndd  with  the given parameter (and overrides the auto-
+              seeding behavior).
 
-       -WW version     mmaawwkk writes its version and copyright to stdout and com-
-                      piled limits to stderr and exits 0.
+       -WW sprintf=_n_u_m
+              adjusts the size of mmaawwkk's internal sprintf buffer to _n_u_m bytes.
+              More  than  rare  use  of  this  option indicates mmaawwkk should be
+              recompiled.
 
-       mmaawwkk accepts abbreviations for any of these options, e.g.,  "-WW v"  and
+       -WW usage
+              prints a usage message to stderr and exits (same as "-WW help").
+
+       -WW version
+              mmaawwkk writes its version and copyright  to  stdout  and  compiled
+              limits to stderr and exits 0.
+
+       mmaawwkk  accepts  abbreviations for any of these options, e.g., "-WW v" and
        "-WWv" both tell mmaawwkk to show its version.
 
-       mmaawwkk  allows  multiple  --WW  options  to  be  combined by separating the
-       options with commas, e.g., -Wsprint=2000,posix.   This  is  useful  for
+       mmaawwkk allows multiple --WW  options  to  be  combined  by  separating  the
+       options  with  commas,  e.g.,  -Wsprint=2000,posix.  This is useful for
        executable ##!!  "magic number" invocations in which only one argument is
        supported, e.g., -WWiinntteerraaccttiivvee,,eexxeecc.
 
 TTHHEE AAWWKK LLAANNGGUUAAGGEE
    11.. PPrrooggrraamm ssttrruuccttuurree
-       An AWK program is a sequence of _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} pairs and  user  func-
+       An  AWK  program is a sequence of _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} pairs and user func-
        tion definitions.
 
        A pattern can be:
@@ -105,18 +116,18 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
             expression
             expression , expression
 
-       One,  but not both, of _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} can be omitted.  If _{_a_c_t_i_o_n_} is
-       omitted it is implicitly { print }.  If _p_a_t_t_e_r_n is omitted, then it  is
+       One, but not both, of _p_a_t_t_e_r_n _{_a_c_t_i_o_n_} can be omitted.  If _{_a_c_t_i_o_n_}  is
+       omitted  it is implicitly { print }.  If _p_a_t_t_e_r_n is omitted, then it is
        implicitly matched.  BBEEGGIINN and EENNDD patterns require an action.
 
-       Statements  are terminated by newlines, semi-colons or both.  Groups of
+       Statements are terminated by newlines, semi-colons or both.  Groups  of
        statements such as actions or loop bodies are blocked via { ... } as in
-       C.   The  last  statement  in a block doesn't need a terminator.  Blank
-       lines have no meaning; an empty statement is terminated  with  a  semi-
+       C.  The last statement in a block doesn't  need  a  terminator.   Blank
+       lines  have  no  meaning; an empty statement is terminated with a semi-
        colon.  Long statements can be continued with a backslash, \.  A state-
-       ment can be broken without a backslash after a comma, left  brace,  &&,
-       ||,  ddoo,  eellssee, the right parenthesis of an iiff, wwhhiillee or ffoorr statement,
-       and the right parenthesis of a function definition.  A  comment  starts
+       ment  can  be broken without a backslash after a comma, left brace, &&,
+       ||, ddoo, eellssee, the right parenthesis of an iiff, wwhhiillee or  ffoorr  statement,
+       and  the  right parenthesis of a function definition.  A comment starts
        with # and extends to, but does not include the end of line.
 
        The following statements control program flow inside blocks.
@@ -138,17 +149,17 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
             bbrreeaakk
 
    22.. DDaattaa ttyyppeess,, ccoonnvveerrssiioonn aanndd ccoommppaarriissoonn
-       There  are two basic data types, numeric and string.  Numeric constants
-       can be integer like -2, decimal like 1.08, or  in  scientific  notation
-       like  -1.1e4 or .28E-3.  All numbers are represented internally and all
-       computations are done in floating point arithmetic.   So  for  example,
+       There are two basic data types, numeric and string.  Numeric  constants
+       can  be  integer  like -2, decimal like 1.08, or in scientific notation
+       like -1.1e4 or .28E-3.  All numbers are represented internally and  all
+       computations  are  done  in floating point arithmetic.  So for example,
        the expression 0.2e2 == 20 is true and true is represented as 1.0.
 
        String constants are enclosed in double quotes.
 
                    "This is a string with a newline at the end.\n"
 
-       Strings  can  be  continued  across a line by escaping (\) the newline.
+       Strings can be continued across a line by  escaping  (\)  the  newline.
        The following escape sequences are recognized.
 
             \\        \
@@ -163,76 +174,75 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
             \ddd      1, 2 or 3 octal digits for ascii ddd
             \xhh      1 or 2 hex digits for ascii  hh
 
-       If you escape any other character \c, you get \c,  i.e.,  mmaawwkk  ignores
+       If  you  escape  any other character \c, you get \c, i.e., mmaawwkk ignores
        the escape.
 
        There are really three basic data types; the third is _n_u_m_b_e_r _a_n_d _s_t_r_i_n_g
-       which has both a numeric value and a string value  at  the  same  time.
-       User  defined  variables  come into existence when first referenced and
-       are initialized to _n_u_l_l, a number and string value  which  has  numeric
-       value  0 and string value "".  Non-trivial number and string typed data
+       which  has  both  a  numeric value and a string value at the same time.
+       User defined variables come into existence when  first  referenced  and
+       are  initialized  to  _n_u_l_l, a number and string value which has numeric
+       value 0 and string value "".  Non-trivial number and string typed  data
        come from input and are typically stored in fields.  (See section 4).
 
-       The type of an expression is determined by its  context  and  automatic
-       type  conversion occurs if needed.  For example, to evaluate the state-
+       The  type  of  an expression is determined by its context and automatic
+       type conversion occurs if needed.  For example, to evaluate the  state-
        ments
 
             y = x + 2  ;  z = x  "hello"
 
-       The value stored in variable y will be typed  numeric.   If  x  is  not
-       numeric,  the  value  read  from x is converted to numeric before it is
-       added to 2 and stored in y.  The value stored in  variable  z  will  be
-       typed  string, and the value of x will be converted to string if neces-
-       sary and concatenated with "hello".  (Of course,  the  value  and  type
+       The  value  stored  in  variable  y will be typed numeric.  If x is not
+       numeric, the value read from x is converted to  numeric  before  it  is
+       added  to  2  and  stored in y.  The value stored in variable z will be
+       typed string, and the value of x will be converted to string if  neces-
+       sary  and  concatenated  with  "hello".  (Of course, the value and type
        stored in x is not changed by any conversions.)  A string expression is
-       converted to numeric using its longest numeric prefix as with  aattooff(3).
-       A  numeric  expression  is  converted  to string by replacing _e_x_p_r with
-       sspprriinnttff((CCOONNVVFFMMTT, _e_x_p_r), unless _e_x_p_r can  be  represented  on  the  host
-       machine  as  an  exact  integer  then  it is converted to sspprriinnttff("%d",
-       _e_x_p_r).  SSpprriinnttff(()) is an AWK built-in that duplicates the  functionality
-       of  sspprriinnttff(3),  and  CCOONNVVFFMMTT  is a built-in variable used for internal
-       conversion from number to string and initialized to  "%.6g".   Explicit
-       type  conversions  can  be  forced,  _e_x_p_r  ""  is  string and _e_x_p_r+0 is
+       converted  to numeric using its longest numeric prefix as with aattooff(3).
+       A numeric expression is converted to  string  by  replacing  _e_x_p_r  with
+       sspprriinnttff((CCOONNVVFFMMTT,  _e_x_p_r),  unless  _e_x_p_r  can  be represented on the host
+       machine as an exact integer  then  it  is  converted  to  sspprriinnttff("%d",
+       _e_x_p_r).   SSpprriinnttff(()) is an AWK built-in that duplicates the functionality
+       of sspprriinnttff(3), and CCOONNVVFFMMTT is a built-in  variable  used  for  internal
+       conversion  from  number to string and initialized to "%.6g".  Explicit
+       type conversions can be  forced,  _e_x_p_r  ""  is  string  and  _e_x_p_r+0  is
        numeric.
 
        To evaluate, _e_x_p_r1 rreell--oopp _e_x_p_r2, if both operands are numeric or number
-       and  string then the comparison is numeric; if both operands are string
-       the comparison is string; if one operand is string, the non-string  op-
-       erand  is  converted  and  the  comparison  is  string.   The result is
+       and string then the comparison is numeric; if both operands are  string
+       the  comparison is string; if one operand is string, the non-string op-
+       erand is converted  and  the  comparison  is  string.   The  result  is
        numeric, 1 or 0.
 
        In boolean contexts such as, iiff ( _e_x_p_r ) _s_t_a_t_e_m_e_n_t, a string expression
-       evaluates  true  if  and only if it is not the empty string ""; numeric
+       evaluates true if and only if it is not the empty  string  "";  numeric
        values if and only if not numerically zero.
 
    33.. RReegguullaarr eexxpprreessssiioonnss
-       In the AWK language, records, fields and strings are often  tested  for
-       matching  a  _r_e_g_u_l_a_r  _e_x_p_r_e_s_s_i_o_n.   Regular expressions are enclosed in
+       In  the  AWK language, records, fields and strings are often tested for
+       matching a _r_e_g_u_l_a_r _e_x_p_r_e_s_s_i_o_n.  Regular  expressions  are  enclosed  in
        slashes, and
 
             _e_x_p_r ~ /_r/
 
-       is an AWK expression that evaluates to 1 if  _e_x_p_r  "matches"  _r,  which
-       means  a substring of _e_x_p_r is in the set of strings defined by _r.  With
-       no match the expression evaluates to  0;  replacing  ~  with  the  "not
+       is  an  AWK  expression  that evaluates to 1 if _e_x_p_r "matches" _r, which
+       means a substring of _e_x_p_r is in the set of strings defined by _r.   With
+       no  match  the  expression  evaluates  to  0; replacing ~ with the "not
        match" operator, !~ , reverses the meaning.  As  pattern-action pairs,
 
             /_r/ { _a_c_t_i_o_n }   and   $$00 ~ /_r/ { _a_c_t_i_o_n }
 
-       are  the same, and for each input record that matches _r, _a_c_t_i_o_n is exe-
-       cuted.  In fact, /_r/ is an AWK expression that is equivalent to  ($$00  ~
-       /_r/)  anywhere  except  when  on  the right side of a match operator or
-       passed as an argument to a built-in function  that  expects  a  regular
+       are the same, and for each input record that matches _r, _a_c_t_i_o_n is  exe-
+       cuted.   In  fact, /_r/ is an AWK expression that is equivalent to ($$00 ~
+       /_r/) anywhere except when on the right side  of  a  match  operator  or
+       passed  as  an  argument  to a built-in function that expects a regular
        expression argument.
 
        AWK uses extended regular expressions as with the --EE option of ggrreepp(1).
        The regular expression metacharacters, i.e., those with special meaning
        in regular expressions are
 
-            \ ^ $ . [ ] | ( ) * + ?
+            \ ^ $ . [ ] | ( ) * + ? { }
 
-       With  the _-_W _r_e_p_e_t_i_t_i_o_n_s command line option (or permanently configured
-       at comnpile time),
+       If the command line option _-_W _c_o_m_p_a_t is used, these are omitted:
 
             { }
 
@@ -291,14 +301,12 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
 
             _r{n}         matches _r exactly n times.
-                         These require the --WW rreeppeettiittiioonnss command line option.
 
             _r{n,}        matches _r repeated n or more times.
 
             _r{n,m}       matches _r repeated n to m (inclusive) times.
 
             _r{,m}        matches _r repeated 0 to m times (a non-standard option).
-                         (_r_e_p_e_t_i_t_i_o_n_s).
 
        The increasing pprreecceeddeennccee ooff ooppeerraattoorrss is:
 
@@ -674,12 +682,12 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        _e_x_p_r  and  returns the corresponding wait status of the command as fol-
        lows:
 
-       +o   if the ssyysstteemm call failed, setting the status to -1,  _m_a_w_k  returns
+       +o   if the ssyysstteemm call failed, setting the status to -1,  mmaawwkk  returns
            that value.
 
-       +o   if the command exited normally, _m_a_w_k returns its exit-status.
+       +o   if the command exited normally, mmaawwkk returns its exit-status.
 
-       +o   if  the command exited due to a signal such as SSIIGGHHUUPP, _m_a_w_k returns
+       +o   if  the command exited due to a signal such as SSIIGGHHUUPP, mmaawwkk returns
            the signal number plus 256.
 
        Changes made to the EENNVVIIRROONN array are not passed to  commands  executed
@@ -935,7 +943,7 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
 
           +o   For systems (MS-DOS or Windows) which provide  a  _s_e_t_m_o_d_e  func-
               tion,  an  environment variable MAWKBINMODE and a built-in vari-
-              able BINMODE.  The bits of the BINMODE value tell  _m_a_w_k  how  to
+              able BINMODE.  The bits of the BINMODE value tell mmaawwkk   how  to
               modify the RRSS and OORRSS variables:
 
               0  set standard input to binary mode, and if BIT-2 is unset, set
@@ -1075,6 +1083,10 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
        +o   The  interval expression implementation in mmaawwkk is based on changes
            proposed by James Parkinson in April 2016.
 
+       MMaawwkk also recognizes a  few  gawk-specific  command  line  options  for
+       script  compatibility  (e.g.,  ----ppoossiixx, --rr, ----rree--iinntteerrvvaall, and ----ttrraaddii--
+       ttiioonnaall).
+
    SSuubbttllee DDiiffffeerreenncceess nnoott iinn PPOOSSIIXX oorr tthhee AAWWKK BBooookk
        Finally, here is how mmaawwkk handles exceptional cases  not  discussed  in
        the  AWK  book  or the POSIX draft.  It is unsafe to assume consistency
@@ -1124,9 +1136,9 @@ EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
              If the variable is unset, mmaawwkk prints an error message and exits.
 
           WHINY_USERS
-             This is an undocumented ggaawwkk feature.   It  tells  mmaawwkk  to  sort
-             array indices before it starts to iterate over the elements of an
-             array.
+             This is a ggaawwkk 3.1.0 feature, removed in the 4.0.0  release.   It
+             tells mmaawwkk to sort array indices before it starts to iterate over
+             the elements of an array.
 
 SSEEEE AALLSSOO
        ggrreepp(1)
@@ -1159,4 +1171,4 @@ AAUUTTHHOORR
 
 
 
-Version 1.3.4                     2020-07-12                           MAWK(1)
+Version 1.3.4                     2020-07-19                           MAWK(1)

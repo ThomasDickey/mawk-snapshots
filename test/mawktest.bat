@@ -1,5 +1,5 @@
 @echo off
-rem $MawkId: mawktest.bat,v 1.13 2020/07/12 14:28:25 tom Exp $
+rem $MawkId: mawktest.bat,v 1.15 2020/07/19 16:10:51 tom Exp $
 rem vile:rs=lf
 rem
 rem  ##########################################################################
@@ -94,9 +94,12 @@ rem ######################################
 
 rem ######################################
 
-	call :begin testing intervals
-	%PROG% -f intervals.awk intervals.dat > %STDOUT%
-	call :compare "intervals-test" %STDOUT% intervals.out
+	call :begin testing interval-expressions
+	%PROG% -f repetitions.awk repetitions.dat > %STDOUT%
+	call :compare "repetitions-test" %STDOUT% repetitions.out
+
+	%PROG% -f interval0.awk repetitions.dat > %STDOUT%
+	call :compare "empty-intervals-test" %STDOUT% interval0.out
 
 rem ################################
 

@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20200717
+MANIFEST for mawk, version t20200724
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -100,7 +100,8 @@ man/Makefile.in                 makefile for mawk's man-directory
 man/TODO                        to-do list (update to conform with POSIX-1003.1-2004)
 man/array.pdf                   generated documentation for array.w
 man/mawk.1                      troff source for unix style man pages
-man/mawk.doc                    ascii man pages
+man/mawk.doc                    formatted-text manpage
+man/mawk.txt                    plain-text manpage
 msdos                           subdirectory
 msdos/dosexec.c                 system() and pipes() for DOS
 msdos/examples                  subdirectory
@@ -141,6 +142,8 @@ test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
 test/full-awk.dat               test-data for /dev/full
+test/interval0.awk              test-case for empty interval-expressions
+test/interval0.out              reference for empty interval-expressions
 test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK

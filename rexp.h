@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.29 2020/07/14 23:03:35 tom Exp $
+ * $MawkId: rexp.h,v 1.31 2020/07/23 00:43:57 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -51,6 +51,9 @@ extern void RE_free(void *);
 #define  U_OFF     0
 #define  END_OFF   0
 #define  END_ON    (2*U_ON)
+
+#define  L_CURL         '{'
+#define  R_CURL         '}'
 
 typedef UChar BV[32];		/* bit vector */
 
@@ -189,7 +192,7 @@ extern RT_POS_ENTRY *RE_pos_stack_empty;
 
 extern int intrvalmin;
 extern int intrvalmax;
-extern char *lp;
+extern char *re_exp;
 
 #ifdef LOCAL_REGEXP
 static /* inline */ RT_POS_ENTRY *

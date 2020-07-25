@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.56 2020/07/13 21:56:57 tom Exp $
+ * $MawkId: mawk.h,v 1.57 2020/07/19 12:51:33 tom Exp $
  */
 
 /*  mawk.h  */
@@ -103,6 +103,8 @@ extern char decimal_dot;
 
 extern const char *progname;	/* for error messages */
 extern unsigned rt_nr, rt_fnr;	/* ditto */
+
+#define TABLESIZE(name) (sizeof(name)/sizeof(name[0]))
 
 /* macro to test the type of two adjacent cells */
 #define TEST2(cp)  (mpow2[(cp)->type]+mpow2[((cp)+1)->type])

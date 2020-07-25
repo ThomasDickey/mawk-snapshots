@@ -1,4 +1,17 @@
--- $MawkId: CHANGES,v 1.278 2020/07/17 22:42:29 tom Exp $
+-- $MawkId: CHANGES,v 1.286 2020/07/24 08:14:10 tom Exp $
+
+20200724
+	+ modify logic for "{0}" in rexp.c so that a left-parenthesis is not
+	  trimmed when cancelling the previous token.
+	+ modify RE_cat to add a dummy M_ACCEPT as a workaround for logic in
+	  the new RE_init_it_cnt and RE_set_limit functions.
+	+ modify regexp_system.c to work with interval-expressions.
+	+ recognize gawk's --traditional and --posix as aliases for mawk's
+	  -W options, as well as -r and --re-interval to improve scripting
+	  compatibility.
+	+ add -W compat and -W posix, using the former to replace
+	  -W repetitions and the latter to replace -W posix_space
+	+ enable interval-expressions by default.
 
 20200717
 	+ add configure option "--disable-interval-expr"
