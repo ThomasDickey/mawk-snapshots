@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.36 2020/01/20 11:47:26 tom Exp $
+ * $MawkId: field.c,v 1.37 2020/07/28 20:40:19 tom Exp $
  */
 
 /* field.c */
@@ -539,12 +539,12 @@ build_field0(void)
 		    cp->ptr = (PTR) & null_str;
 		    null_str.ref_cnt++;
 		} else {	/* its a double */
-		    Int ival;
+		    Long ival;
 		    char xbuff[260];
 
-		    ival = d_to_I(cp->dval);
+		    ival = d_to_L(cp->dval);
 		    if (ival == cp->dval)
-			sprintf(xbuff, INT_FMT, ival);
+			sprintf(xbuff, LONG_FMT, ival);
 		    else
 			sprintf(xbuff, string(CONVFMT)->str, cp->dval);
 

@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.40 2020/07/23 00:46:59 tom Exp $
+ * $MawkId: rexp0.c,v 1.43 2020/07/30 22:36:55 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -82,8 +82,8 @@ static char *re_str;		/*  base of 're_exp' */
 static size_t re_len;
 
 #ifndef NO_INTERVAL_EXPR
-int intrvalmin;
-int intrvalmax;
+Int intrvalmin;
+Int intrvalmax;
 
 /*
  * Given a string beginning with T_LB, check if that is an interval expression.
@@ -155,7 +155,7 @@ do_intervals(
 		if ((UChar) * ++p == R_CURL) {
 		    p++;
 		    *pp = p;
-		    intrvalmax = INT_MAX;
+		    intrvalmax = MAX__INT;
 		    return T_RB;	/* {n,} */
 		}
 		break;
@@ -293,9 +293,9 @@ RE_lex(MACHINE * mp)
 	    if (!repetitions_flag) {
 		return prev = T_CAT;
 	    }
-	    /* FALLTHRU */
 #endif
 
+	    /* FALLTHRU */
 	default:
 	    nest++;
 	    re_exp++;

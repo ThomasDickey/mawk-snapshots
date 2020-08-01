@@ -1,6 +1,7 @@
--- $MawkId: CHANGES,v 1.287 2020/07/25 14:49:06 tom Exp $
+-- $MawkId: CHANGES,v 1.290 2020/07/30 22:45:40 tom Exp $
 
-20200725
+20200731
+	+ amend fix for Debian #303825 to more closely match gawk and BWK.
 	+ add --help and --version options
 
 20200724

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.18 2020/07/21 21:42:40 tom Exp $
+ * $MawkId: rexp1.c,v 1.20 2020/07/30 22:40:05 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -29,7 +29,7 @@ new_TWO(
     mp->start->s_type = (SType) type;
     mp->stop->s_type = M_ACCEPT;
 #ifndef NO_INTERVAL_EXPR
-    mp->start->it_max = INT_MAX;
+    mp->start->it_max = MAX__INT;
     mp->start->it_cnt = 0;
 #endif
 }
@@ -179,7 +179,7 @@ ignore_star_star(MACHINE * mp)
 /*  replace m with m*  limited to the max iterations 
         (variation of m*   closure)   */
 void
-RE_close_limit(MACHINE * mp, int ilimit)
+RE_close_limit(MACHINE * mp, Int ilimit)
 {
     RE_close(mp);
     RE_set_limit(mp->start, ilimit);
@@ -189,7 +189,7 @@ RE_close_limit(MACHINE * mp, int ilimit)
      which is one or more, limited
         (variation of m+   positive closure)   */
 void
-RE_poscl_limit(MACHINE * mp, int ilimit)
+RE_poscl_limit(MACHINE * mp, Int ilimit)
 {
     RE_poscl(mp);
     RE_set_limit(mp->start, ilimit);
@@ -228,7 +228,7 @@ RE_close(MACHINE * mp)
     (++p)->s_type = M_SAVE_POS;
     (p += sz)->s_type = M_2JC;
 #ifndef NO_INTERVAL_EXPR
-    p->it_max = INT_MAX;
+    p->it_max = MAX__INT;
 #endif
     p->s_data.jump = -(int) sz;
     (p + 1)->s_type = M_ACCEPT;
@@ -261,7 +261,7 @@ RE_poscl(MACHINE * mp)
     p += sz - 1;
     p->s_type = M_2JC;
 #ifndef NO_INTERVAL_EXPR
-    p->it_max = INT_MAX;
+    p->it_max = MAX__INT;
 #endif
     p->s_data.jump = -((int) sz);
     (p + 1)->s_type = M_ACCEPT;

@@ -341,7 +341,7 @@ static ANODE* find_by_ival(
              /* need to search by string */
              char buff[256] ;
              STRING *sval ;
-             sprintf(buff, INT_FMT, ival) ;
+             sprintf(buff, LONG_FMT, ival) ;
              sval = new_STRING(buff) ;
              p = find_by_sval(A, sval, create_flag, redo) ;
              if (*redo) {
@@ -450,7 +450,7 @@ static void add_string_associations(ARRAY A)
       for(i=0; (unsigned) i <= A->hmask; i++) {
          p = table[i].ilink ;
          while(p) {
-            sprintf(buff, INT_FMT, p->ival) ;
+            sprintf(buff, LONG_FMT, p->ival) ;
             p->sval = new_STRING(buff) ;
             p->hval = ahash(p->sval) ;
             p->slink = table[A->hmask&p->hval].slink ;

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.29 2020/07/14 00:41:31 tom Exp $
+ * $MawkId: print.c,v 1.36 2020/07/31 22:44:30 tom Exp $
  */
 
 #include "mawk.h"
@@ -57,11 +57,11 @@ print_cell(CELL *p, FILE *fp)
 
     case C_DOUBLE:
 	{
-	    Int ival = d_to_I(p->dval);
+	    Long ival = d_to_L(p->dval);
 
 	    /* integers print as "%[l]d" */
 	    if ((double) ival == p->dval)
-		fprintf(fp, INT_FMT, ival);
+		fprintf(fp, LONG_FMT, ival);
 	    else
 		fprintf(fp, string(OFMT)->str, p->dval);
 	}
@@ -141,7 +141,6 @@ typedef enum {
 /* for switch on number of '*' and type */
 #define	 AST(num,type)	((PF_last)*(num)+(type))
 
-/* some picky ANSI compilers go berserk without this */
 typedef int (*PRINTER) (PTR, const char *, ...);
 
 /*-------------------------------------------------------*/
@@ -392,25 +391,28 @@ do_printf(
 	     CELL *cp)		/* ptr to an array of arguments
 				   (on the eval stack) */
 {
-    char save;
+#ifdef USE_LL_FORMAT
+#define ELL_LIMIT 2
+#else
+#define ELL_LIMIT 1
+#endif
+    char save;			/* saves when temporary null ends format */
+    int splice;
     char *p;
     register char *q = format;
     register char *target;
     int l_flag, h_flag;		/* seen %ld or %hd  */
     int ast_cnt;
     int ast[2];
-    UInt Uval = 0;
-    Int Ival = 0;
+    ULong Uval = 0;
+    Long Ival = 0;
     int sfmt_width, sfmt_prec, sfmt_flags, s_format;
     int num_conversion = 0;	/* for error messages */
     const char *who;		/*ditto */
     int pf_type = 0;		/* conversion type */
     PRINTER printer;		/* pts at fprintf() or sprintf() */
     STRING onechr;
-
-#ifdef	 SHORT_INTS
     char xbuff[256];		/* splice in l qualifier here */
-#endif
 
     if (fp == (FILE *) 0) {	/* doing sprintf */
 	target = sprintf_buff;
@@ -507,13 +509,19 @@ do_printf(
 
 	l_flag = h_flag = 0;
 
-	if (*q == 'l') {
-	    q++;
-	    l_flag = 1;
-	} else if (*q == 'h') {
-	    q++;
-	    h_flag = 1;
+	for (;;) {
+	    if (*q == 'l') {
+		++q;
+		++l_flag;
+	    } else if (*q == 'h') {
+		++q;
+		++h_flag;
+	    } else {
+		break;
+	    }
 	}
+	splice = 0;
+
 	switch (*q++) {
 	case 's':
 	    if (l_flag + h_flag)
@@ -534,7 +542,7 @@ do_printf(
 
 	    case C_STRNUM:
 	    case C_DOUBLE:
-		Ival = d_to_I(cp->dval);
+		Ival = d_to_L(cp->dval);
 		break;
 
 	    case C_STRING:
@@ -566,8 +574,11 @@ do_printf(
 	case 'i':
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
-	    Ival = d_to_I(cp->dval);
+	    Ival = d_to_L(cp->dval);
 	    pf_type = PF_D;
+	    if (!l_flag || h_flag) {
+		splice = 1;
+	    }
 	    break;
 
 	case 'o':
@@ -576,8 +587,11 @@ do_printf(
 	case 'u':
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
-	    Uval = d_to_U(cp->dval);
+	    Uval = d_to_UL(cp->dval);
 	    pf_type = PF_U;
+	    if (!l_flag) {
+		splice = 1;
+	    }
 	    break;
 
 	case 'e':
@@ -595,35 +609,43 @@ do_printf(
 	default:
 	    bad_conversion(num_conversion, who, format);
 	}
+#ifdef	SHORT_INTS
+	if (pf_type == PF_D)
+	    p = xbuff;
+#endif
 
 	save = *q;
 	*q = 0;
 
-#ifdef	SHORT_INTS
-	if (pf_type == PF_D) {
+	if (splice) {
 	    /* need to splice in long modifier */
 	    strcpy(xbuff, p);
 
-	    if (l_flag) /* do nothing */ ;
-	    else {
-		int k = q - p;
+	    if (l_flag < ELL_LIMIT) {
+		int k = (int) (q - p);
 
-		if (h_flag) {
+		switch (h_flag) {
+		case 2:
+		    Ival = (char) Ival;
+		    if (pf_type == PF_D)
+			Ival &= 0xff;
+		    break;
+		case 1:
 		    Ival = (short) Ival;
-		    /* replace the 'h' with 'l' (really!) */
-		    xbuff[k - 2] = 'l';
-		    if (xbuff[k - 1] != 'd' && xbuff[k - 1] != 'i')
+		    if (pf_type == PF_D)
 			Ival &= 0xffff;
-		} else {
-		    /* the usual case */
-		    xbuff[k] = xbuff[k - 1];
-		    xbuff[k - 1] = 'l';
-		    xbuff[k + 1] = 0;
+		    break;
+		default:
+		    do {
+			xbuff[k] = xbuff[k - 1];
+			xbuff[k - 1] = 'l';
+			xbuff[++k] = 0;
+		    } while (++l_flag < ELL_LIMIT);
+		    break;
 		}
 	    }
+	    p = xbuff;
 	}
-#endif
-
 #define PUTS_C_ARGS target, fp, 0,  &onechr, sfmt_width, sfmt_prec, sfmt_flags
 #define PUTS_S_ARGS target, fp, cp, 0,       sfmt_width, sfmt_prec, sfmt_flags
 

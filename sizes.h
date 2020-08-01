@@ -1,6 +1,6 @@
 /********************************************
 sizes.h
-copyright 2009-2014,2017  Thomas E. Dickey
+copyright 2009-2017,2020  Thomas E. Dickey
 copyright 1991-1995,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,46 +11,100 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.11 2017/10/17 00:43:54 tom Exp $
+ * $MawkId: sizes.h,v 1.18 2020/07/31 22:02:36 tom Exp $
  */
 
 /*  sizes.h  */
 
 #ifndef  SIZES_H
 #define  SIZES_H
+/* *INDENT-OFF* */
 
 #include "config.h"
 
+#ifndef SIZEOF_LONG
+#define SIZEOF_LONG 4
+#endif
+
+#ifndef SIZEOF_LONG_LONG
+#define SIZEOF_LONG_LONG 4
+#endif
+
+#if defined(HAVE_STDINT_H) && defined(HAVE_INT64_T) && defined(HAVE_UINT64_T)
+#include <stdint.h>
+#include <limits.h>
+#define  MAX__INT       INT64_MAX
+#define  MAX__LONG      INT64_MAX
+#define  MAX__UINT      UINT64_MAX
+#define  MAX__ULONG     UINT64_MAX
+
+typedef int64_t         Int;
+typedef int64_t         Long;
+#define  Max_Int        MAX__INT
+#define  Max_Long       MAX__LONG
+
+typedef uint64_t        UInt;
+typedef uint64_t        ULong;
+#define  Max_UInt       MAX__UINT
+#define  Max_ULong      MAX__ULONG
+
+#if SIZEOF_LONG_LONG > SIZEOF_LONG
+#define  INT_FMT        "%lld"
+#define  UINT_FMT       "%llu"
+#define  LONG_FMT       "%lld"
+#define  ULONG_FMT      "%llu"
+#define  USE_LL_FORMAT  1
+#else
+#define  INT_FMT        "%ld"
+#define  UINT_FMT       "%lu"
+#define  LONG_FMT       "%ld"
+#define  ULONG_FMT      "%lu"
+#endif
+
+#else
 #ifndef MAX__INT
 #include <limits.h>
-#define  MAX__INT  INT_MAX
-#define  MAX__LONG LONG_MAX
-#define  MAX__UINT UINT_MAX
+#define  MAX__INT       INT_MAX
+#define  MAX__LONG      LONG_MAX
+#define  MAX__UINT      UINT_MAX
+#define  MAX__ULONG     ULONG_MAX
 #endif /* MAX__INT */
 
 #if  MAX__INT <= 0x7fff
 #define  SHORT_INTS
-#define  INT_FMT "%ld"
-typedef long Int;
-#define  Max_Int MAX__LONG
+#define  INT_FMT        "%ld"
+typedef long            Int;
+typedef long            Long;
+#define  Max_Int        MAX__LONG
+#define  Max_Long       MAX__LONG
 #else
-#define  INT_FMT "%d"
-typedef int Int;
-#define  Max_Int  MAX__INT
+#define  INT_FMT        "%d"
+typedef int             Int;
+typedef long            Long;
+#define  Max_Int        MAX__INT
+#define  Max_Long       MAX__LONG
 #endif
 
 #if  MAX__UINT <= 0xffff
 #define  SHORT_UINTS
-#define  UINT_FMT "%lu"
-typedef unsigned long UInt;
-#define  Max_UInt MAX__ULONG
+#define  UINT_FMT       "%lu"
+typedef unsigned long   UInt;
+typedef unsigned long   ULong;
+#define  Max_UInt       MAX__ULONG
+#define  Max_ULong      MAX__ULONG
 #else
-#define  UINT_FMT "%u"
-typedef unsigned UInt;
-#define  Max_UInt  MAX__UINT
+#define  UINT_FMT       "%u"
+typedef unsigned int    UInt;
+typedef unsigned long   ULong;
+#define  Max_UInt       MAX__UINT
+#define  Max_ULong      MAX__ULONG
 #endif
 
-#define EVAL_STACK_SIZE  1024	/* initial size , can grow */
+#define  LONG_FMT       "%ld"
+#define  ULONG_FMT      "%lu"
+#endif /* HAVE_STDINT_H */
+
+#define EVAL_STACK_SIZE 1024	/* initial size , can grow */
 
 /*
  * FBANK_SZ, the number of fields at startup, must be a power of 2.
@@ -81,5 +135,7 @@ typedef unsigned UInt;
 #define  A_HASH_PRIME 199
 
 #define  MAX_COMPILE_ERRORS  5	/* quit if more than 4 errors */
+
+/* *INDENT-ON* */
 
 #endif /* SIZES_H */

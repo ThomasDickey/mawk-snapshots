@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.26 2020/07/25 00:02:25 tom Exp $
+ * $MawkId: rexp.c,v 1.27 2020/07/29 19:19:24 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -256,10 +256,10 @@ REcompile(char *re, size_t len)
 
 	    /*  otherwise, default is operator case  */
 
+	default:
 #ifndef NO_INTERVAL_EXPR
 	  default_case:
 #endif
-	default:
 
 	    if ((op_ptr->prec = table[op_ptr->token][t]) == G) {
 		do {		/* op_pop   */

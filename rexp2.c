@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.29 2020/07/14 23:03:35 tom Exp $
+ * $MawkId: rexp2.c,v 1.30 2020/07/30 20:30:42 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -368,7 +368,7 @@ REtest(char *str,		/* string to test */
 
       CASE_UANY(M_2JC):	/* take the jump branch if position changed */
 #ifndef NO_INTERVAL_EXPR
-	if (m->it_max < INT_MAX && ++(m->it_cnt) >= m->it_max) {
+	if (m->it_max < MAX__INT && ++(m->it_cnt) >= m->it_max) {
 	    RE_pos_pop(&sp, stackp);
 	    m++;
 	    RE_CASE();		/* test the next thing */
