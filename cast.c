@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.22 2020/07/14 00:44:33 tom Exp $
+ * $MawkId: cast.c,v 1.26 2020/07/29 00:23:15 tom Exp $
  */
 
 /*  cast.c  */
@@ -138,7 +138,7 @@ cast2_to_d(CELL *cp)
 void
 cast1_to_s(CELL *cp)
 {
-    register Int lval;
+    register Long lval;
     char xbuff[260];
 
     switch (cp->type) {
@@ -149,9 +149,9 @@ cast1_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_I(cp->dval);
+	lval = d_to_L(cp->dval);
 	if (lval == cp->dval)
-	    sprintf(xbuff, INT_FMT, lval);
+	    sprintf(xbuff, LONG_FMT, lval);
 	else
 	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
 
@@ -174,7 +174,7 @@ cast1_to_s(CELL *cp)
 void
 cast2_to_s(CELL *cp)
 {
-    register Int lval;
+    register Long lval;
     char xbuff[260];
 
     switch (cp->type) {
@@ -185,9 +185,9 @@ cast2_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_I(cp->dval);
+	lval = d_to_L(cp->dval);
 	if (lval == cp->dval)
-	    sprintf(xbuff, INT_FMT, lval);
+	    sprintf(xbuff, LONG_FMT, lval);
 	else
 	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
 
@@ -217,9 +217,9 @@ cast2_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_I(cp->dval);
+	lval = d_to_L(cp->dval);
 	if (lval == cp->dval)
-	    sprintf(xbuff, INT_FMT, lval);
+	    sprintf(xbuff, LONG_FMT, lval);
 	else
 	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
 
@@ -386,27 +386,58 @@ cast_to_REPL(CELL *cp)
 Int
 d_to_I(double d)
 {
-    if (d >= Max_Int)
-	return Max_Int;
-    if (d > -Max_Int)
-	return (Int) d;
-    return -Max_Int;
+    Int result;
+
+    if (d >= Max_Int) {
+	result = Max_Int;
+    } else if (d < 0) {
+	if (-d <= Max_Int) {
+	    result = (Int) d;
+	} else {
+	    result = -Max_Int;
+	}
+    } else {
+	result = (Int) d;
+    }
+    return result;
 }
 
-/* convert a double to UInt (this is not as simple as a
-   cast because the results are undefined if it won't fit).
-   Truncate large values to Max_UInt or 0
-   Send nans to 0
-*/
-
-UInt
-d_to_U(double d)
+Long
+d_to_L(double d)
 {
-    if (d >= Max_UInt)
-	return Max_UInt;
-    if (d > 0)
-	return (UInt) d;
-    return 0;
+    Long result;
+
+    if (d >= Max_Long) {
+	result = Max_Long;
+    } else if (d < 0) {
+	if (-d <= Max_Long) {
+	    result = (Long) d;
+	} else {
+	    result = -Max_Long;
+	}
+    } else {
+	result = (Long) d;
+    }
+    return result;
+}
+
+ULong
+d_to_UL(double d)
+{
+    ULong result;
+
+    if (d >= Max_ULong) {
+	result = Max_ULong;
+    } else if (d < 0) {
+	if (-d < Max_ULong) {
+	    result = ((Max_ULong + (ULong) d) + 1);
+	} else {
+	    result = -Max_ULong;
+	}
+    } else {
+	result = (ULong) d;
+    }
+    return result;
 }
 
 #ifdef NO_LEAKS

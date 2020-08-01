@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2017,2018, Thomas E. Dickey
+copyright 2008-2018,2020, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.44 2018/11/15 01:20:01 tom Exp $
+ * $MawkId: execute.c,v 1.45 2020/07/30 22:43:17 tom Exp $
  */
 
 #include "mawk.h"
@@ -112,7 +112,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
     /* some useful temporaries */
     CELL *cp;
     int t;
-    unsigned tu;
+    UInt tu;
 
     /* save state for array loops via a stack */
     ALOOP_STATE *aloop_state = (ALOOP_STATE *) 0;

@@ -17,6 +17,7 @@ then
 fi
 
 	update-alternatives \
+		--force \
 		--install \
 			$BINDIR/$ALT $ALT \
 			$BINDIR/$PKG $PRI \

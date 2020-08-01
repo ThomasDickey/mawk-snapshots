@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.89 2020/04/04 20:16:13 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.93 2020/07/30 21:28:24 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -1242,24 +1242,27 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FIND_MAX_INT version: 6 updated: 2017/10/16 20:54:11
+dnl CF_MAWK_FIND_MAX_INT version: 7 updated: 2020/07/30 17:25:18
 dnl --------------------
 dnl Try to find a definition of MAX__INT from limits.h else compute.
 AC_DEFUN([CF_MAWK_FIND_MAX_INT],
 [AC_CHECK_HEADER(limits.h,cf_limits_h=yes)
-if test "$cf_limits_h" = yes ; then :
+if test "x$cf_limits_h" = xyes ; then :
 else
 AC_CHECK_HEADER(values.h,cf_values_h=yes)
-   if test "$cf_values_h" = yes ; then
-   AC_TRY_RUN(
+	if test "x$cf_values_h" = xyes ; then
+	AC_TRY_RUN(
 [#include <values.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 int main(void)
 {   FILE *out = fopen("conftest.out", "w") ;
 	unsigned max_uint = 0;
-    if ( ! out ) exit(1) ;
-    fprintf(out, "MAX__INT  0x%x\n", MAXINT) ;
-    fprintf(out, "MAX__LONG 0x%lx\n", MAXLONG) ;
+	unsigned long max_ulong = 0;
+	if ( ! out ) exit(1) ;
+	fprintf(out, "MAX__INT  0x%x\n", MAXINT) ;
+	fprintf(out, "MAX__LONG 0x%lx\n", MAXLONG) ;
 #ifdef MAXUINT
 	max_uint = MAXUINT;	/* not likely (SunOS/Solaris lacks it) */
 #else
@@ -1267,11 +1270,19 @@ int main(void)
 	max_uint <<= 1;
 	max_uint |= 1;
 #endif
-    fprintf(out, "MAX__UINT 0x%lx\n", max_uint) ;
-    exit(0) ; return(0) ;
+	fprintf(out, "MAX__UINT 0x%lx\n", max_uint) ;
+#ifdef MAXULONG
+	max_ulong = MAXULONG;
+#else
+	max_ulong = MAXLONG;
+	max_ulong <<= 1;
+	max_ulong |= 1;
+#endif
+	fprintf(out, "MAX__ULONG 0x%lx\n", max_ulong) ;
+	${cf_cv_main_return:-return}(0);
 }
 ], cf_maxint_set=yes,[CF_MAWK_CHECK_LIMITS_MSG])
-   fi
+	fi
 if test "x$cf_maxint_set" != xyes ; then
 # compute it  --  assumes two's complement
 AC_TRY_RUN(CF_MAWK_MAX__INT_PROGRAM,:,[CF_MAWK_CHECK_LIMITS_MSG])
@@ -1331,32 +1342,47 @@ fi])dnl
 fi
 AC_SUBST(MATHLIB)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_MAX__INT_PROGRAM version: 4 updated: 2017/10/16 20:54:11
+dnl CF_MAWK_MAX__INT_PROGRAM version: 5 updated: 2020/07/30 17:24:25
 dnl ------------------------
-dnl C program to compute MAX__INT and MAX__LONG if looking at headers fails
+dnl C program to compute MAX__INT, MAX__LONG, MAX__UINT and MAX_ULONG if
+dnl looking at headers fails.
 AC_DEFUN([CF_MAWK_MAX__INT_PROGRAM],
 [[#include <stdio.h>
+#include <stdlib.h>
 int main(void)
-{ int y ; unsigned yu; long yy ;
-  FILE *out ;
+{
+	static int y ;
+	static unsigned yu;
+	static long yy ;
+	static unsigned long yyu ;
+	FILE *out ;
 
-    if ( !(out = fopen("conftest.out","w")) ) exit(1) ;
-    /* find max int and max long */
-    y = 0x1000 ;
-    while ( y > 0 ) { yu = y; y *= 2 ; }
-    fprintf(out,"MAX__INT  0x%x\n", y-1) ;
+	if ( !(out = fopen("conftest.out","w")) ) exit(1) ;
+	/* find max int and max long */
+	y = 0x1000 ;
+	while ( y > 0 ) { yu = y; y *= 2 ; }
+	fprintf(out,"MAX__INT  0x%x\n", y-1) ;
 
 	yu = yu - 1;
 	yu <<= 1;
 	yu |= 1;
-    fprintf(out,"MAX__UINT 0x%x\n", y-1) ;
+	yu <<= 1;
+	yu |= 1;
+	fprintf(out,"MAX__UINT 0x%xU\n", yu) ;
 
-    yy = 0x1000 ;
-    while ( yy > 0 ) yy *= 2 ;
-    fprintf(out,"MAX__LONG 0x%lx\n", yy-1) ;
-    exit(0) ;
-    return 0 ;
- }]])dnl
+	yy = 0x1000 ;
+	while ( yy > 0 ) { yyu = yy; yy *= 2 ; }
+	fprintf(out,"MAX__LONG 0x%lxL\n", yy-1) ;
+
+	yyu = yyu - 1;
+	yyu <<= 1;
+	yyu |= 1;
+	yyu <<= 1;
+	yyu |= 1;
+	fprintf(out,"MAX__ULONG 0x%lxUL\n", yyu) ;
+
+	${cf_cv_main_return:-return}(0);
+}]])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_MAWK_RUN_FPE_TESTS version: 15 updated: 2020/01/18 12:30:33
 dnl ---------------------
@@ -1792,7 +1818,7 @@ esac
 AC_SUBST(LINT_OPTS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_REGEX version: 13 updated: 2020/03/10 18:53:47
+dnl CF_REGEX version: 14 updated: 2020/07/11 19:09:29
 dnl --------
 dnl Attempt to determine if we've got one of the flavors of regular-expression
 dnl code that we can support.
@@ -1804,7 +1830,7 @@ cf_regex_func=no
 cf_regex_libs="regex re"
 case $host_os in
 (mingw*)
-	cf_regex_libs="gnurx $cf_regex_libs"
+	cf_regex_libs="systre gnurx $cf_regex_libs"
 	;;
 esac
 
@@ -1962,7 +1988,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 13 updated: 2016/09/05 12:39:46
+dnl CF_SRAND version: 14 updated: 2020/07/30 16:32:36
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2016,7 +2042,7 @@ if test "$cf_cv_srand_func" != unknown ; then
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
-		],[long x = $cf_cv_rand_max],,
+		],[long x = $cf_cv_rand_max; (void)x],,
 		[cf_cv_rand_max="(1UL<<$cf_rand_max)-1"])
 	])
 
@@ -2025,10 +2051,10 @@ if test "$cf_cv_srand_func" != unknown ; then
 		AC_MSG_CHECKING(if <bsd/stdlib.h> should be included)
 		AC_TRY_COMPILE([#include <bsd/stdlib.h>],
 					   [void *arc4random(int);
-						void *x = arc4random(1)],
+						void *x = arc4random(1); (void)x],
 					   [cf_bsd_stdlib_h=no],
 					   [AC_TRY_COMPILE([#include <bsd/stdlib.h>],
-									   [unsigned x = arc4random()],
+									   [unsigned x = arc4random(); (void)x],
 									   [cf_bsd_stdlib_h=yes],
 									   [cf_bsd_stdlib_h=no])])
 	    AC_MSG_RESULT($cf_bsd_stdlib_h)
@@ -2039,10 +2065,10 @@ if test "$cf_cv_srand_func" != unknown ; then
 			AC_MSG_CHECKING(if <bsd/random.h> should be included)
 			AC_TRY_COMPILE([#include <bsd/random.h>],
 						   [void *arc4random(int);
-							void *x = arc4random(1)],
+							void *x = arc4random(1); (void)x],
 						   [cf_bsd_random_h=no],
 						   [AC_TRY_COMPILE([#include <bsd/random.h>],
-										   [unsigned x = arc4random()],
+										   [unsigned x = arc4random(); (void)x],
 										   [cf_bsd_random_h=yes],
 										   [cf_bsd_random_h=no])])
 			AC_MSG_RESULT($cf_bsd_random_h)

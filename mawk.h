@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.57 2020/07/19 12:51:33 tom Exp $
+ * $MawkId: mawk.h,v 1.59 2020/07/28 22:30:39 tom Exp $
  */
 
 /*  mawk.h  */
@@ -136,9 +136,11 @@ extern void cast_for_split(CELL *);
 extern void check_strnum(CELL *);
 extern void cast_to_REPL(CELL *);
 extern Int d_to_I(double);
-extern UInt d_to_U(double d);
+extern Long d_to_L(double);
+extern ULong d_to_UL(double d);
 
 #define d_to_i(d)     ((int)d_to_I(d))
+#define d_to_l(d)     ((long)d_to_L(d))
 
 extern int test(CELL *);	/* test for null non-null */
 extern CELL *cellcpy(CELL *, CELL *);

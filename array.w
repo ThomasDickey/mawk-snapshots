@@ -1,7 +1,7 @@
 \input mwebmac
 \input ctmac
 
-\RCSID{$MawkId: array.w,v 1.21 2020/01/20 11:54:19 tom Exp $}
+\RCSID{$MawkId: array.w,v 1.22 2020/08/01 00:09:06 tom Exp $}
 
 \TOC{Mawk Arrays}
 
@@ -312,7 +312,7 @@ if (A->type & AY_STR) {
    /* need to search by string */
    char buff[256] ;
    STRING *sval ;
-   sprintf(buff, INT_FMT, ival) ;
+   sprintf(buff, LONG_FMT, ival) ;
    sval = new_STRING(buff) ;
    p = find_by_sval(A, sval, create_flag, redo) ;
    if (*redo) {
@@ -432,7 +432,7 @@ static void add_string_associations(ARRAY A)
       for(i=0; (unsigned) i <= A->hmask; i++) {
 	 p = table[i].ilink ;
 	 while(p) {
-	    sprintf(buff, INT_FMT, p->ival) ;
+	    sprintf(buff, LONG_FMT, p->ival) ;
 	    p->sval = new_STRING(buff) ;
 	    p->hval = ahash(p->sval) ;
 	    p->slink = table[A->hmask&p->hval].slink ;
@@ -1072,7 +1072,7 @@ return sp ;
 
 <<blurb>>=
 /*
-$MawkId: array.w,v 1.21 2020/01/20 11:54:19 tom Exp $
+$MawkId: array.w,v 1.22 2020/08/01 00:09:06 tom Exp $
 
 copyright 2009-2019,2020 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan

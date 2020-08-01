@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.31 2020/07/23 00:43:57 tom Exp $
+ * $MawkId: rexp.h,v 1.32 2020/07/30 22:40:05 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -66,8 +66,8 @@ typedef struct {
 	int jump;
     } s_data;
 #ifndef NO_INTERVAL_EXPR
-    int it_max;			/* used for s_type == M_2JC */
-    int it_cnt;
+    Int it_max;			/* used for s_type == M_2JC */
+    Int it_cnt;
 #endif
 } STATE;
 
@@ -166,8 +166,8 @@ extern void RE_panic(const char *) GCC_NORETURN;
 extern void RE_panic2(const char *, char *) GCC_NORETURN;
 
 #ifndef NO_INTERVAL_EXPR
-extern void RE_close_limit(MACHINE *, int);
-extern void RE_poscl_limit(MACHINE *, int);
+extern void RE_close_limit(MACHINE *, Int);
+extern void RE_poscl_limit(MACHINE *, Int);
 extern void duplicate_m(MACHINE *, MACHINE *);
 #endif
 
@@ -190,8 +190,8 @@ extern RT_POS_ENTRY *RE_pos_stack_base;
 extern RT_POS_ENTRY *RE_pos_stack_limit;
 extern RT_POS_ENTRY *RE_pos_stack_empty;
 
-extern int intrvalmin;
-extern int intrvalmax;
+extern Int intrvalmin;
+extern Int intrvalmax;
 extern char *re_exp;
 
 #ifdef LOCAL_REGEXP
@@ -245,7 +245,7 @@ RE_init_it_cnt(STATE * s)
 
 #ifndef NO_INTERVAL_EXPR
 static void
-RE_set_limit(STATE * s, int limit)
+RE_set_limit(STATE * s, Int limit)
 {
     STATE *p = s;
     while (p->s_type < M_ACCEPT) {

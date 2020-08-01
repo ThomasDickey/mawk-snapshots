@@ -13,6 +13,7 @@ MANDIR=/usr/share/man/man1
 if [ $1 != "upgrade" ]
 then
 	update-alternatives \
+		--force \
 		--install \
 			$BINDIR/$ALT $ALT \
 			$BINDIR/$PKG $PRI \

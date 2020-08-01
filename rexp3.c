@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.42 2020/07/14 23:03:35 tom Exp $
+ * $MawkId: rexp3.c,v 1.43 2020/07/30 20:30:42 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -396,7 +396,7 @@ REmatch(char *str,		/* string to test */
     case (M_2JC) + U_ON:
 	/* see REtest */
 #ifndef NO_INTERVAL_EXPR
-	if (m->it_max < INT_MAX && ++(m->it_cnt) >= m->it_max) {
+	if (m->it_max < MAX__INT && ++(m->it_cnt) >= m->it_max) {
 	    RE_pos_pop(&sp, stackp);
 	    m++;
 	    RE_CASE();		/* test the next thing */

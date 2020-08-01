@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: config_h.in,v 1.32 2020/07/25 14:52:05 tom Exp $
+ * $MawkId: config_h.in,v 1.38 2020/07/31 08:17:41 tom Exp $
  * template for config.h
  */
 
@@ -27,7 +27,10 @@ the GNU General Public License, version 2, 1991.
 #undef HAVE_ERRNO_H
 #undef HAVE_FCNTL_H
 #undef HAVE_FORK
+#undef HAVE_INT64_T
 #undef HAVE_ISNAN
+#undef HAVE_LIMITS_H
+#undef HAVE_LONG_LONG
 #undef HAVE_MATHERR
 #undef HAVE_MATH__LIB_VERSION
 #undef HAVE_MKTIME
@@ -39,11 +42,13 @@ the GNU General Public License, version 2, 1991.
 #undef HAVE_SIGACTION
 #undef HAVE_SIGACTION_SA_SIGACTION
 #undef HAVE_SIGINFO_H
+#undef HAVE_STDINT_H
 #undef HAVE_STRFTIME
 #undef HAVE_STRTOD_OVF_BUG
 #undef HAVE_SYS_WAIT_H
 #undef HAVE_TDESTROY
 #undef HAVE_TSEARCH
+#undef HAVE_UINT64_T
 #undef HAVE_UNISTD_H
 #undef HAVE_WAIT
 #undef LOCALE
@@ -52,12 +57,16 @@ the GNU General Public License, version 2, 1991.
 #undef MAX__INT
 #undef MAX__LONG
 #undef MAX__UINT
+#undef MAX__ULONG
 #undef NAME_RANDOM
 #undef NOINFO_SIGFPE
 #undef NO_GAWK_OPTIONS
 #undef NO_INIT_SRAND
 #undef NO_INTERVAL_EXPR
 #undef NO_LEAKS
+#undef SIZEOF_INT64_T
+#undef SIZEOF_LONG
+#undef SIZEOF_LONG_LONG
 #undef SIZE_T_STDDEF_H
 #undef SIZE_T_TYPES_H
 #undef SYSTEM_NAME
