@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.65 2020/07/31 08:18:32 tom Exp $
+dnl $MawkId: configure.in,v 1.66 2020/08/02 09:25:59 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2019,2020, Thomas E. Dickey
@@ -126,9 +126,7 @@ then
 fi
 AC_SUBST(EXTRAOBJS)
 
-AC_CHECK_TYPES(int64_t)
-AC_CHECK_TYPES(uint64_t)
-AC_CHECK_TYPES(long long)
+AC_CHECK_TYPES([int64_t, uint64_t, long long])
 
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(int64_t)

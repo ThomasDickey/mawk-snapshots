@@ -1,0 +1,5 @@
+# $MawkId: mawk-externs.dat,v 1.1 2020/08/03 19:44:42 tom Exp $
+# manpages to exclude from man2html linking, for post-processing.
+atof(3)
+grep(1)
+sprintf(3)

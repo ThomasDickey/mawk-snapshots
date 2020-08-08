@@ -1,4 +1,8 @@
--- $MawkId: CHANGES,v 1.290 2020/07/30 22:45:40 tom Exp $
+-- $MawkId: CHANGES,v 1.293 2020/08/08 00:09:24 tom Exp $
+
+20200807
+	+ begin man/mawk-code.7
+	+ drop noweb dependency, move docs to man/mawk-arrays.7
 
 20200731
 	+ amend fix for Debian #303825 to more closely match gawk and BWK.

@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.4 2020/07/19 16:50:41 tom Exp $
+# $MawkId: Makefile.in,v 1.5 2020/08/03 20:06:53 tom Exp $
 ###############################################################################
 # copyright 2010-2015,2020 Thomas E. Dickey
 #
@@ -48,6 +48,7 @@ clean:
 distclean: clean
 	rm -f Makefile
 
-maintainer-clean:
+maintainer-clean: clean
+	rm -f $(PROG).txt $(PROG).doc
 
 $(PROG).pdf : $(PROG).ps

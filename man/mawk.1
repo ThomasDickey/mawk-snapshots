@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.49 2020/07/25 14:48:03 tom Exp $
+.\" $MawkId: mawk.1,v 1.54 2020/08/02 10:58:21 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-07-25" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-08-07" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -749,7 +749,7 @@ such as
 The following variables are built-in and initialized before program
 execution.
 .RS 5
-.TP \w'FILENAME'u+2n
+.TP
 .B ARGC
 number of command line arguments.
 .TP
@@ -825,7 +825,7 @@ is omitted,
 .B $0
 is used.
 An
-.IR &
+.I &
 in the replacement string
 .I s
 is replaced by the matched substring of
@@ -1980,6 +1980,10 @@ that does not attempt the depth of the AWK book
 and assumes the reader may be a novice programmer.
 The section on AWK arrays is excellent.
 It also discusses POSIX requirements for AWK.
+.PP
+\fBmawk-arrays\fP(7) discusses \fB\*n\fP's implementation of arrays.
+.PP
+\fBmawk-code\fP(7) gives more information on the \fB\-W\ dump\fP option.
 .\" **************************************************************************
 .SH BUGS
 .PP

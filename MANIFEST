@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20200731
+MANIFEST for mawk, version t20200807
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -10,7 +10,6 @@ README                          description of mawk
 aclocal.m4                      mawk-specific macros for autoconf
 array.c                         array functions (C source)
 array.h                         array functions (C header)
-array.w                         array functions (noweb)
 bi_funct.c                      mawk built-in functions
 bi_funct.h                      mawk built-in functions header
 bi_vars.c                       mawk predefined variables
@@ -98,7 +97,9 @@ icons/mawk48.svg                a suitable icon for mawk
 man                             subdirectory
 man/Makefile.in                 makefile for mawk's man-directory
 man/TODO                        to-do list (update to conform with POSIX-1003.1-2004)
-man/array.pdf                   generated documentation for array.w
+man/mawk-arrays.7               documentation for mawk-arrays
+man/mawk-code.7                 documentation for mawk's dump-option
+man/mawk-externs.dat            manpages to exclude from man2html linking
 man/mawk.1                      troff source for unix style man pages
 man/mawk.doc                    formatted-text manpage
 man/mawk.txt                    plain-text manpage
