@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.45 2020/07/30 22:43:17 tom Exp $
+ * $MawkId: execute.c,v 1.46 2020/08/07 22:29:32 tom Exp $
  */
 
 #include "mawk.h"
@@ -536,8 +536,6 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    sp->type = C_DOUBLE;
 	    sp->dval = cp->dval;
 	    break;
-
-	    /* will anyone ever use these ? */
 
 	case F_ADD_ASG:
 	    if (sp->type != C_DOUBLE)

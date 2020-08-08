@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.53 2020/07/25 09:46:41 tom Exp $
+# $MawkId: Makefile.in,v 1.54 2020/08/01 08:34:10 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
 # copyright 2009-2016,2020 Thomas E. Dickey
@@ -119,14 +119,6 @@ parse.c  : parse.y
 	   else mv y.tab.h parse.h ; fi
 
 NOIDENT = sed -e 's/[$$]MawkId\([^$$]*\)[$$]/@MawkId\1@/'
-
-array.c : array.w
-	-@rm -f $@
-	notangle -R'"array.c"' array.w | $(NOIDENT) | cpif array.c
-
-array.h : array.w
-	-@rm -f $@
-	notangle -R'"array.h"' array.w | $(NOIDENT) | cpif array.h
 
 scancode.c :  $(srcdir)/makescan.c  scancode.h nstd.h config.h
 	@ECHO_LD@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o makescan$x $(srcdir)/makescan.c

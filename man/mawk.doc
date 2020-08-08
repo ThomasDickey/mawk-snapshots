@@ -1155,6 +1155,10 @@ SSEEEE AALLSSOO
        assumes  the reader may be a novice programmer.  The section on AWK ar-
        rays is excellent.  It also discusses POSIX requirements for AWK.
 
+       mmaawwkk--aarrrraayyss(7) discusses mmaawwkk's implementation of arrays.
+
+       mmaawwkk--ccooddee(7) gives more information on the --WW dduummpp option.
+
 BBUUGGSS
        mmaawwkk implements pprriinnttff(()) and sspprriinnttff(()) using the C  library  functions,
        printf  and  sprintf, so full ANSI compatibility requires an ANSI C li-
@@ -1172,4 +1176,4 @@ AAUUTTHHOORR
 
 
 
-Version 1.3.4                     2020-07-25                           MAWK(1)
+Version 1.3.4                     2020-08-07                           MAWK(1)

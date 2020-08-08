@@ -1,0 +1,1275 @@
+.\" $MawkId: mawk-code.7,v 1.9 2020/08/08 00:01:49 tom Exp $
+.\" ###########################################################################
+.\" # copyright 2008-2019,2020, Thomas E. Dickey
+.\" # copyright 1996, Michael D. Brennan
+.\" #
+.\" # This is a source file for mawk, an implementation of
+.\" # the AWK programming language.
+.\" #
+.\" # Mawk is distributed without warranty under the terms of
+.\" # the GNU General Public License, version 2, 1991.
+.\" ###########################################################################
+.ds N Mawk
+.ds n mawk
+.TH MAWK-CODE 1 "2020-08-07" "Version 1.3.4" "MISCELLANEOUS"
+.\" strings
+.ds ex \fIexpr\fR
+.\" Bulleted paragraph
+.de bP
+.ie n  .IP \(bu 4
+.el    .IP \(bu 2
+..
+.\" Escape single quotes in literal strings from groff's Unicode transform.
+.ie \n(.g .ds AQ \(aq
+.el       .ds AQ '
+.ie \n(.g .ds `` \(lq
+.el       .ds `` ``
+.ie \n(.g .ds '' \(rq
+.el       .ds '' ''
+.\" superscript
+.de SU
+.ie n \\$1**(\\$2)\\$3
+.el   \\$1\u\s-1\\$2\s+1\d\\$3
+..
+.\" **************************************************************************
+.SH NAME
+mawk-code \- dumping \*n's byte-code
+.\" **************************************************************************
+.SH SYNOPSIS
+At startup, \fB\*n\fP compiles the script into byte-code.
+After that, it interprets the compiled byte-code.
+Use the \fB\-Wdump\fP option to show the byte-code.
+.SH PROGRAM CODES
+.PP
+When an operation requires operands, \fB\*n\fP pushes the values
+(or array/string references) onto the stack,
+which updates the stack pointer \fBsp\fP.
+When the operation completes,
+\fB\*n\fP consumes those entries on the stack,
+pushing the result (if any) onto the stack.
+.SS a_cat
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS a_del
+\fIDelete an array item\fP.
+.PP
+Usage:
+.RS 5
+delete array[expr]
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+points to \fIarray\fP
+.TP 5
+sp[-1]
+is an \fIexpr\fP
+.RE
+.SS a_length
+\fIFind the length of an array\fP.
+.PP
+Usage:
+.RS 5
+length(array)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+points to \fIarray\fP.
+.RE
+.PP
+Returns the length of the array in sp[0].
+.SS a_pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS a_test
+\fITest if an expression is present in an array\fP.
+.PP
+Usage:
+.RS 5
+(expression in array)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+points to \fIan array\fP.
+.TP 5
+sp[-1]
+is an \fIexpression\fP.
+.RE
+.PP
+Returns 1 in sp[0] if the expression is found, 0 otherwise.
+.SS add
+\fIAdd two numbers\fP.
+.PP
+Usage:
+.RS 5
+\fIa\fP + \fIb\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+.TP 5
+sp[-1]
+.RE
+.PP
+Returns the sum in sp[0].
+.SS add_asg
+\fICombined addition/assignment\fP.
+.PP
+Usage:
+.RS 5
+\fItarget\fP += \fIsource\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsource\fP expression
+.TP 5
+sp[-1]
+points to the \fItarget\fP
+.RE
+.PP
+Stores the sum in the \fItarget\fP, leaving sp[0] pointing to the \fItarget\fP.
+.SS ae_pushi
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS aloop
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS assign
+\fIAssigns a value\fP.
+.PP
+Usage:
+.RS 5
+\fItarget\fP = \fIsource\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsource\fP expression
+.TP 5
+sp[-1]
+points to the \fItarget\fP
+.PP
+Stores the sum in the \fItarget\fP, leaving sp[0] pointing to the \fItarget\fP.
+.RE
+.SS call
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS cat
+\fIConcatenate two strings\fP.
+.PP
+Usage:
+.RS 5
+\fIfirst\fP \fIsecond\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsecond\fP string.
+.TP 5
+sp[-1]
+is the \fIfirst\fP string.
+.RE
+.PP
+Returns the result in sp[0].
+.SS del_a
+\fIDelete an array\fP.
+.PP
+Usage:
+.RS 5
+delete(array)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIarray\fP to delete.
+.RE
+.SS div
+\fIDivide one number by another\fP.
+.PP
+Usage:
+.RS 5
+\fIfirst\fP / \fIsecond\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsecond\fP value.
+.TP 5
+sp[-1]
+is the \fIfirst\fP value.
+.RE
+.PP
+Returns the quotient in sp[0].
+.SS div_asg
+\fICombined division/assignment\fP.
+.PP
+Usage:
+.RS 5
+\fItarget\fP /= \fIsource\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsource\fP
+.TP 5
+sp[-1]
+points to the \fItarget\fP
+.RE
+.PP
+Stores the quotient in the \fItarget\fP,
+leaving sp[0] pointing to the target.
+.SS eq
+\fICompare two values\fP.
+.PP
+Usage:
+.RS 5
+\fIfirst\fP == \fIsecond\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsecond\fP value
+.TP 5
+sp[-1]
+is the \fIfirst\fP value
+.RE
+Returns 1 in sp[0] if the values are equal, otherwise 0.
+.SS exit
+\fIExits \*n with a specific exit-code\fP.
+.PP
+Usage:
+.RS 5
+exit(\fIexit_code\fP)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexit_code\fP
+.RE
+.SS exit0
+\fIExits \*n with success\fP
+.PP
+Usage:
+.RS 5
+exit
+.RE
+.PP
+Parameters:
+.RS 5
+none
+.RE
+.SS f_add_asg
+\fICombination addition/assignment to NF\fP.
+.PP
+Usage:
+.RS 5
+NF += \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP to add
+.RE
+.SS f_assign
+\fIAssign an expression to NF\fP.
+.PP
+Usage:
+.RS 5
+NF = \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP
+.RE
+.SS f_div_asg
+\fICombination division/assignment to NF\fP.
+.PP
+Usage:
+.RS 5
+NF /= \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP
+.RE
+.SS f_mod_asg
+\fICombination modulus/assignment to NF\fP.
+.PP
+Usage:
+.RS 5
+NF %= \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP
+.RE
+.SS f_mul_asg
+\fICombination multiplication/assignment to NF\fP.
+.PP
+Usage:
+.RS 5
+NF *= \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP
+.RE
+.SS f_post_dec
+\fIPost-decrement using NF\fP.
+.PP
+Usage:
+.RS 5
+N--
+.RE
+.PP
+Parameters:
+.RS 5
+none
+.RE
+.SS f_post_inc
+\fIPost-increment using NF\fP.
+.PP
+Usage:
+.RS 5
+N++
+.RE
+.PP
+Parameters:
+.RS 5
+none
+.RE
+.SS f_pow_asg
+\fIExponentiation using NF\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS f_pre_dec
+\fIPredecrement using NF\fP.
+.PP
+Usage:
+.RS 5
+++NF
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS f_pre_inc
+\fIPreincrement using NF\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS f_pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS f_pushi
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS f_sub_asg
+\fICombination subtraction/assignment to NF\fP.
+.PP
+Usage:
+.RS 5
+NF -= \fIexpression\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS fe_pusha
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS fe_pushi
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS gt
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS gte
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS jmain
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS jmp
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS jnz
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS jz
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS l_pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS l_pushi
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS lae_pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS lae_pushi
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS la_pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ljnz
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ljz
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS lt
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS lte
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS match0
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS match1
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS match2
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS mod
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS mod_asg
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS mul
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS mul_asg
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS neq
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS next
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS nextfile
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS nf_pushi
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS not
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ol_gl
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ol_gl_nr
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS omain
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pop
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pop_al
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS post_dec
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS post_inc
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pow
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pow_asg
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pre_dec
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pre_inc
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pusha
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pushc
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pushd
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pushi
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pushint
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS pushs
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS range
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ret
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS ret0
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS set_al
+\fIXXX\fP.
+.PP
+Usage:
+YYY
+.PP
+Parameters:
+.RS
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS stop
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS sub
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS sub_asg
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS test
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS uminus
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SS uplus
+\fIXXX\fP.
+.PP
+Usage:
+.RS 5
+YYY
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+ZZZ
+.RE
+.SH REGULAR EXPRESSIONS
+.SS M_1J
+mandatory jump
+.SS M_2JA
+optional (undesirable) jump
+.SS M_2JB
+optional (desirable) jump
+.SS M_2JC
+pop pos'n, optional jump if advanced
+.SS M_ACCEPT
+end of match
+.SS M_ANY
+arbitrary character (.)
+.SS M_CLASS
+character class
+.SS M_END
+end of string ($)
+.SS M_SAVE_POS
+push position onto stack
+.SS M_START
+start of string (^)
+.SS M_STR
+matching a literal string
+.SS M_U
+arbitrary string (.*)
