@@ -1,7 +1,6 @@
-.\" $MawkId: mawk-code.7,v 1.9 2020/08/08 00:01:49 tom Exp $
+.\" $MawkId: mawk-code.7,v 1.39 2020/08/22 01:06:09 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2019,2020, Thomas E. Dickey
-.\" # copyright 1996, Michael D. Brennan
+.\" # copyright 2020, Thomas E. Dickey
 .\" #
 .\" # This is a source file for mawk, an implementation of
 .\" # the AWK programming language.
@@ -11,9 +10,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK-CODE 1 "2020-08-07" "Version 1.3.4" "MISCELLANEOUS"
-.\" strings
-.ds ex \fIexpr\fR
+.TH MAWK-CODE 7 "2020-08-21" "Version 1.3.4" "MISCELLANEOUS"
 .\" Bulleted paragraph
 .de bP
 .ie n  .IP \(bu 4
@@ -41,24 +38,42 @@ After that, it interprets the compiled byte-code.
 Use the \fB\-Wdump\fP option to show the byte-code.
 .SH PROGRAM CODES
 .PP
+As \fB\*n\fP executes the program, it maintains a reference to the
+command to execute in \fBcdp\fP.
+After that there may be data
+and/or references in \fBcdp\fP[0], \fBcdp\fP[1], etc.
+.PP
 When an operation requires operands, \fB\*n\fP pushes the values
 (or array/string references) onto the stack,
 which updates the stack pointer \fBsp\fP.
 When the operation completes,
 \fB\*n\fP consumes those entries on the stack,
 pushing the result (if any) onto the stack.
+.PP
+While executing user-defined functions,
+\fB\*n\fP maintains a \fIframe pointer\fP \fBfp\fP to address
+the function's local variables.
 .SS a_cat
-\fIXXX\fP.
+\fIConcatenate array-indices\fP.
 .PP
 Usage:
-YYY
+.RS 5
+Forms a multiple array index by concatenating the elements
+of \fBsp\fP[1-\fIcnt\fP..0], with each element separated by \fISUBSEP\fP.
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+.br
+\fIcnt\fP, the number of elements to concatenate follows the command.
+.TP 5
+sp[0]..sp[1-\fIcnt\fP]
+hold reference to the elements to concatenate.
+.PP
 .RE
+Returns the index in sp[0].
 .SS a_del
 \fIDelete an array item\fP.
 .PP
@@ -93,17 +108,21 @@ points to \fIarray\fP.
 .PP
 Returns the length of the array in sp[0].
 .SS a_pusha
-\fIXXX\fP.
+\fIPush array address onto stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+This is used to set up a calling argument for a function.
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+array reference follows the command.
 .RE
+.PP
+Returns the array in sp[0].
 .SS a_test
 \fITest if an expression is present in an array\fP.
 .PP
@@ -128,15 +147,17 @@ Returns 1 in sp[0] if the expression is found, 0 otherwise.
 .PP
 Usage:
 .RS 5
-\fIa\fP + \fIb\fP
+\fIfirst\fP + \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
+holds the \fIsecond\fP value.
 .TP 5
 sp[-1]
+holds the \fIfirst\fP value.
 .RE
 .PP
 Returns the sum in sp[0].
@@ -159,30 +180,57 @@ points to the \fItarget\fP
 .RE
 .PP
 Stores the sum in the \fItarget\fP, leaving sp[0] pointing to the \fItarget\fP.
+.SS ae_pusha
+\fIPush reference to array cell, given expression for its index\fP.
+.PP
+Usage:
+.RS 5
+\fIarrayname\fP[\fIexpression\fP]
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+an array reference follows the command.
+.TP 5
+sp[0]
+has an expression, used for the index of a cell in the array.
+.RE
+.PP
+Returns a reference to the addressed cell in sp[0].
 .SS ae_pushi
-\fIXXX\fP.
+\fIPush contents of array cell, given expression for its index\fP.
 .PP
 Usage:
-YYY
+.RS 5
+\fIarrayname\fP[\fIexpression\fP]
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
 sp[0]
-ZZZ
+has an expression, used for the index of a cell in the array.
 .RE
+.PP
+Returns contents of the addressed cell in sp[0].
 .SS aloop
-\fIXXX\fP.
+\fIUpdate reference to next cell for array loop\fP.
 .PP
 Usage:
-YYY
+.RS 5
+for ( \fIi\fP in \fIarrayname\fP )  \fIstatement\fP
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
+.PP
+\fB\*N\fP maintains a stack of array-loop state.
+It updates the array/cell references in the current loop's state.
 .SS assign
 \fIAssigns a value\fP.
 .PP
@@ -202,18 +250,44 @@ points to the \fItarget\fP
 .PP
 Stores the sum in the \fItarget\fP, leaving sp[0] pointing to the \fItarget\fP.
 .RE
-.SS call
-\fIXXX\fP.
+.SS atan2
+\fICompute arc-tangent of two values\fP.
 .PP
 Usage:
-YYY
+.RS 5
+atan2( \fIfirst\fP, \fIsecond\fP )
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
 .RE
+.PP
+Returns the result in sp[0].
+.SS call
+\fICall a function\fP.
+.PP
+Usage:
+.RS 5
+\fIfunction\fP()
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+is a reference to the function block
+.TP 5
+cdp[1]
+holds number of input arguments
+.RE
+.PP
+Returns function value in sp[0].
 .SS cat
 \fIConcatenate two strings\fP.
 .PP
@@ -230,6 +304,40 @@ is the \fIsecond\fP string.
 .TP 5
 sp[-1]
 is the \fIfirst\fP string.
+.RE
+.PP
+Returns the result in sp[0].
+.SS close
+\fIClose the file or pipe associated with an expression\fP.
+.PP
+Usage:
+.RS 5
+close( \fIexpression\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+holds the \fIexpression\fP identifying the file to close
+.RE
+.PP
+Returns the status from closing the file,
+0 on success or
+\-1 on failure.
+.SS cos
+\fICompute the cosine of a value in radians\fP.
+.PP
+Usage:
+.RS 5
+cos( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIvalue\fP.
 .RE
 .PP
 Returns the result in sp[0].
@@ -303,6 +411,7 @@ is the \fIsecond\fP value
 sp[-1]
 is the \fIfirst\fP value
 .RE
+.PP
 Returns 1 in sp[0] if the values are equal, otherwise 0.
 .SS exit
 \fIExits \*n with a specific exit-code\fP.
@@ -330,6 +439,22 @@ Parameters:
 .RS 5
 none
 .RE
+.SS exp
+\fICompute base-e exponential function of a value\fP.
+.PP
+Usage:
+.RS 5
+exp( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIvalue\fP
+.RE
+.PP
+Returns the result in sp[0].
 .SS f_add_asg
 \fICombination addition/assignment to NF\fP.
 .PP
@@ -405,41 +530,55 @@ is the \fIexpression\fP
 .PP
 Usage:
 .RS 5
-N--
+NF--
 .RE
 .PP
 Parameters:
 .RS 5
-none
+holds a reference to the field to use
 .RE
 .SS f_post_inc
 \fIPost-increment using NF\fP.
 .PP
 Usage:
 .RS 5
-N++
+NF++
 .RE
 .PP
 Parameters:
 .RS 5
-none
+holds a reference to the field to use
 .RE
 .SS f_pow_asg
 \fIExponentiation using NF\fP.
 .PP
 Usage:
 .RS 5
-YYY
+NF ^= \fIexpression\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+is the expression to use
 .RE
 .SS f_pre_dec
 \fIPredecrement using NF\fP.
+.PP
+Usage:
+.RS 5
+\-\-NF
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+holds a reference to the field to use
+.RE
+.SS f_pre_inc
+\fIPreincrement using NF\fP.
 .PP
 Usage:
 .RS 5
@@ -450,46 +589,45 @@ Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
-.RE
-.SS f_pre_inc
-\fIPreincrement using NF\fP.
-.PP
-Usage:
-.RS 5
-YYY
-.RE
-.PP
-Parameters:
-.RS 5
-.TP 5
-sp[0]
-ZZZ
+holds a reference to the field to use
 .RE
 .SS f_pusha
-\fIXXX\fP.
+\fIPush array reference to data split-up as fields.\fP.
 .PP
 Usage:
-YYY
+.RS 5
+$0 = \fIexpression\fP
+.br
+getline
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+is a reference to the data to be split/assigned.
 .RE
+.PP
+Returns the resulting array reference in sp[0].
 .SS f_pushi
-\fIXXX\fP.
+\fIPush contents of numbered field\fP.
 .PP
 Usage:
-YYY
+.RS 5
+$\fIexpression\fP
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+holds a reference to $\fIexpression\fP
+.TP 5
+cdp[1]
+holds \fIexpression\fP
 .RE
+.PP
+Returns the field's value in sp[0].
 .SS f_sub_asg
 \fICombination subtraction/assignment to NF\fP.
 .PP
@@ -502,751 +640,1273 @@ Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds a reference to the field to use
 .RE
 .SS fe_pusha
-\fIXXX\fP.
+\fIPush reference to numbered field\fP.
 .PP
 Usage:
 .RS 5
-YYY
+$\fInumber\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the field \fInumber\fP
 .RE
+.PP
+Returns a reference to the field in sp[0].
 .SS fe_pushi
-\fIXXX\fP.
+\fIPush content of numbered field\fP.
 .PP
 Usage:
 .RS 5
-YYY
+$\fInumber\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the field \fInumber\fP
 .RE
+.PP
+Returns the field's content in sp[0].
+.SS fflush
+\fIFlush the output file or pipe associated with an expression\fP.
+.PP
+Usage:
+.RS 5
+fflush( \fIexpression\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIexpression\fP value
+.RE
+.PP
+Returns the result in sp[0].
 .SS gt
-\fIXXX\fP.
+\fITest if first value is greater than the second\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP > \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value.
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value.
 .RE
+.PP
+Returns 1 in sp[0] if the \fIfirst\fP value is greater than, otherwise 0.
 .SS gte
-\fIXXX\fP.
+\fITest if first value is greater than or equal to the second\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP >= \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value.
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value.
 .RE
+.PP
+Returns 1 in sp[0] if the \fIfirst\fP value is greater than or equal, otherwise 0.
+.SS index
+\fIFind the position of the second string in the first\fP.
+.PP
+Usage:
+.RS 5
+index( \fIfirst\fP, \fIsecond\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the \fIsecond\fP string
+.TP 5
+sp[0]
+is the \fIfirst\fP string
+.RE
+.PP
+Returns the position in sp[0] starting at 1 if found, 0 if not found.
+.SS int
+\fIReturns a value truncated towards zero.\fP.
+.PP
+Usage:
+.RS 5
+int( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the value
+.RE
+.PP
+Returns the result in sp[0].
 .SS jmain
-\fIXXX\fP.
+\fIGo from BEGIN code to MAIN code\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS jmp
-\fIXXX\fP.
+\fIJump to a new byte-code position, by a given number of bytes\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+holds the (signed) number of bytes by which to jump.
 .RE
 .SS jnz
-\fIXXX\fP.
+\fIJump to a new byte-code position if sp[0] is nonzero, by a given number of bytes\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
+.TP
+cdp[0]
+.br
+holds the (signed) number of bytes by which to jump.
 .TP 5
 sp[0]
-ZZZ
+.br
+holds a value to compare against 0.
 .RE
 .SS jz
-\fIXXX\fP.
+\fIJump to a new byte-code position if sp[0] is zero, by a given number of bytes\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
+.TP
+cdp[0]
+.br
+holds the (signed) number of bytes by which to jump.
 .TP 5
 sp[0]
-ZZZ
+.br
+holds a value to compare against 0.
 .RE
 .SS l_pusha
-\fIXXX\fP.
+\fIPush a local address onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+.br
+holds the offset from the \fIframe pointer\fP \fBfp\fP.
 .RE
+.PP
+Returns the address in sp[0].
 .SS l_pushi
-\fIXXX\fP.
+\fIPush contents of a local variable onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+.br
+holds the offset from the \fIframe pointer\fP \fBfp\fP.
 .RE
-.SS lae_pusha
-\fIXXX\fP.
 .PP
-Usage:
-YYY
-.PP
-Parameters:
-.RS
-.TP 5
-sp[0]
-ZZZ
-.RE
-.SS lae_pushi
-\fIXXX\fP.
-.PP
-Usage:
-YYY
-.PP
-Parameters:
-.RS
-.TP 5
-sp[0]
-ZZZ
-.RE
+Returns the contents of the local variable in sp[0].
 .SS la_pusha
-\fIXXX\fP.
+\fIPushes a reference to an array onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
-.PP
-Parameters:
-.RS
-.TP 5
-sp[0]
-ZZZ
+.RS 5
+\fIarrayname\fP
 .RE
-.SS ljnz
-\fIXXX\fP.
-.PP
-Usage:
-YYY
 .PP
 Parameters:
-.RS
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds the offset from the \fIframe pointer\fP \fBfp\fP of a reference to an array.
+.RE
+.PP
+Returns a reference to the array in sp[0].
+.SS lae_pusha
+\fIPushes a reference to a given array cell onto the evaluation stack\fP.
+.PP
+Usage:
+.RS 5
+\fIarrayname\fP[\fIexpression\fP]
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds the offset from the \fIframe pointer\fP \fBfp\fP of a reference to an array.
 .TP 5
 sp[0]
-ZZZ
+.br
+holds an \fIexpression\fP
+.RE
+.PP
+Returns a reference to the specified array cell in sp[0].
+.SS lae_pushi
+\fIPushes the contents of a given array cell onto the evaluation stack\fP.
+.PP
+Usage:
+.RS 5
+\fIarrayname\fP[\fIexpression\fP]
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds the offset from the \fIframe pointer\fP \fBfp\fP of a reference to an array.
+.TP 5
+sp[0]
+.br
+holds an \fIexpression\fP
+.RE
+.PP
+Returns the contents of the specified array cell in sp[0].
+.SS length
+\fIReturns the length of a string or array value\fP.
+.PP
+Usage:
+.RS 5
+length( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the string or array reference
+.RE
+.PP
+Returns the length in sp[0].
+.SS ljnz
+\fISpecial jump for logical-OR, always preceded by \fBtest\fP.
+.PP
+Usage:
+.RS 5
+(internal state)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds the (signed) number of bytes by which to jump if the value is nonzero.
+.TP 5
+sp[0]
+.br
+holds a value to compare against 0.
 .RE
 .SS ljz
-\fIXXX\fP.
+\fISpecial jump for logical-OR, always preceded by \fBtest\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds the (signed) number of bytes by which to jump if the value is zero.
 .TP 5
 sp[0]
-ZZZ
+.br
+holds a value to compare against 0.
 .RE
+.SS log
+\fICompute the natural logarithm of a value\fP.
+.PP
+Usage:
+.RS 5
+log( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the value
+.RE
+.PP
+Returns the result in sp[0].
 .SS lt
-\fIXXX\fP.
+\fITest if first value is less than the second\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP < \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value.
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value.
 .RE
+.PP
+Returns 1 in sp[0] if the \fIfirst\fP value is less than, otherwise 0.
 .SS lte
-\fIXXX\fP.
+\fITest if first value is less than or equal to the second\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP <= \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value.
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value.
 .RE
+.PP
+Returns 1 in sp[0] if the \fIfirst\fP value is less than or equal, otherwise 0.
 .SS match0
-\fIXXX\fP.
+\fITest if $0 matches a given regular expression\fP.
 .PP
 Usage:
-YYY
+.RS 5
+$0 ~ \fIregex\fP
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+.br
+holds a reference to a regular expression.
 .RE
+.PP
+Returns 1 in sp[0] if \fB$0\fP matches the regular expression, 0 otherwise.
 .SS match1
-\fIXXX\fP.
+\fITest if a given expression matches a given regular expression\fP.
 .PP
 Usage:
-YYY
+.RS 5
+\fIexpression\fP ~ \fIregex\fP
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
+.TP 5
+cdp[0]
+.br
+holds a reference to a regular expression.
 .TP 5
 sp[0]
-ZZZ
+.br
+holds an expression to test.
 .RE
+.PP
+Returns 1 in sp[0] if the expression matches the regular expression, 0 otherwise.
 .SS match2
-\fIXXX\fP.
+\fITest if an expression in sp[-1] matches the regular expression in sp[0]\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIexpression\fP ~ \fIregex\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+.br
+holds a reference to a regular expression.
+.TP 5
+sp[-1]
+.br
+holds an expression to test.
 .RE
+.PP
+Returns 1 in sp[0] if the expression matches the regular expression, 0 otherwise.
+.SS mktime
+\fIConverts  a date specification in systime format to a timestamp\fP.
+.PP
+Usage:
+.RS 5
+mktime( \fIstring\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+holds the date-specification string
+.RE
+.PP
+Returns the result in sp[0].
 .SS mod
-\fIXXX\fP.
+\fICompute modulus/remainder with two operands\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP % \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP operand
+.TP 5
+sp[-1]
+holds the \fIfirst\fP operand
 .RE
+.PP
+Returns the remainder in sp[0].
 .SS mod_asg
-\fIXXX\fP.
+\fIAssign modulus/remainder with two operands\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP %= \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP operand
+.TP 5
+cdp[0]
+holds the \fIfirst\fP operand
 .RE
+.PP
+Returns the remainder in sp[0] as well as replacing the \fIfirst\fP value.
 .SS mul
-\fIXXX\fP.
+\fICompute product with two operands\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP * \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
 .RE
+.PP
+Returns the product in sp[0].
 .SS mul_asg
-\fIXXX\fP.
+\fIAssign product with two operands\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP *= \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
 .RE
+.PP
+Returns the product in sp[0] as well as replacing the \fIfirst\fP value.
 .SS neq
-\fIXXX\fP.
+\fICompare two values\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP != \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+is the \fIsecond\fP value
+.TP 5
+sp[-1]
+is the \fIfirst\fP value
 .RE
+.PP
+Returns 1 in sp[0] if the values are not equal, otherwise 0.
 .SS next
-\fIXXX\fP.
+\fIRead the next record, restart pattern testing\fP.
 .PP
 Usage:
 .RS 5
-YYY
+next
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS nextfile
-\fIXXX\fP.
+\fIBegin processing the next file listed on the command line\fP.
 .PP
 Usage:
 .RS 5
-YYY
+nextfile
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS nf_pushi
-\fIXXX\fP.
+\fIPush the number of fields (NF) onto the evaluation stack\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS not
-\fIXXX\fP.
+\fICompute a logical negation\fP.
 .PP
 Usage:
 .RS 5
-YYY
+! \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds a value to negate.
 .RE
+.PP
+Returns the result on the evaluation stack,
+i.e., 0 if the value is nonzero and 1 otherwise.
 .SS ol_gl
-\fIXXX\fP.
+\fIRead into $0 using getline\fP.
 .PP
 Usage:
 .RS 5
-YYY
+getline
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS ol_gl_nr
-\fIXXX\fP.
+\fIRead into $0 using getline, updating NR and FNR\fP.
 .PP
 Usage:
 .RS 5
-YYY
+getline < \fIfile\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS omain
-\fIXXX\fP.
+\fIStart executing the main section of the script (between BEGIN and END)\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS pop
-\fIXXX\fP.
+\fIPop the evaluation stack, discarding the value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS pop_al
-\fIXXX\fP.
+\fIFinish an array \*(``in\*('' loop, deallocating the state information\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
 .SS post_dec
-\fIXXX\fP.
+\fIPost-decrement a value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIvalue\fP \-\-
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the value to decrement
 .RE
+.PP
+Returns the updated value in sp[0].
 .SS post_inc
-\fIXXX\fP.
+\fIPost-increment a value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIvalue\fP ++
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the value to increment
 .RE
+.PP
+Returns the updated value in sp[0].
 .SS pow
-\fIXXX\fP.
+\fICompute the first value raised to the power of the second value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP ^ \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
 .RE
+.PP
+Returns the result in sp[0].
 .SS pow_asg
-\fIXXX\fP.
+\fIAssign the first value raised to the power of the second value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIvariable\fP = \fIfirst\fP ^ \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
+cdp[0]
+is a reference to the variable which will be assigned the result
+.TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
 .RE
 .SS pre_dec
-\fIXXX\fP.
+\fIPre-decrement a value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\-\- \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIvalue\fP to decrement.
 .RE
+.PP
+Returns the updated value in sp[0];.
 .SS pre_inc
-\fIXXX\fP.
+\fIPre-increment a value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+++ \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIvalue\fP to decrement.
 .RE
+.PP
+Returns the updated value in sp[0];.
 .SS pusha
-\fIXXX\fP.
+\fIPush array address onto stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+array reference follows the command.
 .RE
+.PP
+Returns the array in sp[0].
 .SS pushc
-\fIXXX\fP.
+\fIPush a data cell onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+is a reference to the data to push
 .RE
+.PP
+Returns a reference to the result in sp[0].
 .SS pushd
-\fIXXX\fP.
+\fIPush a double floating value onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+is a reference to the data to push
 .RE
+.PP
+Returns a reference to the result in sp[0].
 .SS pushi
-\fIXXX\fP.
+\fIPush contents of next referenced variable onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+is a reference to the data cell to copy.
 .RE
+.PP
+Returns a reference to the result in sp[0].
 .SS pushint
-\fIXXX\fP.
+\fIReserve the next slot on the evaluation stack, setting its type\fP.
 .PP
 Usage:
-YYY
+.RS 5
+(internal state)
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
-sp[0]
-ZZZ
+cdp[0]
+holds the type to set in the new slot, e.g., for data via I/O redirection
 .RE
+.PP
+Returns a reference to the result in sp[0].
 .SS pushs
-\fIXXX\fP.
+\fIPush a reference to a string value onto the evaluation stack\fP.
 .PP
 Usage:
-YYY
-.PP
-Parameters:
-.RS
-.TP 5
-sp[0]
-ZZZ
+.RS 5
+(internal state)
 .RE
-.SS range
-\fIXXX\fP.
-.PP
-Usage:
-YYY
 .PP
 Parameters:
-.RS
+.RS 5
+.TP 5
+cdp[0]
+holds a reference to the string value
+.RE
+.PP
+Returns a reference to the result in sp[0].
+.SS rand
+\fIReturns a random number between zero and one.\fP.
+.PP
+Usage:
+.RS 5
+rand()
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+none
+.RE
+.PP
+Returns the result in sp[0].
+.SS range
+\fITest a range pattern:  pat1, pat2 { action }\fP.
+.PP
+Usage:
+.RS 5
+(internal state)
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0].op
+a flag, test \fIpat1\fP if on else \fIpat2\fP
+.TP 5
+cdp[1].op
+offset of \fIpat2\fP code from cdp
+.TP 5
+cdp[2].op
+offset of action code from cdp
+.TP 5
+cdp[3].op
+offset of code after the action from cdp
+.TP 5
+cdp[4]
+start of \fIpat1\fP code
 .TP 5
 sp[0]
-ZZZ
+holds arguments for the action.
 .RE
 .SS ret
-\fIXXX\fP.
+\fIReturn a function value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+return \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the return value
 .RE
+.PP
+When calling a function, \fB\*n\fP saves the current stack,
+creating a new one.
+On return, \fB\*n\fP restores the previous stack and returns
+the function value in sp[0].
 .SS ret0
-\fIXXX\fP.
+\fIReturn from a function without providing a return-value\fP.
 .PP
 Usage:
 .RS 5
-YYY
+return
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+is modified to make the value uninitialized.
 .RE
+.PP
+As in the \fBret\fP operation, \fB\*n\fP restores the previous stack.
+After the return, sp[0] is an uninitialized value.
 .SS set_al
-\fIXXX\fP.
+\fIBegin an array \*(``in\*('' loop\fP.
 .PP
 Usage:
-YYY
+.RS 5
+for ( \fIiterator\fP in \fIarrayname\fP )  \fIstatement\fP
+.RE
 .PP
 Parameters:
-.RS
+.RS 5
 .TP 5
 sp[0]
-ZZZ
+holds a reference to the array
+.TP 5
+sp[-1]
+holds a reference to the iteration variable
 .RE
+.PP
+\fB\*N\fP pushes a new entry onto the array loop stack,
+and updates cdp to point to the statement to execute.
+.SS sin
+\fICompute the sine of a value in radians\fP.
+.PP
+Usage:
+.RS 5
+sin( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+holds the value
+.RE
+.PP
+Returns the result in sp[0].
+.SS sprintf
+\fIReturns a string constructed from expression-list according to format\fP.
+.PP
+Usage:
+.RS 5
+sprintf( \fIformat\fP [, value1 [,... ] ] )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the last parameter value; there can be up to 255.
+.RE
+Returns the resulting string in sp[0].
+.SS sqrt
+\fIReturns the square root of a value\fP.
+.PP
+Usage:
+.RS 5
+sqrt( \fIvalue\fP 0
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the value
+.RE
+.PP
+Returns the result in sp[0].
+.SS srand
+\fISeeds the random number generator\fP.
+.PP
+Usage:
+.RS 5
+srand( \fIvalue\fP )
+.br
+srand( )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the seed value, which may be uninitialized
+.RE
+.PP
+Returns the previous seed value in sp[0].
 .SS stop
-\fIXXX\fP.
+\fIFinish a range pattern\fP.
 .PP
 Usage:
 .RS 5
-YYY
+(internal state)
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
-sp[0]
-ZZZ
+none
 .RE
+.SS strftime
+\fIFormats the given timestamp using the given format\fP.
+.PP
+Usage:
+.RS 5
+strftime( \fIformat\fP , \fItimestamp\fP , \fIutc\fP )
+.br
+strftime( \fIformat\fP , \fItimestamp\fP )
+.br
+strftime( \fIformat\fP )
+.br
+strftime( )
+.RE
+.PP
+Parameters:
+.RS 5
+.PP
+Zero to three parameters may be on the stack.
+If all three are used, they are as follows:
+.TP 5
+sp[0]
+is the \fIutc\fP flag
+.TP 5
+sp[-1]
+is the \fItimestamp\fP value
+.TP 5
+sp[-2]
+is the \fIformat\fP
+.RE
+.PP
+Returns the result in sp[0].
 .SS sub
-\fIXXX\fP.
+\fISubtract the second value from the first\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIfirst\fP \- \fIsecond\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
+.PP
+Returns the result in sp[0].
 .RE
 .SS sub_asg
-\fIXXX\fP.
+\fIAssign the difference of two values to a variable\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fItarget\fP = \fIfirst\fP \- \fIsecond\fP
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+cdp[0]
+holds a reference to the variable to which to assign the result
+.TP 5
+sp[0]
+holds the \fIsecond\fP value
+.TP 5
+sp[-1]
+holds the \fIfirst\fP value
+.RE
+.PP
+Stores the difference in the \fItarget\fP, leaving sp[0] pointing to the \fItarget\fP.
+.SS substr
+\fIeturns the substring of string s, starting at index i, of length n\fP.
+.PP
+Usage:
+.RS 5
+substr(s,i,n)
+.br
+substr(s,i)
+.RE
+.PP
+Parameters:
+.RS 5
+.PP
+Two or three parameters may be on the stack.
+If all three are used, they are as follows:
+.TP 5
+sp[0]
+holds the length \fIn\fP.
+.TP 5
+sp[0]
+holds the index \fIi\fP.
+.TP 5
+sp[0]
+holds the string \fIs\fP.
+.RE
+.SS system
+\fIExecutes a command, returning the wait-status\fP.
+.PP
+Usage:
+.RS 5
+status = system( \fIcommand\fP )
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+is the command to execute
 .RE
+.PP
+Returns the wait-status in sp[0].
+.SS systime
+\fIReturns the current time of day as the number of seconds since the Epoch\fP.
+.PP
+Usage:
+.RS 5
+systime( )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+none
+.RE
+.PP
+Returns the result in sp[0].
 .SS test
-\fIXXX\fP.
+\fITest a logical expression\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+holds a value to test.
 .RE
+.PP
+Returns the result on the evaluation stack,
+i.e., 1 if the value is nonzero and 0 otherwise.
+.SS tolower
+\fICopy a string, converting to lowercase\fP.
+.PP
+Usage:
+.RS 5
+tolower( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the value to convert
+.RE
+.PP
+Returns the result in sp[0].
+.SS toupper
+\fICopy a string, converting to uppercase\fP.
+.PP
+Usage:
+.RS 5
+toupper( \fIvalue\fP )
+.RE
+.PP
+Parameters:
+.RS 5
+.TP 5
+sp[0]
+is the value to convert
+.RE
+.PP
+Returns the result in sp[0].
 .SS uminus
-\fIXXX\fP.
+\fIUnitary minus\fP.
 .PP
 Usage:
 .RS 5
-YYY
+\- \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+contains a value to negate.
+As a side-effect, if the value is a string, it is cast to double floating point.
 .RE
+.PP
+Returns the result in sp[0].
 .SS uplus
-\fIXXX\fP.
+\fIUnitary plus\fP.
 .PP
 Usage:
 .RS 5
-YYY
++ \fIvalue\fP
 .RE
 .PP
 Parameters:
 .RS 5
 .TP 5
 sp[0]
-ZZZ
+contains a value to use.
+As a side-effect, if the value is a string, it is cast to double floating point.
+.PP
+Returns the result in sp[0].
 .RE
 .SH REGULAR EXPRESSIONS
 .SS M_1J
