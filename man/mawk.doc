@@ -427,41 +427,45 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
        The  following  variables  are  built-in and initialized before program
        execution.
 
-            AARRGGCC      number of command line arguments.
+            AARRGGCC   number of command line arguments.
 
-            AARRGGVV      array of command line arguments, 0..ARGC-1.
+            AARRGGVV   array of command line arguments, 0..ARGC-1.
 
-            CCOONNVVFFMMTT   format for internal conversion  of  numbers  to  string,
-                      initially = "%.6g".
+            CCOONNVVFFMMTT
+                   format for internal conversion of numbers to  string,  ini-
+                   tially = "%.6g".
 
-            EENNVVIIRROONN   array  indexed by environment variables.  An environment
-                      string, _v_a_r_=_v_a_l_u_e is stored as EENNVVIIRROONN[_v_a_r] = _v_a_l_u_e.
+            EENNVVIIRROONN
+                   array  indexed  by  environment  variables.  An environment
+                   string, _v_a_r_=_v_a_l_u_e is stored as EENNVVIIRROONN[_v_a_r] = _v_a_l_u_e.
 
-            FFIILLEENNAAMMEE  name of the current input file.
+            FFIILLEENNAAMMEE
+                   name of the current input file.
 
-            FFNNRR       current record number in FFIILLEENNAAMMEE.
+            FFNNRR    current record number in FFIILLEENNAAMMEE.
 
-            FFSS        splits records into fields as a regular expression.
+            FFSS     splits records into fields as a regular expression.
 
-            NNFF        number of fields in the current record.
+            NNFF     number of fields in the current record.
 
-            NNRR        current record number in the total input stream.
+            NNRR     current record number in the total input stream.
 
-            OOFFMMTT      format for printing numbers; initially = "%.6g".
+            OOFFMMTT   format for printing numbers; initially = "%.6g".
 
-            OOFFSS       inserted between fields on output, initially = " ".
+            OOFFSS    inserted between fields on output, initially = " ".
 
-            OORRSS       terminates each record on output, initially = "\n".
+            OORRSS    terminates each record on output, initially = "\n".
 
-            RRLLEENNGGTTHH   length set by the last call to  the  built-in  function,
-                      mmaattcchh(()).
+            RRLLEENNGGTTHH
+                   length set by the  last  call  to  the  built-in  function,
+                   mmaattcchh(()).
 
-            RRSS        input record separator, initially = "\n".
+            RRSS     input record separator, initially = "\n".
 
-            RRSSTTAARRTT    index set by the last call to mmaattcchh(()).
+            RRSSTTAARRTT index set by the last call to mmaattcchh(()).
 
-            SSUUBBSSEEPP    used  to  build  multiple  array subscripts, initially =
-                      "\034".
+            SSUUBBSSEEPP used  to  build  multiple  array  subscripts,  initially  =
+                   "\034".
 
    88.. BBuuiilltt--iinn ffuunnccttiioonnss
        SSttrriinngg ffuunnccttiioonnss
@@ -480,7 +484,7 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
                    is in position 1.
 
             length(_s)
-                   Returns the length of string or array.  _s.
+                   Returns the length of string or array _s.
 
             match(_s_,_r)
                    Returns  the  index  of  the first longest match of regular
@@ -1176,4 +1180,4 @@ AAUUTTHHOORR
 
 
 
-Version 1.3.4                     2020-08-07                           MAWK(1)
+Version 1.3.4                     2020-08-21                           MAWK(1)
