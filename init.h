@@ -1,6 +1,6 @@
 /********************************************
 init.h
-copyright 2009-2012,2016, Thomas E. Dickey
+copyright 2009-2016,2020, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.h,v 1.6 2016/09/30 23:37:13 tom Exp $
+ * $MawkId: init.h,v 1.7 2020/08/26 00:52:06 tom Exp $
  */
 
 /* init.h  */
@@ -47,7 +47,7 @@ void fpe_init(void);
 void load_environ(ARRAY);
 void set_stdio(void);
 
-void print_version(void);
+void print_version(FILE *fp);
 int is_cmdline_assign(char *);
 
 #endif /* INIT_H  */

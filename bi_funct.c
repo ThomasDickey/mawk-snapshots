@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.111 2020/01/06 10:01:20 tom Exp $
+ * $MawkId: bi_funct.c,v 1.113 2020/08/28 08:20:21 tom Exp $
  */
 
 #include <mawk.h>
@@ -476,7 +476,6 @@ bi_strftime(CELL *sp)
     int n_args;
     int utc;
     STRING *sval = 0;		/* strftime(sval->str, timestamp, utc) */
-    char buff[128];
     size_t result;
 
     TRACE_FUNC("bi_strftime", sp);
@@ -517,7 +516,10 @@ bi_strftime(CELL *sp)
     else
 	ptm = localtime(&rawtime);
 
-    result = strftime(buff, sizeof(buff) / sizeof(buff[0]), format, ptm);
+    result = strftime(sprintf_buff,
+		      (size_t) (sprintf_limit - sprintf_buff),
+		      format,
+		      ptm);
     TRACE(("...bi_strftime (%s, \"%d.%d.%d %d.%d.%d %d\", %d) ->%s\n",
 	   format,
 	   ptm->tm_year,
@@ -528,12 +530,12 @@ bi_strftime(CELL *sp)
 	   ptm->tm_sec,
 	   ptm->tm_isdst,
 	   utc,
-	   buff));
+	   sprintf_buff));
 
     if (sval)
 	free_STRING(sval);
 
-    sp->ptr = (PTR) new_STRING1(buff, result);
+    sp->ptr = (PTR) new_STRING1(sprintf_buff, result);
 
     while (n_args > 1) {
 	n_args--;

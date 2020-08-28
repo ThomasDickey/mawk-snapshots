@@ -1,6 +1,6 @@
 /********************************************
 kw.c
-copyright 2008-2012,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 1991-1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: kw.c,v 1.7 2016/09/29 23:02:51 tom Exp $
+ * $MawkId: kw.c,v 1.8 2020/08/25 20:33:33 tom Exp $
  */
 
 /* kw.c */
@@ -23,7 +23,7 @@ the GNU General Public License, version 2, 1991.
 /* *INDENT-OFF* */
 static const struct kw
 {
-    const char *text;
+    const char text[12];
     short kw;
 }
 keywords[] =
@@ -51,7 +51,7 @@ keywords[] =
     { "sub",      SUB },
     { "gsub",     GSUB },
     { "function", FUNCTION },
-    { (char *) 0, 0 }
+    { "",         0 }
 };
 /* *INDENT-ON* */
 
@@ -62,7 +62,7 @@ kw_init(void)
     register const struct kw *p = keywords;
     register SYMTAB *q;
 
-    while (p->text) {
+    while (p->text[0]) {
 	q = insert(p->text);
 	q->type = ST_KEYWORD;
 	q->stval.kw = p++->kw;
@@ -75,7 +75,7 @@ find_kw_str(int kw_token)
 {
     const struct kw *p;
 
-    for (p = keywords; p->text; p++)
+    for (p = keywords; p->text[0]; p++)
 	if (p->kw == kw_token)
 	    return p->text;
     /* search failed */
