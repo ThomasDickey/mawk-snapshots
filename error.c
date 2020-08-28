@@ -1,6 +1,6 @@
 /********************************************
 error.c
-copyright 2008-2014,2016 Thomas E. Dickey
+copyright 2008-2016,2020 Thomas E. Dickey
 copyright 1991-1994,1995 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.23 2016/09/29 23:00:43 tom Exp $
+ * $MawkId: error.c,v 1.24 2020/08/25 20:08:35 tom Exp $
  */
 
 #include <mawk.h>
@@ -23,7 +23,7 @@ unsigned rt_nr, rt_fnr;
 /* *INDENT-OFF* */
 static const struct token_str {
     short token;
-    const char *str;
+    const char str[12];
 } token_str[] = {
     { EOF,                "end of file" },
     { NL,                 "end of line" },
@@ -52,7 +52,7 @@ static const struct token_str {
     { LTE,                "<=" },
     { GT,                 ">" },
     { GTE,                ">=" },
-    { MATCH,              string_buff },
+    { MATCH,              "" },	/* string_buff */
     { PLUS,               "+" },
     { MINUS,              "-" },
     { MUL,                "*" },
@@ -61,18 +61,18 @@ static const struct token_str {
     { POW,                "^" },
     { NOT,                "!" },
     { COMMA,              "," },
-    { INC_or_DEC,         string_buff },
-    { DOUBLE,             string_buff },
-    { STRING_,            string_buff },
-    { ID,                 string_buff },
-    { FUNCT_ID,           string_buff },
-    { BUILTIN,            string_buff },
-    { IO_OUT,             string_buff },
+    { INC_or_DEC,         "" },	/* string_buff */
+    { DOUBLE,             "" },	/* string_buff */
+    { STRING_,            "" },	/* string_buff */
+    { ID,                 "" },	/* string_buff */
+    { FUNCT_ID,           "" },	/* string_buff */
+    { BUILTIN,            "" },	/* string_buff */
+    { IO_OUT,             "" },	/* string_buff */
     { IO_IN,              "<" },
     { PIPE,               "|" },
     { DOLLAR,             "$" },
     { FIELD,              "$" },
-    { 0,                  (char *) 0 }
+    { 0,                  "" }
 };
 /* *INDENT-ON* */
 
@@ -116,7 +116,7 @@ yyerror(const char *s GCC_UNUSED)
 
     for (p = token_str; p->token; p++)
 	if (current_token == p->token) {
-	    ss = p->str;
+	    ss = p->str[0] ? p->str : string_buff;
 	    break;
 	}
 
@@ -175,7 +175,7 @@ yyerror(const char *s GCC_UNUSED)
    messages if errnum > 0 */
 
 void
-errmsg(int errnum, const char *format,...)
+errmsg(int errnum, const char *format, ...)
 {
     va_list args;
 
@@ -200,7 +200,7 @@ errmsg(int errnum, const char *format,...)
 }
 
 void
-compile_error(const char *format,...)
+compile_error(const char *format, ...)
 {
     va_list args;
     const char *s0, *s1;
@@ -253,7 +253,7 @@ rt_where(void)
 }
 
 void
-rt_error(const char *format,...)
+rt_error(const char *format, ...)
 {
     va_list args;
 

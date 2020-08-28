@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.56 2020/08/21 23:54:28 tom Exp $
+.\" $MawkId: mawk.1,v 1.58 2020/08/26 22:11:20 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2019,2020, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-08-21" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2020-08-26" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -120,10 +120,6 @@ Implementation specific options are prefaced with
 \fB\*n\fP
 provides these:
 .TP
-\-\fBW \fRcompat
-Omit features such as interval expressions which were not supported by
-traditional \fIawk\fP.
-.TP
 \-\fBW \fRdump
 writes an assembler like listing of the internal
 representation of the program to stdout and exits 0
@@ -174,6 +170,10 @@ bytes.
 More than rare use of this option indicates
 \fB\*n\fP
 should be recompiled.
+.TP
+\-\fBW \fRtraditional
+Omit features such as interval expressions which were not supported by
+traditional \fIawk\fP.
 .TP
 \-\fBW \fRusage
 prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRhelp\*('').
@@ -434,7 +434,7 @@ meaning in regular expressions are
 	\\ ^ $ . [ ] | ( ) * + ? { }
 .sp
 .fi
-If the command line option \fI-W compat\fP is used, these are omitted:
+If the command line option \fI-W traditional\fP is used, these are omitted:
 .nf
 .sp
 	{ }
@@ -1941,13 +1941,19 @@ GNU-style long options:
 allow
 \fB\*N\fP allows the option to be checked against the (small) set of
 long options it recognizes.
+.IP
+The long names from the \fB\-W\fP option are recognized,
+e.g.,
+\fB\-\-version\fP is derived from
+\fB\-Wversion\fP.
 .TP
 error
 \fB\*N\fP prints an error message and exits.
 This is the default.
 .TP
 ignore
-\fB\*N\fP ignores the option.
+\fB\*N\fP ignores the option,
+unless it happens to be one of the one it recognizes.
 .TP
 warn
 Print an warning message and otherwise ignore the option.

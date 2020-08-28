@@ -1,4 +1,20 @@
--- $MawkId: CHANGES,v 1.295 2020/08/22 01:07:18 tom Exp $
+-- $MawkId: CHANGES,v 1.301 2020/08/28 19:08:28 tom Exp $
+
+20200828
+	+ modify configure script to move gcc -Werror flags to EXTRA_CFLAGS
+	  to avoid breaking configure-checks.
+	+ use sprintf-buffer for intermediate output of strftime, to handle
+	  extra-long format strings.
+	+ modify MAWK_LONG_OPTIONS "ignore" to limit that to the "-xxx" options
+	  in this set of changes, plus the existing --lint/--lint-old options.
+	+ allow -Wxxx options to use long-option format as -xxx, for better
+	  script-compatibility with gawk.
+	+ use standard output for -Whelp, but show usage message in standard
+	  error when no command arguments are given.
+	+ print version for -Wversion consistently in standard output.
+	+ improve use of const for making tables readonly.
+	+ change -W compat to -W traditional for better script-compatibility
+	  with gawk.
 
 20200821
 	+ completed first draft of mawk-code.7

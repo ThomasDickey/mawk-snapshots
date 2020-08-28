@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.43 2020/07/30 22:36:55 tom Exp $
+ * $MawkId: rexp0.c,v 1.44 2020/08/25 19:34:57 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -521,7 +521,7 @@ lookup_cclass(char **start)
     static CCLASS *cclass_data[CCLASS_xdigit];
     static const struct {
 	CCLASS_ENUM code;
-	const char *name;
+	const char name[8];
 	unsigned size;
     } cclass_table[] = {
 	CCLASS_DATA(alnum),
@@ -915,7 +915,7 @@ store_bvp(BV * bvp)
 #define isoctal(x)  ((x)>='0'&&(x)<='7')
 
 #define	 NOT_HEX	16
-static char hex_val['f' - 'A' + 1] =
+static const char hex_val['f' - 'A' + 1] =
 {
     10, 11, 12, 13, 14, 15, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
