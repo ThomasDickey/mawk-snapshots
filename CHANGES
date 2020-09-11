@@ -1,4 +1,10 @@
--- $MawkId: CHANGES,v 1.301 2020/08/28 19:08:28 tom Exp $
+-- $MawkId: CHANGES,v 1.306 2020/09/10 11:23:53 tom Exp $
+
+20200911
+	+ improve range of printf/sprintf for decimal formats by using the
+	  unsigned limit if the value is positive.
+	+ improve checks for command-line numeric options.
+	+ allow long-options to be abbreviated.
 
 20200828
 	+ modify configure script to move gcc -Werror flags to EXTRA_CFLAGS

@@ -1,6 +1,6 @@
 /********************************************
 matherr.c
-copyright 2009-2012,2013 Thomas E. Dickey
+copyright 2009-2013,2020 Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,37 +11,8 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: matherr.c,v 1.27 2013/12/27 00:45:11 tom Exp $
- *
- * @Log: matherr.c,v @
- * Revision 1.9  1996/09/01 16:54:35  mike
- * Third try at bug fix for solaris strtod.
- *
- * Revision 1.6  1994/12/18  20:53:43  mike
- * check NetBSD mathlib defines
- *
- * Revision 1.5  1994/12/14  14:48:57  mike
- * add <siginfo.h> include -- sysV doesn't have it inside <signal.h>
- * restore #else that had been removed
- *
- * Revision 1.4  1994/10/11  00:36:17  mike
- * systemVr4 siginfo
- *
- * Revision 1.3  1993/07/17  13:23:04  mike
- * indent and general code cleanup
- *
- * Revision 1.2	 1993/07/04  12:52:03  mike
- * start on autoconfig changes
- *
- * Revision 5.2	 1992/03/31  16:14:44  brennan
- * patch2:
- * TURN_ON_FPE_TRAPS() macro
- * USE_IEEEFP_H macro
- *
- * Revision 5.1	 91/12/05  07:56:18  brennan
- * 1.1 pre-release
- *
-*/
+ * $MawkId: matherr.c,v 1.28 2020/09/11 23:48:53 tom Exp $
+ */
 
 #include  "mawk.h"
 #include  "init.h"
@@ -169,6 +140,7 @@ fpe_init(void)
 */
 
 struct exception;
+extern int matherr(struct exception *e);
 
 int
 matherr(struct exception *e)

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.66 2020/08/27 00:14:36 tom Exp $
+ * $MawkId: init.c,v 1.70 2020/09/10 10:11:26 tom Exp $
  */
 
 /* init.c */
@@ -209,15 +209,22 @@ parse_w_opt(char *source, char **next, int *args)
 
     first = source;
     if (*source != '\0') {
+	char mark;
 	while (*source != '\0' && *source != ',' && *source != '=') {
 	    ++source;
 	}
+	mark = *source;
+	*source = '\0';
 	for (n = 0; n < (int) TABLESIZE(w_options); ++n) {
 	    if (w_options[n].mode > 1)
 		continue;
+	    if (!strcmp(w_options[n].name, first)) {
+		match = n;
+		break;
+	    }
 	    if (ok_abbrev(w_options[n].name, first, (int) (source - first))) {
 		if (match >= 0) {
-		    errmsg(0, "? ambiguous -W value: \"%.*s\" (%s vs %s)",
+		    errmsg(0, "ambiguous -W value: \"%.*s\" (%s vs %s)",
 			   (int) (source - first), first,
 			   w_options[match].name,
 			   w_options[n].name);
@@ -235,6 +242,7 @@ parse_w_opt(char *source, char **next, int *args)
 		}
 	    }
 	}
+	*source = mark;
     }
     *next = source;
 
@@ -250,6 +258,7 @@ static W_OPTIONS
 parse_long_opt(char *source, char **next, int *args)
 {
     int n;
+    int match = -1;
     W_OPTIONS result = W_UNKNOWN;
     const char *first = source;
     char mark;
@@ -262,14 +271,39 @@ parse_long_opt(char *source, char **next, int *args)
     mark = *source;
     *source = '\0';
     for (n = 0; n < (int) TABLESIZE(w_options); ++n) {
-	if (!strcmp(first, w_options[n].name)) {
-	    result = w_options[n].code;
-	    *args = w_options[n].args;
+	if (!strcmp(w_options[n].name, first)) {
+	    match = n;
 	    break;
 	}
+	if (ok_abbrev(w_options[n].name, first, (int) (source - first))) {
+	    if (match >= 0) {
+		errmsg(0, "ambiguous long option: \"--%.*s\" (--%s vs --%s)",
+		       (int) (source - first), first,
+		       w_options[match].name,
+		       w_options[n].name);
+	    } else {
+		match = n;
+	    }
+	}
+    }
+    if (match >= 0) {
+	result = w_options[match].code;
+	*args = w_options[match].args;
     }
     *source = mark;
     *next = source;
+    return result;
+}
+
+static long
+numeric_option(const char *source)
+{
+    char *next = NULL;
+    long result = strtol(source, &next, 0);
+    if (next == source || next == NULL || *next != '\0') {
+	errmsg(0, "invalid numeric option: \"%s\"", source);
+	mawk_exit(2);
+    }
     return result;
 }
 
@@ -319,7 +353,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     case W_BINMODE:
 	wantArg = 1;
 	if (optNext != 0) {
-	    set_binmode(atoi(optNext));
+	    set_binmode(numeric_option(optNext));
 	    wantArg = 2;
 	}
 	break;
@@ -360,7 +394,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     case W_RANDOM:
 	wantArg = 1;
 	if (optNext != 0) {
-	    int x = atoi(optNext);
+	    long x = numeric_option(optNext);
 	    CELL c[2];
 
 	    memset(c, 0, sizeof(c));
@@ -381,9 +415,9 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     case W_SPRINTF:
 	wantArg = 1;
 	if (optNext != 0) {
-	    int x = atoi(optNext);
+	    long x = numeric_option(optNext);
 
-	    if (x > (int) sizeof(string_buff)) {
+	    if (x > (long) sizeof(string_buff)) {
 		if (sprintf_buff != string_buff &&
 		    sprintf_buff != 0) {
 		    zfree(sprintf_buff,
@@ -702,7 +736,7 @@ initialize(int argc, char **argv)
 	char *p = getenv("MAWKBINMODE");
 
 	if (p)
-	    set_binmode(atoi(p));
+	    set_binmode(numeric_option(p));
     }
 #endif
 

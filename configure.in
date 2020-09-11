@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.66 2020/08/02 09:25:59 tom Exp $
+dnl $MawkId: configure.in,v 1.67 2020/09/09 08:05:14 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2019,2020, Thomas E. Dickey
@@ -68,18 +68,6 @@ if test "x${with_builtin_srand}" = xno; then
     CF_SRAND(mawk_)
 	AC_DEFINE_UNQUOTED(NAME_RANDOM, "$cf_cv_srand_func", [Define to the name of the random-function])
 fi
-###############################################################################
-AC_MSG_CHECKING(if you want mawk to recognize gawk command-line options)
-CF_ARG_DISABLE([gawk-options],
-[  --disable-gawk-options  suppress gawk options],
-	[with_gawk_options=no],
-	[with_gawk_options=yes])
-if test "x${with_gawk_options}" != xno; then
-	with_gawk_options=yes
-else
-    AC_DEFINE(NO_GAWK_OPTIONS,1,[define to 1 to suppress gawk command-line options])
-fi
-AC_MSG_RESULT($with_gawk_options)
 
 ###############################################################################
 AC_MSG_CHECKING(if you want mawk to initialize random numbers at startup)

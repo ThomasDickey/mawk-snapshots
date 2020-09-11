@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.46 2020/08/07 22:29:32 tom Exp $
+ * $MawkId: execute.c,v 1.47 2020/09/11 23:32:09 tom Exp $
  */
 
 #include "mawk.h"
@@ -1474,7 +1474,7 @@ DB_cell_destroy(CELL *cp)
 static UInt
 d_to_index(double d)
 {
-    if (d >= Max_Int) {
+    if (d >= (double) Max_Int) {
 	return (UInt) Max_Int;
     } else if (d >= 0.0) {
 	return (UInt) (Int) (d);

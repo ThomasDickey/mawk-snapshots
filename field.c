@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.37 2020/07/28 20:40:19 tom Exp $
+ * $MawkId: field.c,v 1.38 2020/09/07 12:12:20 tom Exp $
  */
 
 /* field.c */
@@ -689,7 +689,7 @@ binmode(void)
    from environment or -W binmode=   */
 
 void
-set_binmode(int x)
+set_binmode(long x)
 {
     CELL c;
     int change = ((x & 4) == 0);

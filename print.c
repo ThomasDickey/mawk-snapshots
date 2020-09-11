@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.36 2020/07/31 22:44:30 tom Exp $
+ * $MawkId: print.c,v 1.38 2020/09/11 23:30:34 tom Exp $
  */
 
 #include "mawk.h"
@@ -56,7 +56,15 @@ print_cell(CELL *p, FILE *fp)
 	break;
 
     case C_DOUBLE:
-	{
+	if (p->dval > 0.0) {
+	    ULong ival = d_to_UL(p->dval);
+
+	    /* integers can print as "%[l]u", for additional range */
+	    if ((double) ival == p->dval)
+		fprintf(fp, ULONG_FMT, ival);
+	    else
+		fprintf(fp, string(OFMT)->str, p->dval);
+	} else {
 	    Long ival = d_to_L(p->dval);
 
 	    /* integers print as "%[l]d" */
@@ -571,6 +579,19 @@ do_printf(
 	    break;
 
 	case 'd':
+	    if (cp->type != C_DOUBLE)
+		cast1_to_d(cp);
+	    if (cp->dval >= (double) Max_Long) {
+		Uval = d_to_UL(cp->dval);
+		pf_type = PF_U;
+	    } else {
+		Ival = d_to_L(cp->dval);
+		pf_type = PF_D;
+	    }
+	    if (!l_flag || h_flag) {
+		splice = 1;
+	    }
+	    break;
 	case 'i':
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
@@ -641,6 +662,8 @@ do_printf(
 			xbuff[k - 1] = 'l';
 			xbuff[++k] = 0;
 		    } while (++l_flag < ELL_LIMIT);
+		    if ((pf_type == PF_U) && (xbuff[k - 1] == 'd'))
+			xbuff[k - 1] = 'u';
 		    break;
 		}
 	    }
