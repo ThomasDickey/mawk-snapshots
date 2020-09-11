@@ -1,6 +1,6 @@
 /********************************************
 field.h
-copyright 2009-2010,2014 Thomas E. Dickey
+copyright 2009-2014,2020 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,20 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.h,v 1.12 2014/08/22 00:51:01 tom Exp $
- * @Log: field.h,v @
- * Revision 1.2  1995/06/18  19:42:16  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.1.1.1  1993/07/03  18:58:12  mike
- * move source to cvs
- *
- * Revision 5.2  1992/01/06  08:10:24  brennan
- * set_binmode() proto for MSDOS
- *
- * Revision 5.1  91/12/05  07:59:16  brennan
- * 1.1 pre-release
- *
+ * $MawkId: field.h,v 1.13 2020/09/07 12:13:20 tom Exp $
  */
 
 /* field.h */
@@ -42,7 +29,7 @@ extern char *is_string_split(PTR, SLen *);
 extern void slow_cell_assign(CELL *, CELL *);
 extern CELL *slow_field_ptr(int);
 extern int field_addr_to_index(CELL *);
-extern void set_binmode(int);
+extern void set_binmode(long);
 
 #define  NUM_PFIELDS		5
 extern CELL field[FBANK_SZ + NUM_PFIELDS];

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.26 2020/07/29 00:23:15 tom Exp $
+ * $MawkId: cast.c,v 1.28 2020/09/11 23:36:20 tom Exp $
  */
 
 /*  cast.c  */
@@ -135,10 +135,26 @@ cast2_to_d(CELL *cp)
     cp->type = C_DOUBLE;
 }
 
+#define DoubleToString(target,source) \
+	if (source->dval >= (double) Max_Long) { \
+	    ULong lval = d_to_UL(source->dval); \
+	    if (lval == source->dval) { \
+		sprintf(target, ULONG_FMT, lval); \
+	    } else { \
+		sprintf(target, string(CONVFMT)->str, source->dval); \
+	    } \
+	} else { \
+	    Long lval = d_to_L(source->dval); \
+	    if (lval == source->dval) { \
+		sprintf(target, LONG_FMT, lval); \
+	    } else { \
+		sprintf(target, string(CONVFMT)->str, source->dval); \
+	    } \
+	}
+
 void
 cast1_to_s(CELL *cp)
 {
-    register Long lval;
     char xbuff[260];
 
     switch (cp->type) {
@@ -149,12 +165,7 @@ cast1_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_L(cp->dval);
-	if (lval == cp->dval)
-	    sprintf(xbuff, LONG_FMT, lval);
-	else
-	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
-
+	DoubleToString(xbuff, cp);
 	cp->ptr = (PTR) new_STRING(xbuff);
 	break;
 
@@ -174,7 +185,6 @@ cast1_to_s(CELL *cp)
 void
 cast2_to_s(CELL *cp)
 {
-    register Long lval;
     char xbuff[260];
 
     switch (cp->type) {
@@ -185,12 +195,7 @@ cast2_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_L(cp->dval);
-	if (lval == cp->dval)
-	    sprintf(xbuff, LONG_FMT, lval);
-	else
-	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
-
+	DoubleToString(xbuff, cp);
 	cp->ptr = (PTR) new_STRING(xbuff);
 	break;
 
@@ -217,12 +222,7 @@ cast2_to_s(CELL *cp)
 
     case C_DOUBLE:
 
-	lval = d_to_L(cp->dval);
-	if (lval == cp->dval)
-	    sprintf(xbuff, LONG_FMT, lval);
-	else
-	    sprintf(xbuff, string(CONVFMT)->str, cp->dval);
-
+	DoubleToString(xbuff, cp);
 	cp->ptr = (PTR) new_STRING(xbuff);
 	break;
 
@@ -388,10 +388,10 @@ d_to_I(double d)
 {
     Int result;
 
-    if (d >= Max_Int) {
+    if (d >= (double) Max_Int) {
 	result = Max_Int;
     } else if (d < 0) {
-	if (-d <= Max_Int) {
+	if (-d <= (double) Max_Int) {
 	    result = (Int) d;
 	} else {
 	    result = -Max_Int;
@@ -407,10 +407,10 @@ d_to_L(double d)
 {
     Long result;
 
-    if (d >= Max_Long) {
+    if (d >= (double) Max_Long) {
 	result = Max_Long;
     } else if (d < 0) {
-	if (-d <= Max_Long) {
+	if (-d <= (double) Max_Long) {
 	    result = (Long) d;
 	} else {
 	    result = -Max_Long;
@@ -426,10 +426,10 @@ d_to_UL(double d)
 {
     ULong result;
 
-    if (d >= Max_ULong) {
+    if (d >= (double) Max_ULong) {
 	result = Max_ULong;
     } else if (d < 0) {
-	if (-d < Max_ULong) {
+	if (-d < (double) Max_ULong) {
 	    result = ((Max_ULong + (ULong) d) + 1);
 	} else {
 	    result = -Max_ULong;
