@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.38 2020/09/11 23:30:34 tom Exp $
+ * $MawkId: print.c,v 1.39 2020/09/13 17:31:07 tom Exp $
  */
 
 #include "mawk.h"
@@ -56,7 +56,7 @@ print_cell(CELL *p, FILE *fp)
 	break;
 
     case C_DOUBLE:
-	if (p->dval > 0.0) {
+	if (p->dval >= (double) Max_Long) {
 	    ULong ival = d_to_UL(p->dval);
 
 	    /* integers can print as "%[l]u", for additional range */

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.70 2020/09/10 10:11:26 tom Exp $
+ * $MawkId: init.c,v 1.71 2020/09/13 14:26:56 tom Exp $
  */
 
 /* init.c */
@@ -530,7 +530,7 @@ static void
 process_cmdline(int argc, char **argv)
 {
     int i, j, nextarg;
-    char *curArg;
+    char *curArg = NULL;
     char *optArg;
     char *optNext;
     PFILE dummy;		/* starts linked list of filenames */
