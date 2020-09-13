@@ -1,4 +1,10 @@
--- $MawkId: CHANGES,v 1.306 2020/09/10 11:23:53 tom Exp $
+-- $MawkId: CHANGES,v 1.309 2020/09/13 17:27:56 tom Exp $
+
+20200918
+	+ build-fix for HP-UX 11.23, which lacks #define's for maximum of
+	  int64_t and uint64_t
+	+ build-fix for OpenBSD, which mis-types int64_t, just like macOS.
+	+ build-fix for macOS, which mis-types int64_t
 
 20200911
 	+ improve range of printf/sprintf for decimal formats by using the

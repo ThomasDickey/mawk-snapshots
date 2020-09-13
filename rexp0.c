@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.44 2020/08/25 19:34:57 tom Exp $
+ * $MawkId: rexp0.c,v 1.45 2020/09/13 17:24:47 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -135,7 +135,7 @@ do_intervals(
 
     intrvalmin = 0;
     intrvalmax = 0;
-    if (!isdigit(*p) && *p != ',')	/* error */
+    if (!isdigit((UChar) * p) && *p != ',')	/* error */
     {
 	RE_error_trap(-E7);
     }

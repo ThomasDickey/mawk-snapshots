@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.31 2020/07/14 00:43:07 tom Exp $
+ * $MawkId: split.c,v 1.32 2020/09/13 14:41:05 tom Exp $
  */
 
 /* split.c */
@@ -41,11 +41,11 @@ typedef struct split_block {
 static Split_Block_Node split_block_base;
 static Split_Block_Node *split_block_list = &split_block_base;
 
-/* usually the list is of size 1
-   the list never gets smaller than size 1
-   this function returns a bigger list to size 1
-*/
-
+/*
+ * Usually the list is of size 1.
+ * The list never gets smaller than size 1.
+ * This function returns a bigger list to size 1.
+ */
 static void
 spb_list_shrink(void)
 {
@@ -58,11 +58,11 @@ spb_list_shrink(void)
     }
 }
 
-/* this function is passed a pointer to the tail of the list,
-   adds a new node and returns the new tail
-   This makes the list one node bigger
-*/
-
+/*
+ * This function is passed a pointer to the tail of the list,
+ * adds a new node and returns the new tail
+ * This makes the list one node bigger
+ */
 static Split_Block_Node *
 grow_sp_list(Split_Block_Node * tail)
 {
@@ -144,13 +144,14 @@ re_split(char *s, size_t slen, PTR re)
 	}
     }
     /* last match at end of s, so last field is "" */
-    node_p->strings[idx] = new_STRING0(0);
+    node_p->strings[idx] = new_STRING0((size_t) 0);
     return ++cnt;
 }
 
-/* match a string with a regular expression, but
- * only matches of positive length count
- * input a string str and its length
+/*
+ * Matches a string with a regular expression, but only matches of positive
+ * length count.
+ * input is a string str and its length.
  * return is match point else 0 if no match
  * length of match is returned in *lenp
  */
@@ -182,8 +183,9 @@ re_pos_match(char *str, size_t str_len, PTR re, size_t *lenp, int no_bol)
     return 0;
 }
 
-/* like space split but splits s into single character strings */
-
+/*
+ * like space split but splits s into single character strings
+ */
 size_t
 null_split(const char *s, size_t slen)
 {
@@ -192,7 +194,7 @@ null_split(const char *s, size_t slen)
     unsigned idx = 0;
 
     while (s < end) {
-	node_p->strings[idx] = new_STRING1(s++, 1);
+	node_p->strings[idx] = new_STRING1(s++, (size_t) 1);
 	if (++idx == SP_SIZE) {
 	    idx = 0;
 	    node_p = grow_sp_list(node_p);
@@ -201,13 +203,12 @@ null_split(const char *s, size_t slen)
     return slen;
 }
 
-/* The caller knows there are cnt STRING* in the split_block_list
+/*
+ * The caller knows there are cnt STRING* in the split_block_list
  * buffers.  This function uses them to make CELLs in cp[]
  * The target CELLs are virgin, they don't need to be
  * destroyed
- *
  */
-
 void
 transfer_to_array(CELL cp[], size_t cnt)
 {
@@ -227,12 +228,11 @@ transfer_to_array(CELL cp[], size_t cnt)
 	spb_list_shrink();
 }
 
-/* like above but transfers the saved pieces to $1, $2 ... $cnt
+/*
+ * like above but transfers the saved pieces to $1, $2 ... $cnt
  * The target CELLs may be string type so need to be destroyed
  * The caller has made sure the target CELLs exist
- * 
-*/
-
+ */
 void
 transfer_to_fields(size_t cnt)
 {
@@ -271,8 +271,8 @@ transfer_to_fields(size_t cnt)
  *	   sp[-1] pts at X
  *	   sp[-2] holds s
  *
-      exit :  sp is 2 less,   sp[0] is C_DOUBLE CELL with value equal
-              to the number of split pieces
+ *    exit :  sp is 2 less,   sp[0] is C_DOUBLE CELL with value equal
+ *            to the number of split pieces
  */
 CELL *
 bi_split(CELL *sp)

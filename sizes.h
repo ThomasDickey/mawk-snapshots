@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.18 2020/07/31 22:02:36 tom Exp $
+ * $MawkId: sizes.h,v 1.21 2020/09/13 17:24:05 tom Exp $
  */
 
 /*  sizes.h  */
@@ -31,12 +31,28 @@ the GNU General Public License, version 2, 1991.
 #endif
 
 #if defined(HAVE_STDINT_H) && defined(HAVE_INT64_T) && defined(HAVE_UINT64_T)
+
 #include <stdint.h>
 #include <limits.h>
+
+#if defined(INT64_MAX)
 #define  MAX__INT       INT64_MAX
-#define  MAX__LONG      INT64_MAX
+#elif defined(LLONG_MAX)
+#define  MAX__INT       LLONG_MAX		
+#elif defined(LONG_LONG_MAX)
+#define  MAX__INT       LONG_LONG_MAX		
+#endif
+
+#if defined(UINT64_MAX)
 #define  MAX__UINT      UINT64_MAX
-#define  MAX__ULONG     UINT64_MAX
+#elif defined(LLONG_MAX)
+#define  MAX__UINT      ULLONG_MAX		
+#elif defined(LONG_LONG_MAX)
+#define  MAX__UINT      ULONG_LONG_MAX		
+#endif
+
+#define  MAX__LONG      MAX__INT
+#define  MAX__ULONG     MAX__UINT
 
 typedef int64_t         Int;
 typedef int64_t         Long;
@@ -48,7 +64,7 @@ typedef uint64_t        ULong;
 #define  Max_UInt       MAX__UINT
 #define  Max_ULong      MAX__ULONG
 
-#if SIZEOF_LONG_LONG > SIZEOF_LONG
+#if (SIZEOF_LONG_LONG > SIZEOF_LONG) || defined(__APPLE__) || defined(__OpenBSD__)
 #define  INT_FMT        "%lld"
 #define  UINT_FMT       "%llu"
 #define  LONG_FMT       "%lld"
@@ -61,7 +77,8 @@ typedef uint64_t        ULong;
 #define  ULONG_FMT      "%lu"
 #endif
 
-#else
+#else /* !defined(HAVE_STDINT_H), etc */
+
 #ifndef MAX__INT
 #include <limits.h>
 #define  MAX__INT       INT_MAX
@@ -102,6 +119,7 @@ typedef unsigned long   ULong;
 
 #define  LONG_FMT       "%ld"
 #define  ULONG_FMT      "%lu"
+
 #endif /* HAVE_STDINT_H */
 
 #define EVAL_STACK_SIZE 1024	/* initial size , can grow */
