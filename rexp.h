@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.32 2020/07/30 22:40:05 tom Exp $
+ * $MawkId: rexp.h,v 1.33 2020/09/25 23:28:44 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -87,13 +87,6 @@ typedef enum {
     ,T_Q			/* ? */
     ,T_LP			/* ( */
     ,T_RP			/* ) */
-    ,T_START			/* ^ */
-    ,T_END			/* $ */
-    ,T_ANY			/* . */
-    ,T_CLASS			/* starts with [ */
-    ,T_SLASH			/*  \  */
-    ,T_CHAR			/* all the rest */
-    ,T_STR			/* string built of other tokens */
 #ifdef NO_INTERVAL_EXPR
 #define T_LB	T_CHAR		/* { */
 #define T_RB	T_CHAR		/* } */
@@ -101,6 +94,13 @@ typedef enum {
     ,T_LB			/* { */
     ,T_RB			/* } */
 #endif
+    ,T_START			/* ^ */
+    ,T_END			/* $ */
+    ,T_ANY			/* . */
+    ,T_CLASS			/* starts with [ */
+    ,T_SLASH			/*  \  */
+    ,T_CHAR			/* all the rest */
+    ,T_STR			/* string built of other tokens */
     ,T_U
 } MAWK_TOKEN;
 

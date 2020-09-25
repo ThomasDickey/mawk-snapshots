@@ -1,4 +1,5 @@
 #!/usr/bin/mawk -f
+# $MawkId: deps.awk,v 1.3 2020/09/19 13:08:34 tom Exp $
 
 # find include dependencies in C source
 #
@@ -11,7 +12,7 @@
 BEGIN {  stack_index = 0 # stack[] holds the input files
 
   for(i = 1 ; i < ARGC ; i++)
-  { 
+  {
     file = ARGV[i]
     if ( file !~ /\.[cC]$/ )  continue  # skip it
     outfile = substr(file, 1, length(file)-2) ".o"
@@ -23,9 +24,9 @@ BEGIN {  stack_index = 0 # stack[] holds the input files
     while ( 1 )
     {
         if ( getline line < file <= 0 )  # no open or EOF
-	{ close(file)
+	{ # close(file)
 	  if ( stack_index == 0 )  break # empty stack
-	  else  
+	  else
 	  { file = stack[ stack_index-- ]
 	    continue
 	  }
@@ -38,16 +39,16 @@ BEGIN {  stack_index = 0 # stack[] holds the input files
 	  if ( X[2] in INCLUDED ) # we've already included it
 		continue
 
-	  #push current file 
+	  #push current file
 	  stack[ ++stack_index ] = file
 	  INCLUDED[ file = X[2] ] = ""
         }
     }  # end of while
-    
+
    # test if INCLUDED is empty
-   flag = 0 # on once the front is printed 
+   flag = 0 # on once the front is printed
    for( j in INCLUDED )
-      if ( ! flag )  
+      if ( ! flag )
       { printf "%s : %s" , outfile, j ; flag = 1 }
       else  printf " %s" , j
 

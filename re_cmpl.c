@@ -1,6 +1,6 @@
 /********************************************
 re_cmpl.c
-copyright 2008-2014,2016, Thomas E. Dickey
+copyright 2008-2016,2020, Thomas E. Dickey
 copyright 1991-1994,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.30 2016/09/30 13:47:45 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.32 2020/09/25 08:11:16 tom Exp $
  */
 
 /*  re_cmpl.c  */
@@ -170,6 +170,7 @@ REPL_compile(STRING * sval)
     VCount count = 0;
     register char *p = sval->str;
     register char *q;
+    register char *r;
     char *xbuff;
     CELL *cp;
 
@@ -182,7 +183,26 @@ REPL_compile(STRING * sval)
 	    goto done;
 
 	case '\\':
-	    if (p[1] == '&' || p[1] == '\\') {
+	    if (p[1] == '\\') {
+		int merge = 0;
+		for (r = p + 2; *r; ++r) {
+		    if (r[0] == '&') {
+			/* gotcha! */
+			merge = 1;
+		    } else if (r[0] != '\\') {
+			/* give up: do not alter */
+			break;
+		    }
+		}
+		if (merge) {
+		    *q++ = p[1];
+		    p += 2;
+		} else {
+		    *q++ = *p++;
+		    *q++ = *p++;
+		}
+		continue;
+	    } else if (p[1] == '&') {
 		*q++ = p[1];
 		p += 2;
 		continue;

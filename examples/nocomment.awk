@@ -1,4 +1,5 @@
 #!/usr/bin/mawk -f
+# $MawkId: nocomment.awk,v 1.3 2020/09/19 13:02:14 tom Exp $
 
 # remove C comments  from a list of files
 # using a comment as the record separator
@@ -8,7 +9,7 @@
 
 BEGIN {
  # RS is set to  a comment (this is mildly tricky, I blew it here
- RS = "/\*([^*]|\*+[^*/])*\*+/"
+ RS = "/[*]([^*]|[*]+[^*/])*[*]+/"
  ORS = " "
  getline hold
  filename = FILENAME

@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.96 2020/09/09 08:02:42 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.97 2020/09/12 22:30:01 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -1219,6 +1219,89 @@ CF_EOF
 AC_SUBST(cf_cv_makeflags)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_MAKE_PHONY version: 1 updated: 2020/09/08 21:08:52
+dnl -------------
+dnl Check if the make-program handles a ".PHONY" target, e.g,. a target which
+dnl acts as a placeholder.
+dnl
+dnl The ".PHONY" feature was proposed in 2011 here
+dnl     https://www.austingroupbugs.net/view.php?id=523
+dnl and is scheduled for release in P1003.1 Issue 8 (late 2022).
+dnl
+dnl This is not supported by SVr4 make (or SunOS 4, 4.3SD, etc), but works with
+dnl a few others (i.e., GNU make and the non-POSIX "BSD" make):
+dnl
+dnl + This is a GNU make feature (since April 1988, but in turn from binutils,
+dnl   date unspecified).
+dnl
+dnl + It was adopted in NetBSD make in June 1995.
+dnl
+dnl + The other BSD make programs are derived from the NetBSD make (and for
+dnl   that reason are not actually different "implementations").
+dnl
+dnl + Some features of NetBSD make were actually adapted from pmake, which
+dnl   began as a modified GNU make starting in 1993.
+dnl
+dnl + Version 3.8 of the dmake program in January 1992 also implemented this
+dnl   GNU make extension, but is less well known than the BSD make.
+AC_DEFUN([CF_MAKE_PHONY],[
+AC_CACHE_CHECK(for \".PHONY\" make-support, cf_cv_make_PHONY,[
+	rm -rf conftest*
+	(
+		mkdir conftest || exit 1
+		cd conftest
+		cat >makefile <<'CF_EOF'
+.PHONY: always
+DATA=0
+always:	always.out
+	@echo "** making [$]@ [$](DATA)"
+once: once.out
+	@echo "** making [$]@ [$](DATA)"
+always.out:
+	@echo "** making [$]@ [$](DATA)"
+	echo [$](DATA) > [$]@
+once.out:
+	@echo "** making [$]@ [$](DATA)"
+	echo [$](DATA) > [$]@
+CF_EOF
+		for cf_data in 1 2 3
+		do
+			${MAKE:-make} always DATA=$cf_data
+			${MAKE:-make} once   DATA=$cf_data
+			${MAKE:-make} -t always once
+			if test -f always ; then
+				echo "no (case 1)" > ../conftest.tmp
+			elif test ! -f always.out ; then
+				echo "no (case 2)" > ../conftest.tmp
+			elif test ! -f once.out ; then
+				echo "no (case 3)" > ../conftest.tmp
+			elif ! cmp -s always.out once.out ; then
+				echo "no (case 4)" > ../conftest.tmp
+				diff always.out once.out
+			else
+				cf_check=`cat always.out`
+				if test "x$cf_check" != "x$cf_data" ; then
+					echo "no (case 5)" > ../conftest.tmp
+				else
+					echo yes > ../conftest.tmp
+					rm -f *.out
+					continue
+				fi
+			fi
+			break
+		done
+	) >&AC_FD_CC 2>&1
+	cf_cv_make_PHONY=`cat conftest.tmp`
+	rm -rf conftest*
+])
+MAKE_NO_PHONY="#"
+MAKE_PHONY="#"
+test "x$cf_cv_make_PHONY" = xyes && MAKE_PHONY=
+test "x$cf_cv_make_PHONY" != xyes && MAKE_NO_PHONY=
+AC_SUBST(MAKE_NO_PHONY)
+AC_SUBST(MAKE_PHONY)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_MAKE_TAGS version: 6 updated: 2010/10/23 15:52:32
 dnl ------------
 dnl Generate tags/TAGS targets for makefiles.  Do not generate TAGS if we have
@@ -1865,7 +1948,7 @@ esac
 AC_SUBST(LINT_OPTS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_REGEX version: 14 updated: 2020/07/11 19:09:29
+dnl CF_REGEX version: 15 updated: 2020/09/12 18:30:01
 dnl --------
 dnl Attempt to determine if we've got one of the flavors of regular-expression
 dnl code that we can support.
@@ -1873,23 +1956,33 @@ AC_DEFUN([CF_REGEX],
 [
 
 cf_regex_func=no
-
-cf_regex_libs="regex re"
+cf_regex_libs=
 case $host_os in
 (mingw*)
-	cf_regex_libs="systre gnurx $cf_regex_libs"
+	# -lsystre -ltre -lintl -liconv
+	AC_CHECK_LIB(systre,regcomp,[
+		AC_CHECK_LIB(iconv,libiconv_open,[CF_ADD_LIB(iconv)])
+		AC_CHECK_LIB(intl,libintl_gettext,[CF_ADD_LIB(intl)])
+		AC_CHECK_LIB(tre,tre_regcomp,[CF_ADD_LIB(tre)])
+		CF_ADD_LIB(systre)
+		cf_regex_func=regcomp
+	],[
+		AC_CHECK_LIB(gnurx,regcomp,cf_regex_func=regcomp)
+	])
+	;;
+(*)
+	cf_regex_libs="regex re"
+	AC_CHECK_FUNC(regcomp,[cf_regex_func=regcomp],[
+		for cf_regex_lib in $cf_regex_libs
+		do
+			AC_CHECK_LIB($cf_regex_lib,regcomp,[
+					CF_ADD_LIB($cf_regex_lib)
+					cf_regex_func=regcomp
+					break])
+		done
+	])
 	;;
 esac
-
-AC_CHECK_FUNC(regcomp,[cf_regex_func=regcomp],[
-	for cf_regex_lib in $cf_regex_libs
-	do
-		AC_CHECK_LIB($cf_regex_lib,regcomp,[
-				CF_ADD_LIB($cf_regex_lib)
-				cf_regex_func=regcomp
-				break])
-	done
-])
 
 if test "$cf_regex_func" = no ; then
 	AC_CHECK_FUNC(compile,[cf_regex_func=compile],[
