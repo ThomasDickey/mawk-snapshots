@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.71 2020/09/13 14:26:56 tom Exp $
+ * $MawkId: init.c,v 1.73 2020/09/25 20:55:05 tom Exp $
  */
 
 /* init.c */
@@ -63,6 +63,7 @@ short interactive_flag = 0;
 
 int dump_code_flag = 0;		/* if on dump internal code */
 short posix_space_flag = 0;
+short traditional_flag = 0;
 
 #ifndef NO_INTERVAL_EXPR
 #define enable_repetitions(flag) repetitions_flag = flag
@@ -359,6 +360,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
 	break;
 #endif
     case W_TRADITIONAL:
+	traditional_flag = 1;
 	enable_repetitions(0);
 	posix_space_flag = 0;
 	break;
@@ -605,7 +607,9 @@ process_cmdline(int argc, char **argv)
 					? argv[nextarg++]
 					: NULL)
 				     : NULL));
-		if (!handle_w_opt(code, glue, name, &optValue))
+		int done = !handle_w_opt(code, glue, name, &optValue);
+		i = nextarg;
+		if (done)
 		    goto no_more_opts;
 		optNext = optValue;
 	    }

@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.67 2020/09/09 08:05:14 tom Exp $
+dnl $MawkId: configure.in,v 1.68 2020/09/24 22:18:21 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2019,2020, Thomas E. Dickey
@@ -23,6 +23,7 @@ AC_DEFUN([AC_PATH_XTRA],[])
 CF_PROG_CC
 AC_PROG_MAKE_SET
 CF_MAKEFLAGS
+CF_MAKE_PHONY
 AC_PROG_CPP
 AC_PROG_INSTALL
 

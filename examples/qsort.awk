@@ -1,11 +1,11 @@
 #!/usr/bin/mawk -f
+# $MawkId: qsort.awk,v 1.4 2020/09/19 14:20:45 tom Exp $
 
 # qsort text files
-#
 
 function middle(x,y,z)  #return middle of 3
 {
-  if ( x <= y )  
+  if ( x <= y )
   { if ( z >= y )  return y
     if ( z <  x )  return x
     return z
@@ -15,7 +15,6 @@ function middle(x,y,z)  #return middle of 3
   if ( z <  y )  return y
   return z
 }
-
 
 function  isort(A , n,    i, j, hold)
 {
@@ -31,11 +30,9 @@ function  isort(A , n,    i, j, hold)
   }
 }
 
-
 # recursive quicksort
 function  qsort(A, left, right    ,i , j, pivot, hold)
 {
-  
   pivot = middle(A[left], A[int((left+right)/2)], A[right])
 
   i = left
@@ -43,7 +40,7 @@ function  qsort(A, left, right    ,i , j, pivot, hold)
 
   while ( i <= j )
   {
-    while ( A[i] < pivot )  i++ 
+    while ( A[i] < pivot )  i++
     while ( A[j] > pivot )  j--
 
     if ( i <= j )
@@ -59,7 +56,6 @@ function  qsort(A, left, right    ,i , j, pivot, hold)
 
 BEGIN { BLOCK = 5 }
 
-
 { line[NR] = $0 ""   # sort as string
 }
 
@@ -69,10 +65,5 @@ END  {
 
   isort(line, NR)
 
-  for(i = 1 ; i <= NR ; i++) print line[i]
+  for(ie = 1 ; ie <= NR ; ie++) print line[ie]
 }
-  
-
-
-
-    

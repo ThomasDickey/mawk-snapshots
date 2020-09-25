@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.54 2020/08/01 08:34:10 tom Exp $
+# $MawkId: Makefile.in,v 1.55 2020/09/24 22:08:12 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
 # copyright 2009-2016,2020 Thomas E. Dickey
@@ -93,6 +93,8 @@ OBJS = parse$o scan$o memory$o main$o hash$o execute$o code$o \
 .c$o :
 	@RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
+
+@MAKE_PHONY@.PHONY: all check mawk_test fpe_test install uninstall clean distclean maintainer-clean lint
 
 all :	$(PROG)
 

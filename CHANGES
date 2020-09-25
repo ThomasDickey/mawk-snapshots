@@ -1,4 +1,12 @@
--- $MawkId: CHANGES,v 1.309 2020/09/13 17:27:56 tom Exp $
+-- $MawkId: CHANGES,v 1.313 2020/09/25 00:25:17 tom Exp $
+
+20200925
+	+ improve compatibility vs gawk/bwk in gsub handling of backslash by
+	  only escaping backslash with itself if those backslashes happen to
+	  precede a "&", e.g., "\\&" vs "\\" (Original-Mawk #14).
+	+ fix a regression in recent command-line option parsing.
+	+ modify configure/makefile to use .PHONY if available.
+	+ review/improve example-scripts
 
 20200918
 	+ build-fix for HP-UX 11.23, which lacks #define's for maximum of
