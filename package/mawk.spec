@@ -1,8 +1,8 @@
 Summary: mawk - pattern scanning and text processing language
 %define AppProgram mawk
 %define AppVersion 1.3.4
-%define AppRelease 20200925
-# $MawkId: mawk.spec,v 1.85 2020/09/19 08:27:08 tom Exp $
+%define AppRelease 20201009
+# $MawkId: mawk.spec,v 1.87 2020/10/03 10:57:03 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppRelease}

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.27 2020/07/29 19:19:24 tom Exp $
+ * $MawkId: rexp.c,v 1.29 2020/10/03 08:26:11 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -249,7 +249,7 @@ REcompile(char *re, size_t len)
 		    return (PTR) m_ptr->start;
 		} else {
 		    /* machines still on the stack  */
-		    RE_panic2("values still on machine stack for ", re);
+		    RE_panic("values still on machine stack for %s", re);
 		}
 	    }
 	    /* FALLTHRU */
@@ -365,16 +365,29 @@ REdestroy(PTR ptr)
 
 /* getting here means a logic flaw or unforeseen case */
 void
-RE_panic(const char *s)
+RE_panic(const char *format, ...)
 {
-    fprintf(stderr, "REcompile() - panic:  %s\n", s);
-    mawk_exit(100);
-}
+    const char *where = "REcompile() - panic:  ";
+    va_list args;
 
-void
-RE_panic2(const char *s1, char *s2)
-{
-    fprintf(stderr, "REcompile() - panic:  %s %s\n", s1, s2);
+    fflush(stdout);
+
+#if OPT_TRACE > 0
+    va_start(args, format);
+    Trace("?? %s", where);
+    TraceVA(format, args);
+    Trace("\n");
+    va_end(args);
+#endif
+
+    fputs(where, stderr);
+
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
+
     mawk_exit(100);
 }
 

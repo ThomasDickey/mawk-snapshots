@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.21 2020/09/13 17:24:05 tom Exp $
+ * $MawkId: sizes.h,v 1.22 2020/10/03 10:49:28 tom Exp $
  */
 
 /*  sizes.h  */
@@ -38,17 +38,17 @@ the GNU General Public License, version 2, 1991.
 #if defined(INT64_MAX)
 #define  MAX__INT       INT64_MAX
 #elif defined(LLONG_MAX)
-#define  MAX__INT       LLONG_MAX		
+#define  MAX__INT       LLONG_MAX
 #elif defined(LONG_LONG_MAX)
-#define  MAX__INT       LONG_LONG_MAX		
+#define  MAX__INT       LONG_LONG_MAX
 #endif
 
 #if defined(UINT64_MAX)
 #define  MAX__UINT      UINT64_MAX
 #elif defined(LLONG_MAX)
-#define  MAX__UINT      ULLONG_MAX		
+#define  MAX__UINT      ULLONG_MAX
 #elif defined(LONG_LONG_MAX)
-#define  MAX__UINT      ULONG_LONG_MAX		
+#define  MAX__UINT      ULONG_LONG_MAX
 #endif
 
 #define  MAX__LONG      MAX__INT
