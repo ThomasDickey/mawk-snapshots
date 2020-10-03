@@ -1,4 +1,8 @@
--- $MawkId: CHANGES,v 1.313 2020/09/25 00:25:17 tom Exp $
+-- $MawkId: CHANGES,v 1.316 2020/10/03 10:57:03 tom Exp $
+
+20201009
+	+ show limits for brace-expressions in dump.
+	+ change RE_panic to stdarg, and log its message in trace file
 
 20200925
 	+ improve compatibility vs gawk/bwk in gsub handling of backslash by

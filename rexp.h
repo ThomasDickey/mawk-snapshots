@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.33 2020/09/25 23:28:44 tom Exp $
+ * $MawkId: rexp.h,v 1.34 2020/10/02 23:25:24 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -162,8 +162,7 @@ extern void RE_or(MACHINE *, MACHINE *);
 extern void RE_close(MACHINE *);
 extern void RE_poscl(MACHINE *);
 extern void RE_01(MACHINE *);
-extern void RE_panic(const char *) GCC_NORETURN;
-extern void RE_panic2(const char *, char *) GCC_NORETURN;
+extern void RE_panic(const char *, ...) GCC_NORETURN GCC_PRINTFLIKE(1,2);
 
 #ifndef NO_INTERVAL_EXPR
 extern void RE_close_limit(MACHINE *, Int);
