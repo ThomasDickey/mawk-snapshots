@@ -1,4 +1,7 @@
--- $MawkId: CHANGES,v 1.316 2020/10/03 10:57:03 tom Exp $
+-- $MawkId: CHANGES,v 1.318 2020/10/16 22:29:45 tom Exp $
+
+20201016
+	+ improve dump format, showing the jump-targets rather than offsets.
 
 20201009
 	+ show limits for brace-expressions in dump.

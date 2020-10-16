@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.34 2020/10/02 23:25:24 tom Exp $
+ * $MawkId: rexp.h,v 1.37 2020/10/16 22:27:03 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -34,23 +34,25 @@ extern void RE_free(void *);
 
 /*  finite machine  state types  */
 
-#define  M_STR     	0	/* matching a literal string */
-#define  M_CLASS   	1	/* character class */
-#define  M_ANY     	2	/* arbitrary character (.) */
-#define  M_START   	3	/* start of string (^) */
-#define  M_END     	4	/* end of string ($) */
-#define  M_U       	5	/* arbitrary string (.*) */
-#define  M_1J      	6	/* mandatory jump */
-#define  M_2JA     	7	/* optional (undesirable) jump */
-#define  M_2JB     	8	/* optional (desirable) jump */
-#define  M_SAVE_POS	9	/* push position onto stack */
-#define  M_2JC     	10	/* pop pos'n, optional jump if advanced */
-#define  M_ACCEPT  	11	/* end of match */
-#define  U_ON      	12
+typedef enum {
+    M_STR			/* matching a literal string */
+    ,M_CLASS			/* character class */
+    ,M_ANY			/* arbitrary character (.) */
+    ,M_START			/* start of string (^) */
+    ,M_END			/* end of string ($) */
+    ,M_U			/* arbitrary string (.*) */
+    ,M_1J			/* mandatory jump */
+    ,M_2JA			/* optional (undesirable) jump */
+    ,M_2JB			/* optional (desirable) jump */
+    ,M_SAVE_POS			/* push position onto stack */
+    ,M_2JC			/* pop pos'n, optional jump if advanced */
+    ,M_ACCEPT			/* end of match */
+    ,U_ON			/* ...distinct from the preceding */
+} MAWK_REGEX;
 
 #define  U_OFF     0
 #define  END_OFF   0
-#define  END_ON    (2*U_ON)
+#define  END_ON    (2*U_ON)	/* ...distinct from the preceding */
 
 #define  L_CURL         '{'
 #define  R_CURL         '}'
@@ -105,16 +107,16 @@ typedef enum {
 } MAWK_TOKEN;
 
 /*  precedences and error codes  */
-#define  L   0
-#define  EQ  1
-#define  G   2
-#define  E1  (-1)
-#define  E2  (-2)
-#define  E3  (-3)
-#define  E4  (-4)
-#define  E5  (-5)
-#define  E6  (-6)
-#define  E7  (-7)
+#define  OP_L   0
+#define  OP_EQ  1
+#define  OP_G   2
+#define  ERR_1  (-1)
+#define  ERR_2  (-2)
+#define  ERR_3  (-3)
+#define  ERR_4  (-4)
+#define  ERR_5  (-5)
+#define  ERR_6  (-6)
+#define  ERR_7  (-7)
 
 #define  MEMORY_FAILURE      5
 
@@ -193,7 +195,7 @@ extern Int intrvalmin;
 extern Int intrvalmax;
 extern char *re_exp;
 
-#ifdef LOCAL_REGEXP
+#if defined(LOCAL_REGEXP) && defined(REGEXP_INTERNALS)
 static /* inline */ RT_POS_ENTRY *
 RE_pos_push(RT_POS_ENTRY * head, const RT_STATE * owner, const char *s)
 {

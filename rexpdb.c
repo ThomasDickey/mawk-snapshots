@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.18 2020/10/03 10:50:44 tom Exp $
+ * $MawkId: rexpdb.c,v 1.21 2020/10/16 22:43:52 tom Exp $
  */
 
 #include "rexp.h"
@@ -36,19 +36,21 @@ static const char xlat[][12] =
 };
 
 const char *
-REs_type(PTR p)
+REs_type(STATE * p)
 {
-    return (xlat[((UChar) (((STATE *) p)->s_type)) % U_ON]);
+    return (xlat[((UChar) (p->s_type)) % U_ON]);
 }
 
 void
-REmprint(PTR m, FILE *f)
+REmprint(STATE * m, FILE *f)
 {
-    STATE *p = (STATE *) m;
+    STATE *base = m;
+    STATE *p = base;
     const char *end_on_string;
 
     while (1) {
-	fprintf(f, "%03d ", (int) (p - (STATE *) m));
+	int line = (int) (p - base);
+	fprintf(f, "%03d ", line);
 	fprintf(f, ".\t");
 	if (p->s_type >= END_ON) {
 	    p->s_type = (SType) (p->s_type - END_ON);
@@ -71,10 +73,10 @@ REmprint(PTR m, FILE *f)
 	case M_1J:
 	case M_2JA:
 	case M_2JB:
-	    fprintf(f, "\t%d", p->s_data.jump);
+	    fprintf(f, "\t%03d", line + p->s_data.jump);
 	    break;
 	case M_2JC:
-	    fprintf(f, "\t%d", p->s_data.jump);
+	    fprintf(f, "\t%03d", line + p->s_data.jump);
 #ifndef NO_INTERVAL_EXPR
 	    if (p->it_max != MAX__INT)
 		fprintf(f, "," INT_FMT, p->it_max);

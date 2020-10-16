@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.43 2020/07/30 20:30:42 tom Exp $
+ * $MawkId: rexp3.c,v 1.47 2020/10/16 23:31:12 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -40,17 +40,33 @@ the GNU General Public License, version 2, 1991.
 	TR_STR(s); \
 	return cb_ss
 
+#if OPT_TRACE
+static const char *
+RE_u_end(int flag)
+{
+    static const char *utable[] =
+    {
+	"U_OFF + END_OFF",
+	"U_ON  + END_OFF",
+	"U_OFF + END_ON",
+	"U_ON  + END_ON",
+    };
+    flag /= U_ON;
+    return utable[flag % 4];
+}
+#endif
+
 /* returns start of first longest match and the length by
    reference.  If no match returns NULL and length zero */
 
 char *
 REmatch(char *str,		/* string to test */
 	size_t str_len,		/* ...its length */
-	PTR machine,		/* compiled regular expression */
+	STATE * machine,	/* compiled regular expression */
 	size_t *lenp,		/* where to return matched-length */
 	int no_bol)		/* disallow match at beginning of line */
 {
-    register STATE *m = (STATE *) machine;
+    register STATE *m = machine;
     char *s = str;
     char *ss;
     register RT_STATE *stackp;
@@ -65,7 +81,7 @@ REmatch(char *str,		/* string to test */
 
     *lenp = 0;
 
-    TRACE(("REmatch: %s \"%s\" ~ /pattern/", no_bol ? "any" : "1st", str));
+    TRACE(("REmatch: %s \"%s\" ~ /pattern/\n", no_bol ? "any" : "1st", str));
 
     /* check for the easy case */
     if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {
@@ -105,6 +121,11 @@ REmatch(char *str,		/* string to test */
     u_flag = (stackp + 1)->u;
 
   reswitch:
+    TRACE(("[%s@%d] %03d %-8s %-15s: %s\n", __FILE__, __LINE__,
+	   (int) (m - machine),
+	   REs_type(m),
+	   RE_u_end(u_flag),
+	   cb_ss ? cb_ss : s));
     switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
 	if (strncmp(s, m->s_data.str, (size_t) m->s_len)) {

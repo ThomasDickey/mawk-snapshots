@@ -10,11 +10,12 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
  */
 
-/* $MawkId: regexp.c,v 1.9 2020/07/13 21:32:26 tom Exp $ */
+/* $MawkId: regexp.c,v 1.10 2020/10/16 22:27:03 tom Exp $ */
 
 #include <config.h>
 
 #ifdef LOCAL_REGEXP
+#define REGEXP_INTERNALS
 #		include "mawk.h"
 #define RE_FILL() { goto refill; }
 #define RE_CASE() { goto reswitch; }

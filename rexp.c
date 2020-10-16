@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.29 2020/10/03 08:26:11 tom Exp $
+ * $MawkId: rexp.c,v 1.32 2020/10/16 22:45:57 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -32,34 +32,34 @@ const char *const REerrlist[] =
  /* 7  */ "bad interval expression",
  /* 8  */ ""
 };
-/* E5 is very unlikely to occur */
+/* ERR_5 is very unlikely to occur */
 
 /* This table drives the operator precedence parser */
 /* *INDENT-OFF* */
 #ifdef NO_INTERVAL_EXPR
 static  short  table[8][8] = {
-/*        0   |   CAT  *   +   ?   (   )   */
-/* 0 */  {0,  L,  L,   L,  L,  L,  L,  E1},
-/* | */  {G,  G,  L,   L,  L,  L,  L,  G},
-/* CAT*/ {G,  G,  G,   L,  L,  L,  L,  G},
-/* * */  {G,  G,  G,   G,  G,  G,  E7, G},
-/* + */  {G,  G,  G,   G,  G,  G,  E7, G},
-/* ? */  {G,  G,  G,   G,  G,  G,  E7, G},
-/* ( */  {E2, L,  L,   L,  L,  L,  L,  EQ},
-/* ) */  {G , G,  G,   G,  G,  G,  E7, G}};
+/*        0      |      CAT     *      +      ?      (      )   */
+/* 0 */  {0,     OP_L,  OP_L,   OP_L,  OP_L,  OP_L,  OP_L,  ERR_1},
+/* | */  {OP_G,  OP_G,  OP_L,   OP_L,  OP_L,  OP_L,  OP_L,  OP_G},
+/* CAT*/ {OP_G,  OP_G,  OP_G,   OP_L,  OP_L,  OP_L,  OP_L,  OP_G},
+/* * */  {OP_G,  OP_G,  OP_G,   OP_G,  OP_G,  OP_G,  ERR_7, OP_G},
+/* + */  {OP_G,  OP_G,  OP_G,   OP_G,  OP_G,  OP_G,  ERR_7, OP_G},
+/* ? */  {OP_G,  OP_G,  OP_G,   OP_G,  OP_G,  OP_G,  ERR_7, OP_G},
+/* ( */  {ERR_2, OP_L,  OP_L,   OP_L,  OP_L,  OP_L,  OP_L,  OP_EQ},
+/* ) */  {OP_G , OP_G,  OP_G,   OP_G,  OP_G,  OP_G,  ERR_7, OP_G}};
 #else
 static  short  table[10][10]  =  {
-/*        0    |   CAT   *   +   ?   (   )   {   }  */
-/* 0 */   {0,  L,  L,    L,  L,  L,  L,  E1, E7, L},
-/* | */   {G,  G,  L,    L,  L,  L,  L,  G,  G,  G},
-/* CAT*/  {G,  G,  G,    L,  L,  L,  L,  G,  L,  G},
-/* * */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
-/* + */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
-/* ? */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  G},
-/* ( */   {E2, L,  L,    L,  L,  L,  L,  EQ, G,  G},
-/* ) */   {G , G,  G,    G,  G,  G,  E7, G,  E7, G},
-/* { */   {G,  G,  G,    G,  G,  G,  E7, G,  G,  EQ},
-/* } */   {G , G,  G,    G,  G,  G,  E7, G,  E7, G}   };
+/*       0       |      CAT    *      +      ?      (      )      {      }  */
+/* 0 */  {0,     OP_L,  OP_L,  OP_L,  OP_L,  OP_L,  OP_L,  ERR_1, ERR_7, OP_L},
+/* | */  {OP_G,  OP_G,  OP_L,  OP_L,  OP_L,  OP_L,  OP_L,  OP_G,  OP_G,  OP_G},
+/* CAT*/ {OP_G,  OP_G,  OP_G,  OP_L,  OP_L,  OP_L,  OP_L,  OP_G,  OP_L,  OP_G},
+/* * */  {OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  OP_G,  OP_G},
+/* + */  {OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  OP_G,  OP_G},
+/* ? */  {OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  OP_G,  OP_G},
+/* ( */  {ERR_2, OP_L,  OP_L,  OP_L,  OP_L,  OP_L,  OP_L,  OP_EQ, OP_G,  OP_G},
+/* ) */  {OP_G , OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  ERR_7, OP_G},
+/* { */  {OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  OP_G,  OP_EQ},
+/* } */  {OP_G , OP_G,  OP_G,  OP_G,  OP_G,  OP_G,  ERR_7, OP_G,  ERR_7, OP_G}   };
 #endif
 /* *INDENT-ON* */
 
@@ -115,7 +115,7 @@ typedef struct {
     int prec;
 } OPS;
 
-PTR
+STATE *
 REcompile(char *re, size_t len)
 {
     MACHINE m_stack[STACKSZ];
@@ -131,11 +131,11 @@ REcompile(char *re, size_t len)
     if (len == 0) {
 	STATE *p = (STATE *) RE_malloc(sizeof(STATE));
 	p->s_type = M_ACCEPT;
-	return (PTR) p;
+	return p;
     }
 
     if (setjmp(err_buf))
-	return (PTR) 0;
+	return NULL;
     /* we used to try to recover memory left on machine stack ;
        but now m_ptr is in a register so it won't be right unless
        we force it out of a register which isn't worth the trouble */
@@ -168,7 +168,7 @@ REcompile(char *re, size_t len)
 	     * eg, 
 	     *   convert m{3} to mmm
 	     *   convert m{3,} to mmm* (with a limit of MAX_INT)
-	     *   convert m{3,10} to mm* with a limit of 10
+	     *   convert m{3,10} to mmm* with a limit of 10
 	     */
 	    if (intrvalmin == 0) {	/* zero or more */
 		switch (intrvalmax) {
@@ -246,7 +246,7 @@ REcompile(char *re, size_t len)
 	    if (op_ptr->token == 0) {
 		/*  done   */
 		if (m_ptr == m_stack) {
-		    return (PTR) m_ptr->start;
+		    return m_ptr->start;
 		} else {
 		    /* machines still on the stack  */
 		    RE_panic("values still on machine stack for %s", re);
@@ -261,7 +261,7 @@ REcompile(char *re, size_t len)
 	  default_case:
 #endif
 
-	    if ((op_ptr->prec = table[op_ptr->token][t]) == G) {
+	    if ((op_ptr->prec = table[op_ptr->token][t]) == OP_G) {
 		do {		/* op_pop   */
 
 		    if (op_ptr->token <= T_CAT) {	/*binary op */
@@ -276,7 +276,7 @@ REcompile(char *re, size_t len)
 		    /* if not enough values on machine stack
 		       then we have a missing operand */
 		    if (m_ptr < m_stack)
-			RE_error_trap(-E4);
+			RE_error_trap(-ERR_4);
 
 		    switch (op_ptr->token) {
 		    case T_CAT:
@@ -306,21 +306,21 @@ REcompile(char *re, size_t len)
 
 		    op_ptr--;
 		}
-		while (op_ptr->prec != L);
+		while (op_ptr->prec != OP_L);
 
 		continue;	/* back thru switch at top */
 	    }
 
 	    if (op_ptr->prec < 0) {
-		if (op_ptr->prec == E7)
-		    RE_panic("parser returns E7");
+		if (op_ptr->prec == ERR_7)
+		    RE_panic("parser returns ERR_7");
 		else
 		    RE_error_trap(-op_ptr->prec);
 	    }
 
 	    if (++op_ptr == op_stack + STACKSZ) {
 		/* stack overflow */
-		RE_error_trap(-E5);
+		RE_error_trap(-ERR_5);
 	    }
 
 	    op_ptr->token = t;
@@ -328,7 +328,7 @@ REcompile(char *re, size_t len)
 
 	if (m_ptr == m_stack + (STACKSZ - 1)) {
 	    /*overflow */
-	    RE_error_trap(-E5);
+	    RE_error_trap(-ERR_5);
 	}
 
 	t = RE_lex(m_ptr + 1);
@@ -336,11 +336,11 @@ REcompile(char *re, size_t len)
 }
 
 void
-REdestroy(PTR ptr)
+REdestroy(STATE * ptr)
 {
     int done = 0;
     int n = 0;
-    STATE *q = (STATE *) ptr;
+    STATE *q = ptr;
 
     TRACE(("REdestroy %p\n", ptr));
     while (!done) {
