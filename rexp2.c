@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.30 2020/07/30 20:30:42 tom Exp $
+ * $MawkId: rexp2.c,v 1.32 2020/10/16 23:07:37 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -163,9 +163,9 @@ slow_push(
 int
 REtest(char *str,		/* string to test */
        size_t len,		/* ...its length */
-       PTR machine)		/* compiled regular-expression */
+       STATE * machine)		/* compiled regular-expression */
 {
-    register STATE *m = (STATE *) machine;
+    register STATE *m = machine;
     char *s = str;
     register RT_STATE *stackp;
     int u_flag;
@@ -173,6 +173,8 @@ REtest(char *str,		/* string to test */
     RT_POS_ENTRY *sp;
     int t;			/*convenient temps */
     STATE *tm;
+
+    TRACE(("REtest: \"%s\" ~ /pattern/\n", str));
 
     /* handle the easy case quickly */
     if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {

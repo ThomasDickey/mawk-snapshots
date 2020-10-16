@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.45 2020/09/13 17:24:47 tom Exp $
+ * $MawkId: rexp0.c,v 1.46 2020/10/16 22:19:44 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -137,7 +137,7 @@ do_intervals(
     intrvalmax = 0;
     if (!isdigit((UChar) * p) && *p != ',')	/* error */
     {
-	RE_error_trap(-E7);
+	RE_error_trap(-ERR_7);
     }
 
     if (*p != ',') {
@@ -162,7 +162,7 @@ do_intervals(
 	    } else {
 		p++;
 		*pp = p;
-		RE_error_trap(-E7);
+		RE_error_trap(-ERR_7);
 	    }
 	}
     } else {
@@ -173,14 +173,14 @@ do_intervals(
 	    intrvalmax = intrvalmax * 10 + *p++ - '0';
 	} else if ((UChar) * p == R_CURL) {
 	    if (intrvalmax < intrvalmin) {
-		RE_error_trap(-E7);
+		RE_error_trap(-ERR_7);
 	    }
 	    p++;
 	    break;
 	} else {
 	    p++;
 	    *pp = p;
-	    RE_error_trap(-E7);
+	    RE_error_trap(-ERR_7);
 	}
     }
 
@@ -559,12 +559,12 @@ lookup_cclass(char **start)
     name = (*start += 2);	/* point past "[:" */
     colon = strchr(name, ':');
     if (colon == 0 || colon[1] != ']') {
-	RE_error_trap(-E3);
+	RE_error_trap(-ERR_3);
     }
 
     size = (size_t) (colon - *start);	/* length of name */
     if (size < 5 || size > 6) {
-	RE_error_trap(-E3);
+	RE_error_trap(-ERR_3);
     }
 
     *start = colon + 2;
@@ -614,7 +614,7 @@ lookup_cclass(char **start)
 	!strncmp(name, cclass_table[item].name, size)) {
 	code = cclass_table[item].code;
     } else {
-	RE_error_trap(-E3);
+	RE_error_trap(-ERR_3);
     }
 
     if ((result = cclass_data[item]) == 0) {
@@ -764,19 +764,19 @@ do_class(char **start, MACHINE * mp)
     for (level = 0, q = p;; ++q) {
 	if (*q == '[' && q[1] == ':') {
 	    if (++level > 1)
-		RE_error_trap(-E3);
+		RE_error_trap(-ERR_3);
 	} else if (*q == ']') {
 	    if (level == 0)
 		break;
 	    if (q[-1] != ':')
-		RE_error_trap(-E3);
+		RE_error_trap(-ERR_3);
 	    --level;
 	} else if (*q == '\\') {
 	    ++q;
 	}
 	if (*q == '\0' && q == (re_str + re_len - 1)) {
 	    /* no closing bracket */
-	    RE_error_trap(-E3);
+	    RE_error_trap(-ERR_3);
 	}
     }
 
