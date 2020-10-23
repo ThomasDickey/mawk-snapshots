@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.32 2020/10/16 22:45:57 tom Exp $
+ * $MawkId: rexp.c,v 1.34 2020/10/23 08:07:50 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -217,12 +217,18 @@ REcompile(char *re, size_t len)
 		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
 		    break;
 		default:
-		    RE_close_limit(m_ptr, intrvalmax);
+		    RE_close_limit(m_ptr, intrvalmin, intrvalmax);
 		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
 		}
-	    } else if (intrvalmin == 1) {	/* one or more */
-		RE_poscl_limit(m_ptr, intrvalmax);
+#ifdef NO_RI_LOOP_UNROLL
+	    } else if (intrvalmin >= 1) {	/* one or more */
+		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
 		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
+#else
+	    } else if (intrvalmin == 1) {	/* one or more */
+		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
+		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
+#endif
 	    } else {		/* n or more */
 		register int i;
 		/* copy 2 copies of m_ptr, use 2nd copy to replace

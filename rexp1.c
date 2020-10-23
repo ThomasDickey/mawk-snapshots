@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.20 2020/07/30 22:40:05 tom Exp $
+ * $MawkId: rexp1.c,v 1.21 2020/10/23 00:28:14 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -29,6 +29,7 @@ new_TWO(
     mp->start->s_type = (SType) type;
     mp->stop->s_type = M_ACCEPT;
 #ifndef NO_INTERVAL_EXPR
+    mp->start->it_min = 1;
     mp->start->it_max = MAX__INT;
     mp->start->it_cnt = 0;
 #endif
@@ -179,20 +180,43 @@ ignore_star_star(MACHINE * mp)
 /*  replace m with m*  limited to the max iterations 
         (variation of m*   closure)   */
 void
-RE_close_limit(MACHINE * mp, Int ilimit)
+RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
 {
+#ifdef NO_RI_LOOP_UNROLL
+    STATE *s;
+
+    TRACE(("RE_close_limit " INT_FMT ".." INT_FMT "\n", min_limit, max_limit));
+    if ((s = RE_close(mp)) != 0) {
+	if (s->s_type == M_2JC) {
+	    s->it_min = min_limit;
+	    s->it_max = max_limit;
+	}
+    }
+#else
     RE_close(mp);
-    RE_set_limit(mp->start, ilimit);
+    RE_set_limit(mp->start, min_limit, max_limit);
+#endif
 }
 
 /*  replace m with m+  limited to the max iterations 
      which is one or more, limited
         (variation of m+   positive closure)   */
 void
-RE_poscl_limit(MACHINE * mp, Int ilimit)
+RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit)
 {
+#ifdef NO_RI_LOOP_UNROLL
+    STATE *s;
+    TRACE(("RE_poscl_limit " INT_FMT ".." INT_FMT "\n", min_limit, max_limit));
+    if ((s = RE_poscl(mp)) != NULL) {
+	if (s->s_type == M_2JC) {
+	    s->it_min = min_limit;
+	    s->it_max = max_limit;
+	}
+    }
+#else
     RE_poscl(mp);
-    RE_set_limit(mp->start, ilimit);
+    RE_set_limit(mp->start, min_limit, max_limit);
+#endif
 }
 #endif /* ! NO_INTERVAL_EXPR */
 
@@ -200,14 +224,14 @@ RE_poscl_limit(MACHINE * mp, Int ilimit)
 
 /*  replace m by m*  (zero or more) */
 
-void
+STATE *
 RE_close(MACHINE * mp)
 {
     register STATE *p;
     size_t sz;
 
     if (ignore_star_star(mp))
-	return;
+	return NULL;
     /*
      *                2JA end
      * loop:
@@ -228,22 +252,25 @@ RE_close(MACHINE * mp)
     (++p)->s_type = M_SAVE_POS;
     (p += sz)->s_type = M_2JC;
 #ifndef NO_INTERVAL_EXPR
+    p->it_min = 1;
     p->it_max = MAX__INT;
 #endif
     p->s_data.jump = -(int) sz;
     (p + 1)->s_type = M_ACCEPT;
+
+    return p;
 }
 
 /*  replace m  by  m+  (positive closure - one or more)  */
 
-void
+STATE *
 RE_poscl(MACHINE * mp)
 {
     register STATE *p;
     size_t sz;
 
     if (ignore_star_star(mp))
-	return;
+	return NULL;
     /*
      * loop:
      *          SAVE_POS
@@ -261,10 +288,13 @@ RE_poscl(MACHINE * mp)
     p += sz - 1;
     p->s_type = M_2JC;
 #ifndef NO_INTERVAL_EXPR
+    p->it_min = 1;
     p->it_max = MAX__INT;
 #endif
     p->s_data.jump = -((int) sz);
     (p + 1)->s_type = M_ACCEPT;
+
+    return p;
 }
 
 /* replace  m  by  m? (zero or one)  */

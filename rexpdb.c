@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.21 2020/10/16 22:43:52 tom Exp $
+ * $MawkId: rexpdb.c,v 1.23 2020/10/23 23:32:39 tom Exp $
  */
 
 #include "rexp.h"
@@ -78,8 +78,17 @@ REmprint(STATE * m, FILE *f)
 	case M_2JC:
 	    fprintf(f, "\t%03d", line + p->s_data.jump);
 #ifndef NO_INTERVAL_EXPR
-	    if (p->it_max != MAX__INT)
-		fprintf(f, "," INT_FMT, p->it_max);
+	    if (p->it_min != 1 || p->it_max != MAX__INT) {
+		fprintf(f, " %c", L_CURL);
+		if (p->it_min != 0)
+		    fprintf(f, INT_FMT, p->it_min);
+		if (p->it_max != p->it_min) {
+		    fprintf(f, ",");
+		    if (p->it_max != MAX__INT)
+			fprintf(f, INT_FMT, p->it_max);
+		}
+		fprintf(f, "%c", R_CURL);
+	    }
 #endif
 	    break;
 	case M_CLASS:
