@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.37 2020/10/16 22:27:03 tom Exp $
+ * $MawkId: rexp.h,v 1.38 2020/10/22 22:57:48 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -68,6 +68,7 @@ typedef struct {
 	int jump;
     } s_data;
 #ifndef NO_INTERVAL_EXPR
+    Int it_min;			/* used for s_type == M_2JC */
     Int it_max;			/* used for s_type == M_2JC */
     Int it_cnt;
 #endif
@@ -161,14 +162,14 @@ extern MACHINE RE_str(char *, size_t);
 extern MACHINE RE_class(BV *);
 extern void RE_cat(MACHINE *, MACHINE *);
 extern void RE_or(MACHINE *, MACHINE *);
-extern void RE_close(MACHINE *);
-extern void RE_poscl(MACHINE *);
+extern STATE *RE_close(MACHINE *);
+extern STATE *RE_poscl(MACHINE *);
 extern void RE_01(MACHINE *);
 extern void RE_panic(const char *, ...) GCC_NORETURN GCC_PRINTFLIKE(1,2);
 
 #ifndef NO_INTERVAL_EXPR
-extern void RE_close_limit(MACHINE *, Int);
-extern void RE_poscl_limit(MACHINE *, Int);
+extern void RE_close_limit(MACHINE *, Int, Int);
+extern void RE_poscl_limit(MACHINE *, Int, Int);
 extern void duplicate_m(MACHINE *, MACHINE *);
 #endif
 
@@ -245,16 +246,22 @@ RE_init_it_cnt(STATE * s)
 #endif
 
 #ifndef NO_INTERVAL_EXPR
+#undef NO_RI_LOOP_UNROLL	/* experimental 2020/10/22 -TD */
+#ifdef NO_RI_LOOP_UNROLL
+#else
 static void
-RE_set_limit(STATE * s, Int limit)
+RE_set_limit(STATE * s, Int minlimit, Int maxlimit)
 {
     STATE *p = s;
     while (p->s_type < M_ACCEPT) {
-	if (p->s_type == M_2JC)
-	    p->it_max = limit;
+	if (p->s_type == M_2JC) {
+	    p->it_min = minlimit;
+	    p->it_max = maxlimit;
+	}
 	p++;
     }
 }
+#endif /* ! NO_RI_LOOP_UNROLL */
 #endif /* ! NO_INTERVAL_EXPR */
 
 #endif /* LOCAL_REGEXP */
