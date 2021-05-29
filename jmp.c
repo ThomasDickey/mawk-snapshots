@@ -1,6 +1,6 @@
 /********************************************
 jmp.c
-copyright 2009,2010, Thomas E. Dickey
+copyright 2009-2010,2021, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,28 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.c,v 1.6 2010/12/10 17:00:00 tom Exp $
- * @Log: jmp.c,v @
- * Revision 1.4  1995/06/18  19:42:19  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.3  1995/04/21  14:20:16  mike
- * move_level variable to fix bug in arglist patching of moved code.
- *
- * Revision 1.2  1993/07/14  13:17:49  mike
- * rm SIZE_T and run thru indent
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:15  mike
- * move source to cvs
- *
- * Revision 5.3	 1993/01/09  19:03:44  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.2	 1993/01/07  02:50:33  mike
- * relative vs absolute code
- *
- * Revision 5.1	 1991/12/05  07:56:10  brennan
- * 1.1 pre-release
+ * $MawkId: jmp.c,v 1.7 2021/05/29 00:17:15 tom Exp $
  */
 
 /* this module deals with back patching jumps, breaks and continues,
@@ -87,10 +66,10 @@ code_jmp(int jtype, INST * target)
 void
 patch_jmp(INST * target)
 {
-    register JMP *p;
-    register INST *source;	/* jmp starts here */
-
     if (!error_state) {
+	register JMP *p;
+	register INST *source;	/* jmp starts here */
+
 #ifdef	DEBUG
 	if (!jmp_top)
 	    bozo("jmp stack underflow");
@@ -147,8 +126,7 @@ BC_insert(int type, INST * address)
 void
 BC_clear(INST * B_address, INST * C_address)
 {
-    register BC *p, *q;
-    INST *source;
+    register BC *p;
 
     if (error_state)
 	return;
@@ -156,6 +134,9 @@ BC_clear(INST * B_address, INST * C_address)
     p = bc_top;
     /* pop down to the mark node */
     while (p->type) {
+	INST *source;
+	register BC *q;
+
 	source = code_base + p->source_offset;
 	source->op = (int) ((p->type == 'B' ? B_address : C_address)
 			    - source);

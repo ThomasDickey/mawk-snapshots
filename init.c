@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2017,2020, Thomas E. Dickey
+copyright 2008-2020,2021, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.73 2020/09/25 20:55:05 tom Exp $
+ * $MawkId: init.c,v 1.74 2021/05/29 00:00:53 tom Exp $
  */
 
 /* init.c */
@@ -197,7 +197,6 @@ static W_OPTIONS
 parse_w_opt(char *source, char **next, int *args)
 {
     W_OPTIONS result = W_UNKNOWN;
-    int n;
     int match = -1;
     const char *first;
 
@@ -210,6 +209,7 @@ parse_w_opt(char *source, char **next, int *args)
 
     first = source;
     if (*source != '\0') {
+	int n;
 	char mark;
 	while (*source != '\0' && *source != ',' && *source != '=') {
 	    ++source;
@@ -702,14 +702,16 @@ load_environ(ARRAY ENV)
 {
     CELL c;
     register char **p = environ;	/* walks environ */
-    char *s;			/* looks for the '=' */
-    CELL *cp;			/* pts at ENV[&c] */
 
     c.type = C_STRING;
 
     while (*p) {
+	char *s;		/* looks for the '=' */
+
 	if ((s = strchr(*p, '='))) {	/* shouldn't fail */
+	    CELL *cp;		/* pts at ENV[&c] */
 	    size_t len = (size_t) (s - *p);
+
 	    c.ptr = (PTR) new_STRING0(len);
 	    memcpy(string(&c)->str, *p, len);
 	    s++;

@@ -1,6 +1,6 @@
 /********************************************
 kw.c
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2021, Thomas E. Dickey
 copyright 1991-1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: kw.c,v 1.8 2020/08/25 20:33:33 tom Exp $
+ * $MawkId: kw.c,v 1.9 2021/05/29 00:17:26 tom Exp $
  */
 
 /* kw.c */
@@ -60,9 +60,10 @@ void
 kw_init(void)
 {
     register const struct kw *p = keywords;
-    register SYMTAB *q;
 
     while (p->text[0]) {
+	register SYMTAB *q;
+
 	q = insert(p->text);
 	q->type = ST_KEYWORD;
 	q->stval.kw = p++->kw;

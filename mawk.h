@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2019,2020 Thomas E. Dickey
+copyright 2008-2020,2021 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.60 2020/09/25 20:54:52 tom Exp $
+ * $MawkId: mawk.h,v 1.62 2021/05/28 22:02:11 tom Exp $
  */
 
 /*  mawk.h  */
@@ -31,6 +31,12 @@ the GNU General Public License, version 2, 1991.
 #include <assert.h>
 
 #include "types.h"
+
+#ifdef HAVE_STDNORETURN_H
+#include <stdnoreturn.h>
+#undef GCC_NORETURN
+#define GCC_NORETURN STDC_NORETURN
+#endif
 
 #ifndef GCC_NORETURN
 #define GCC_NORETURN		/* nothing */
@@ -149,8 +155,8 @@ extern CELL *repl_cpy(CELL *, CELL *);
 extern void DB_cell_destroy(CELL *);
 extern void overflow(const char *, unsigned);
 extern void rt_overflow(const char *, unsigned);
-extern void rt_error(const char *,...) GCC_NORETURN GCC_PRINTFLIKE(1,2);
-extern void mawk_exit(int) GCC_NORETURN;
+extern GCC_NORETURN void rt_error(const char *,...) GCC_PRINTFLIKE(1,2);
+extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);
 extern INST *da_this(INST *, INST *, FILE *);
 extern char *rm_escape(char *, size_t *);
@@ -169,7 +175,7 @@ extern int yylex(void);
 #endif
 extern void yyerror(const char *);
 
-extern void bozo(const char *) GCC_NORETURN;
+extern GCC_NORETURN void bozo(const char *);
 extern void errmsg(int, const char *,...) GCC_PRINTFLIKE(2,3);
 extern void compile_error(const char *,...) GCC_PRINTFLIKE(1,2);
 

@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.55 2020/09/24 22:08:12 tom Exp $
+# $MawkId: Makefile.in,v 1.56 2021/05/28 22:49:07 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2016,2020 Thomas E. Dickey
+# copyright 2009-2020,2021 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -57,7 +57,7 @@ CTAGS		= @CTAGS@
 ETAGS		= @ETAGS@
 
 LINT		= @LINT@
-LINTOPTS	= 
+LINTOPTS	= @LINT_OPTS@
 
 INSTALL         = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@

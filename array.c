@@ -1,8 +1,8 @@
 /* array.c */
 /*
-$MawkId: array.c,v 1.25 2020/08/01 09:30:48 tom Exp $
+$MawkId: array.c,v 1.26 2021/05/28 23:59:47 tom Exp $
 
-copyright 2009-2019,2020 Thomas E. Dickey
+copyright 2009-2020,2021 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -274,9 +274,9 @@ array_loop_vector(
 		     ARRAY A,
 		     size_t *sizep)
 {
-    STRING **ret;
     *sizep = A->size;
     if (A->size > 0) {
+	STRING **ret;
 	if (!(A->type & AY_STR))
 	    add_string_associations(A);
 	ret = (STRING **) zmalloc(A->size * sizeof(STRING *));

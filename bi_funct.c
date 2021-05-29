@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2021, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.113 2020/08/28 08:20:21 tom Exp $
+ * $MawkId: bi_funct.c,v 1.114 2021/05/28 23:38:12 tom Exp $
  */
 
 #include <mawk.h>
@@ -193,7 +193,6 @@ bi_index(CELL *sp)
 {
     size_t idx;
     size_t len;
-    const char *p;
 
     TRACE_FUNC("bi_index", sp);
 
@@ -202,6 +201,7 @@ bi_index(CELL *sp)
 	cast2_to_s(sp);
 
     if ((len = string(sp + 1)->len)) {
+	const char *p;
 	idx = (size_t) ((p = str_str(string(sp)->str,
 				     string(sp)->len,
 				     string(sp + 1)->str,
@@ -1060,8 +1060,8 @@ bi_sub(CELL *sp)
     CELL *cp;			/* pointer to the replacement target */
     CELL tc;			/* build the new string here */
     CELL sc;			/* copy of the target CELL */
-    char *front, *middle, *back;	/* pieces */
-    size_t front_len, middle_len, back_len;
+    char *front, *middle;	/* pieces */
+    size_t middle_len;
 
     TRACE_FUNC("bi_sub", sp);
 
@@ -1085,9 +1085,9 @@ bi_sub(CELL *sp)
 		     0);
 
     if (middle != 0) {
-	front_len = (size_t) (middle - front);
-	back = middle + middle_len;
-	back_len = string(&sc)->len - front_len - middle_len;
+	size_t front_len = (size_t) (middle - front);
+	char *back = middle + middle_len;
+	size_t back_len = string(&sc)->len - front_len - middle_len;
 
 	if ((sp + 1)->type == C_REPLV) {
 	    STRING *sval = new_STRING0(middle_len);
@@ -1146,7 +1146,6 @@ gsub3(PTR re, CELL *repl, CELL *target)
 
     int skip0 = -1;
     size_t howmuch;
-    char *where;
 
     TRACE(("called gsub3\n"));
 
@@ -1163,11 +1162,11 @@ gsub3(PTR re, CELL *repl, CELL *target)
     output = new_STRING0(limit);
 
     for (j = 0; j <= (int) input->len; ++j) {
-	where = REmatch(input->str + j,
-			input->len - (size_t) j,
-			cast_to_re(re),
-			&howmuch,
-			(j != 0));
+	char *where = REmatch(input->str + j,
+			      input->len - (size_t) j,
+			      cast_to_re(re),
+			      &howmuch,
+			      (j != 0));
 	/*
 	 * REmatch returns a non-null pointer if it found a match.  But
 	 * that can be an empty string, e.g., for "*" or "?".  The length
