@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20201023
+MANIFEST for mawk, version t20210528
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -133,6 +133,10 @@ package/debian/source           subdirectory
 package/debian/source/format    debian build script
 package/debian                  subdirectory
 package/debian/watch            debian build-script
+package/freebsd                 subdirectory
+package/freebsd/Makefile        FreeBSD build-script
+package/freebsd/distinfo        FreeBSD build-script
+package/freebsd/pkg-descr       FreeBSD build-script
 package                         subdirectory
 package/mawk.spec               RPM script for mawk
 test                            subdirectory

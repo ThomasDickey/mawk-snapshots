@@ -1,6 +1,6 @@
 /********************************************
 fin.c
-copyright 2008-2018,2020.  Thomas E. Dickey
+copyright 2008-2020,2021.  Thomas E. Dickey
 copyright 1991-1995,1996.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.47 2020/01/20 01:56:30 tom Exp $
+ * $MawkId: fin.c,v 1.48 2021/05/28 23:59:35 tom Exp $
  */
 
 /* fin.c */
@@ -461,7 +461,6 @@ open_main(void)
 static FIN *
 next_main(int open_flag)	/* called by open_main() if on */
 {
-    register CELL *cp;
     CELL argc;			/* copy of ARGC */
     CELL c_argi;		/* cell copy of argi */
     CELL argval;		/* copy of ARGV[c_argi] */
@@ -482,6 +481,8 @@ next_main(int open_flag)	/* called by open_main() if on */
 	cast1_to_d(&argc);
 
     while (argi < argc.dval) {
+	register CELL *cp;
+
 	c_argi.dval = argi;
 	argi += 1.0;
 

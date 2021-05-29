@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2016,2020 Thomas E. Dickey
+copyright 2008-2020,2021 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.38 2020/09/07 12:12:20 tom Exp $
+ * $MawkId: field.c,v 1.39 2021/05/29 00:00:11 tom Exp $
  */
 
 /* field.c */
@@ -517,8 +517,8 @@ build_field0(void)
 	STRING *ofs, *tail;
 	size_t len;
 	register CELL *cp;
-	register char *p, *q;
 	int cnt;
+	register char *p;
 	CELL **fbp, *cp_limit;
 
 	cast1_to_s(cellcpy(&c, OFS));
@@ -571,7 +571,10 @@ build_field0(void)
 	fbp = fbankv;
 	cp = field + 1;
 	cp_limit = field + FBANK_SZ;
+
 	while (cnt-- > 0) {
+	    register char *q;
+
 	    memcpy(p, string(cp)->str, string(cp)->len);
 	    p += string(cp)->len;
 	    /* if not really string, free temp use of ptr */
@@ -612,11 +615,12 @@ slow_cell_assign(CELL *target, CELL *source)
 	size_t i;
 	for (i = 1; i < fbankv_num_chunks * FBANKV_CHUNK_SIZE; i++) {
 	    CELL *bank_start = fbankv[i];
-	    CELL *bank_end = bank_start + FBANK_SZ;
+	    CELL *bank_end;
 
 	    if (bank_start == 0)
 		break;
 
+	    bank_end = bank_start + FBANK_SZ;
 	    if (bank_start <= target && target < bank_end) {
 		/* it is a field */
 		field_assign(target, source);

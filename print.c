@@ -1,6 +1,6 @@
 /********************************************
 print.c
-copyright 2008-2016,2020.  Thomas E. Dickey
+copyright 2008-2020,2021.  Thomas E. Dickey
 copyright 1991-1996,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.39 2020/09/13 17:31:07 tom Exp $
+ * $MawkId: print.c,v 1.40 2021/05/29 00:00:22 tom Exp $
  */
 
 #include "mawk.h"
@@ -180,7 +180,6 @@ make_sfmt(const char *format,
 	  int *prec,
 	  int *flags)
 {
-    int ch;
     int parts = 0;
     int digits = 0;
     int value = 0;
@@ -217,6 +216,7 @@ make_sfmt(const char *format,
     }
 
     while (*format != '\0' && success) {
+	int ch;
 	switch (ch = *format++) {
 	case '0':
 	case '1':

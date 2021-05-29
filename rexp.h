@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2021, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.38 2020/10/22 22:57:48 tom Exp $
+ * $MawkId: rexp.h,v 1.39 2021/05/28 08:23:39 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -21,7 +21,7 @@ the GNU General Public License, version 2, 1991.
 #include "nstd.h"
 #include "types.h"
 #include <stdio.h>
-#include  <setjmp.h>
+#include <setjmp.h>
 
 extern PTR RE_malloc(size_t);
 extern PTR RE_realloc(void *, size_t);
@@ -165,7 +165,7 @@ extern void RE_or(MACHINE *, MACHINE *);
 extern STATE *RE_close(MACHINE *);
 extern STATE *RE_poscl(MACHINE *);
 extern void RE_01(MACHINE *);
-extern void RE_panic(const char *, ...) GCC_NORETURN GCC_PRINTFLIKE(1,2);
+extern GCC_NORETURN void RE_panic(const char *, ...) GCC_PRINTFLIKE(1,2);
 
 #ifndef NO_INTERVAL_EXPR
 extern void RE_close_limit(MACHINE *, Int, Int);

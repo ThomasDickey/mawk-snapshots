@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2019,2020, Thomas E. Dickey
+copyright 2008-2020,2021, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.29 2020/08/24 08:26:08 tom Exp $
+ * $MawkId: da.c,v 1.30 2021/05/29 00:00:01 tom Exp $
  */
 
 /*  da.c  */
@@ -153,7 +153,6 @@ INST *
 da_this(INST * p, INST * start, FILE *fp)
 {
     CELL *cp;
-    const char *name;
 
     /* print the relative code address (label) */
     fprintf(fp, "%03ld ", (long) (p - start));
@@ -225,6 +224,7 @@ da_this(INST * p, INST * start, FILE *fp)
 	else if (cp == &fs_shadow)
 	    fprintf(fp, "pushi\t@fs_shadow\n");
 	else {
+	    const char *name;
 	    if (cp > NF && cp <= LAST_PFIELD)
 		name = reverse_find(ST_FIELD, &cp);
 	    else
