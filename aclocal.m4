@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.98 2021/05/01 21:49:36 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.99 2021/06/13 23:45:41 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -583,7 +583,7 @@ if test "x$ifelse([$2],,CLANG_COMPILER,[$2])" = "xyes" ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 6 updated: 2021/01/01 13:31:04
+dnl CF_CONST_X_STRING version: 7 updated: 2021/06/07 17:39:17
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -613,7 +613,7 @@ AC_TRY_COMPILE(
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
 ],
-[String foo = malloc(1); (void)foo],[
+[String foo = malloc(1); free((void*)foo)],[
 
 AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 	AC_TRY_COMPILE(
@@ -1801,19 +1801,29 @@ AC_DEFUN([CF_MSG_LOG],[
 echo "${as_me:-configure}:__oline__: testing $* ..." 1>&AC_FD_CC
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NO_LEAKS_OPTION version: 8 updated: 2021/01/05 20:05:09
+dnl CF_NO_LEAKS_OPTION version: 9 updated: 2021/06/13 19:45:41
 dnl ------------------
 dnl see CF_WITH_NO_LEAKS
+dnl
+dnl $1 = option/name
+dnl $2 = help-text
+dnl $3 = symbol to define if the option is set
+dnl $4 = additional actions to take if the option is set
 AC_DEFUN([CF_NO_LEAKS_OPTION],[
 AC_MSG_CHECKING(if you want to use $1 for testing)
 AC_ARG_WITH($1,
 	[$2],
-	[AC_DEFINE_UNQUOTED($3,1,"Define to 1 if you want to use $1 for testing.")ifelse([$4],,[
+	[case "x$withval" in
+	(x|xno) ;;
+	(*)
+		: "${with_cflags:=-g}"
+		: "${enable_leaks:=no}"
+		with_$1=yes
+		AC_DEFINE_UNQUOTED($3,1,"Define to 1 if you want to use $1 for testing.")ifelse([$4],,[
 	 $4
 ])
-	: "${with_cflags:=-g}"
-	: "${enable_leaks:=no}"
-	 with_$1=yes],
+		;;
+	esac],
 	[with_$1=])
 AC_MSG_RESULT(${with_$1:-no})
 
@@ -2205,7 +2215,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 15 updated: 2021/01/02 09:31:20
+dnl CF_SRAND version: 16 updated: 2021/06/08 18:08:14
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2231,7 +2241,7 @@ AC_TRY_LINK([
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
-],[long seed = 1; $cf_srand_func(seed); seed = $cf_rand_func()],
+],[long seed = 1; $cf_srand_func(seed); seed = $cf_rand_func(); (void)seed],
 [cf_cv_srand_func=$cf_func
  break])
 done
