@@ -1,15 +1,16 @@
 Summary: mawk - pattern scanning and text processing language
-%define AppProgram mawk
-%define AppVersion 1.3.4
-%define AppRelease 20210824
-# $MawkId: mawk.spec,v 1.92 2021/08/24 08:26:27 tom Exp $
+%global AppProgram mawk
+%global AppVersion 1.3.4
+%global AppRelease 20221229
+%global MySite https://invisible-island.net
+# $MawkId: mawk.spec,v 1.94 2022/12/29 16:15:10 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppRelease}
 License: GPLv2
 Group: Applications/Development
-URL: ftp://ftp.invisible-island.net/%{AppProgram}
-Source0: %{AppProgram}-%{AppVersion}-%{AppRelease}.tgz
+URL: %{MySite}/%{AppProgram}
+Source0: %{MySite}/archives/%{AppProgram}-%{AppVersion}-%{AppRelease}.tgz
 Packager: Thomas Dickey <dickey@invisible-island.net>
 
 %description
@@ -51,6 +52,9 @@ strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Thu Dec 29 2022 Thomas Dickey
+- update URLs
 
 * Mon Jan 06 2020 Thomas Dickey
 - use hardening flags

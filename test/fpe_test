@@ -1,7 +1,7 @@
 #!/bin/sh
-# $MawkId: fpe_test,v 1.7 2010/12/10 17:00:00 tom Exp $
+# $MawkId: fpe_test,v 1.8 2022/12/29 15:20:09 tom Exp $
 ###############################################################################
-# copyright 2009,2010, Thomas E. Dickey
+# copyright 2009-2010,2022, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 1994,1995, Michael D. Brennan
 #
@@ -25,6 +25,9 @@
 
 PROG="${MAWK:-../mawk}"
 
+: "${EGREP:=grep -E}"
+: "${FGREP:=grep -F}"
+
 PATH=/bin:/usr/bin
 export PATH
 
@@ -46,22 +49,22 @@ test3='BEGIN{ print sqrt(-8) }'
 
 
 echo "testing division by zero"
-echo $PROG "$test1"
+echo "$PROG" "$test1"
 $PROG "$test1"
 ret1=$?
 echo
 
 echo "testing overflow"
-echo $PROG "$test2"
+echo "$PROG" "$test2"
 $PROG "$test2"
 ret2=$?
 echo
 
 echo "testing domain error"
-echo $PROG "$test3"
-$PROG "$test3"  > $STDOUT
+echo "$PROG" "$test3"
+$PROG "$test3"  > "$STDOUT"
 ret3=$?
-cat $STDOUT
+cat "$STDOUT"
 echo
 
 
@@ -85,7 +88,7 @@ echo return3 = $ret3
 [ $ret2 -gt 128 ] && { echo test2 failed ; exception=1 ; }
 [ $ret3 -gt 128 ] && { echo test3 failed ; exception=1 ; }
 
-[ "$exception" = 1 ] && { rm -f *core* $STDOUT ; exit 1 ; }
+[ "$exception" = 1 ] && { rm -f ./*core* "$STDOUT" ; exit 1 ; }
 
 
 same=0
@@ -94,37 +97,37 @@ same=0
 
 
 if [ $same = 1 ]
-   then
-   if [ $ret1 = 0 ]
-      then
-	echo "results consistent: ignoring floating exceptions"
-	# some versions of hpux print NAN as ?
-	if egrep '[nN][aA][nN]|\?' $STDOUT  > /dev/null
+then
+	if [ $ret1 = 0 ]
 	then
-	     :
-	# MSYS / MinGW uses a different string...
-	elif fgrep '#IND' $STDOUT > /dev/null
-	then
-	     echo "found MinGW hack for NaN..."
-	else
-	     echo "but the library is not IEEE754 compatible"
-	     echo "test 3 failed"
-	     exit 1
+		echo "results consistent: ignoring floating exceptions"
+		# some versions of hpux print NAN as ?
+		if $EGREP '[nN][aA][nN]|\?' "$STDOUT"  > /dev/null
+		then
+			:
+		# MSYS / MinGW uses a different string...
+		elif $FGREP '#IND' "$STDOUT" > /dev/null
+		then
+			echo "found MinGW hack for NaN..."
+		else
+			echo "but the library is not IEEE754 compatible"
+			echo "test 3 failed"
+			exit 1
+		fi
+		else echo "results consistent: trapping floating exceptions"
 	fi
-      else echo "results consistent: trapping floating exceptions"
-   fi
 
-   trap  0
-   rm -f $STDOUT
-   exit 0
+	trap  0
+	rm -f "$STDOUT"
+	exit 0
 
-   else
-	   cat <<-EOF
+	else
+		cat <<-EOF
 		results are not consistent
 		return values should all be 0 if ignoring FPEs (e.g. with IEEE754)
 		or all 2 if trapping FPEs
 EOF
 
-exit 1
+	exit 1
 fi
-
+# vile: ts=4 sw=4

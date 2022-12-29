@@ -1,7 +1,7 @@
 #!/bin/sh
-# $MawkId: mawktest,v 1.44 2020/09/25 23:53:32 tom Exp $
+# $MawkId: mawktest,v 1.45 2022/12/29 15:22:14 tom Exp $
 ###############################################################################
-# copyright 2008-2014,2020, Thomas E. Dickey
+# copyright 2008-2020,2022, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2010, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -21,6 +21,8 @@
 #
 # It needs to be run from  mawk/test
 # and mawk needs to be in mawk/test or in PATH
+
+: "${FGREP:=grep -F}"
 
 # POSIX shells have functions...
 Fail() {
@@ -96,7 +98,7 @@ MAWKS=no
 if $PROG -W version </dev/null
 then
 	( $PROG -W version </dev/null 2>&1 |head -n 1 |grep mawk >/dev/null ) && MAWKS=yes
-	NULLS=`$PROG -W version 2>&1 </dev/null |fgrep regex |fgrep 'internal' 2>/dev/null`
+	NULLS=`$PROG -W version 2>&1 </dev/null |$FGREP regex |$FGREP 'internal' 2>/dev/null`
 else
 	NULLS=
 fi
@@ -135,7 +137,7 @@ LC_ALL=C $PROG -F '\]' -f wc.awk $dat | cmp -s - "$STDOUT" || Fail "case 7b"
 
 # check that the regexp [\ does not make mawk segfault
 if test "$MAWKS" = "yes" ; then
-LC_ALL=C $PROG -F '[\' 2> "$STDERR" || Fail "case 8"
+LC_ALL=C $PROG -F "[\\" 2> "$STDERR" || Fail "case 8"
 fi
 
 LC_ALL=C $PROG -F '(^)?)' -f wc.awk $dat > "$STDOUT"
@@ -260,3 +262,4 @@ echo "##################################################"
 trap 0
 rm -f "$STDOUT"
 exit $ERRS
+# vile: ts=4 sw=4

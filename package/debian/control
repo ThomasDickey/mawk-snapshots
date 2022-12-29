@@ -2,9 +2,9 @@ Source: mawk-cur
 Maintainer: Thomas E. Dickey <dickey@invisible-island.net>
 Section: interpreters
 Priority: optional
-Standards-Version: 3.8.4
-Build-Depends: debhelper (>= 5)
-Homepage: http://invisible-island.net/mawk/
+Standards-Version: 4.6.0.1
+Build-Depends: debhelper (>= 12)
+Homepage: https://invisible-island.net/mawk/
 
 Package: mawk-cur
 Architecture: any
