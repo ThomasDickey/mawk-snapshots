@@ -1,11 +1,11 @@
-dnl $MawkId: aclocal.m4,v 1.101 2022/12/29 15:11:44 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.102 2023/02/01 22:23:35 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
 dnl renamed for consistency by Thomas E Dickey.
 dnl
 dnl ---------------------------------------------------------------------------
-dnl Copyright:  2008-2021,2022 by Thomas E. Dickey
+dnl Copyright:  2008-2022,2023 by Thomas E. Dickey
 dnl
 dnl Permission is hereby granted, free of charge, to any person obtaining a
 dnl copy of this software and associated documentation files (the
@@ -505,7 +505,7 @@ if test ".$system_name" != ".$cf_cv_system_name" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_ENVIRON version: 3 updated: 2010/05/26 16:44:57
+dnl CF_CHECK_ENVIRON version: 4 updated: 2023/01/14 07:48:15
 dnl ----------------
 dnl Check for data that is usually declared in <unistd.h>, e.g., the 'environ'
 dnl variable.  Define a DECL_xxx symbol if we must declare it ourselves.
@@ -520,7 +520,7 @@ AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
 #include <stdlib.h>
 #endif
 #include <unistd.h> ],
-    ifelse([$2],,int,[$2]) x = (ifelse([$2],,int,[$2])) $1,
+    ifelse([$2],,void*,[$2]) x = (ifelse([$2],,void*,[$2])) $1; (void)x,
     [cf_cv_dcl_$1=yes],
     [cf_cv_dcl_$1=no])
 ])
@@ -1285,7 +1285,7 @@ ifdef([AC_FUNC_FSEEKO],[
 ])
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_LOCALE version: 6 updated: 2021/01/02 09:31:20
+dnl CF_LOCALE version: 7 updated: 2023/01/11 04:05:23
 dnl ---------
 dnl Check if we have setlocale() and its header, <locale.h>
 dnl The optional parameter $1 tells what to do if we do have locale support.
@@ -1293,7 +1293,9 @@ AC_DEFUN([CF_LOCALE],
 [
 AC_MSG_CHECKING(for setlocale())
 AC_CACHE_VAL(cf_cv_locale,[
-AC_TRY_LINK([#include <locale.h>],
+AC_TRY_LINK([
+$ac_includes_default
+#include <locale.h>],
 	[setlocale(LC_ALL, "")],
 	[cf_cv_locale=yes],
 	[cf_cv_locale=no])
@@ -1498,7 +1500,7 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FIND_MAX_INT version: 7 updated: 2020/07/30 17:25:18
+dnl CF_MAWK_FIND_MAX_INT version: 8 updated: 2023/01/05 17:52:18
 dnl --------------------
 dnl Try to find a definition of MAX__INT from limits.h else compute.
 AC_DEFUN([CF_MAWK_FIND_MAX_INT],
@@ -1508,10 +1510,10 @@ else
 AC_CHECK_HEADER(values.h,cf_values_h=yes)
 	if test "x$cf_values_h" = xyes ; then
 	AC_TRY_RUN(
-[#include <values.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+[$ac_includes_default
+
+#include <values.h>
+
 int main(void)
 {   FILE *out = fopen("conftest.out", "w") ;
 	unsigned max_uint = 0;

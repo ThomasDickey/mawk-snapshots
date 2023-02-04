@@ -1,16 +1,16 @@
 Summary: mawk - pattern scanning and text processing language
 %global AppProgram mawk
 %global AppVersion 1.3.4
-%global AppRelease 20221229
+%global AppPatched 20230203
 %global MySite https://invisible-island.net
-# $MawkId: mawk.spec,v 1.94 2022/12/29 16:15:10 tom Exp $
+# $MawkId: mawk.spec,v 1.96 2023/02/04 01:03:36 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
-Release: %{AppRelease}
+Release: %{AppPatched}
 License: GPLv2
 Group: Applications/Development
 URL: %{MySite}/%{AppProgram}
-Source0: %{MySite}/archives/%{AppProgram}-%{AppVersion}-%{AppRelease}.tgz
+Source0: %{MySite}/archives/%{AppProgram}-%{AppVersion}-%{AppPatched}.tgz
 Packager: Thomas Dickey <dickey@invisible-island.net>
 
 %description
@@ -21,7 +21,7 @@ prototyping and experimenting with algorithms.
 %prep
 
 %define debug_package %{nil}
-%setup -q -n %{AppProgram}-%{AppVersion}-%{AppRelease}
+%setup -q -n %{AppProgram}-%{AppVersion}-%{AppPatched}
 
 %build
 

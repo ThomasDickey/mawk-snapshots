@@ -1,9 +1,13 @@
--- $MawkId: CHANGES,v 1.328 2022/12/29 15:22:41 tom Exp $
+-- $MawkId: CHANGES,v 1.331 2023/02/04 01:03:36 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230203
+	+ split up do_printf to fix build with fortified mingw stdio.h
+	+ reduce compiler-warnings in configure script checks.
 
 20221229
 	+ fix shellcheck warnings in test-scripts.

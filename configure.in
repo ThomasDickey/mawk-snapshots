@@ -1,7 +1,7 @@
-dnl $MawkId: configure.in,v 1.68 2020/09/24 22:18:21 tom Exp $
+dnl $MawkId: configure.in,v 1.70 2023/02/03 00:55:02 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
-dnl copyright 2008-2019,2020, Thomas E. Dickey
+dnl copyright 2008-2020,2023, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -115,6 +115,9 @@ then
 fi
 AC_SUBST(EXTRAOBJS)
 
+AC_CHECK_DECL(exit)
+AC_CHECK_HEADERS(errno.h fcntl.h sys/wait.h)
+
 AC_CHECK_TYPES([int64_t, uint64_t, long long])
 
 AC_CHECK_SIZEOF(long)
@@ -140,8 +143,6 @@ test "$ac_cv_func_fork" = yes && \
 test "$ac_cv_func_pipe" = yes && \
 test "$ac_cv_func_wait" = yes && \
 AC_DEFINE(HAVE_REAL_PIPES,1,[Define to 1 if we have functions needed to setup Unix pipes])
-
-AC_CHECK_HEADERS(errno.h fcntl.h unistd.h sys/wait.h)
 
 CF_SET_MATH_LIB_VERSION
 CF_MAWK_FIND_MAX_INT
