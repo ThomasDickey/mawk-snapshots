@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.102 2023/02/01 22:23:35 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.103 2023/02/16 00:15:36 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -2287,7 +2287,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 17 updated: 2022/12/02 19:55:38
+dnl CF_SRAND version: 18 updated: 2023/02/15 19:14:44
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2333,9 +2333,7 @@ if test "$cf_cv_srand_func" != unknown ; then
 			;;
 		esac
 		AC_TRY_COMPILE([
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+$ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif

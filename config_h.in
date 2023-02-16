@@ -1,6 +1,6 @@
 /********************************************
 config_h.in
-copyright 2009-2016,2020 Thomas E. Dickey
+copyright 2009-2020,2023 Thomas E. Dickey
  vile:cmode
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: config_h.in,v 1.38 2020/07/31 08:17:41 tom Exp $
+ * $MawkId: config_h.in,v 1.39 2023/02/15 23:54:28 tom Exp $
  * template for config.h
  */
 
@@ -28,11 +28,13 @@ the GNU General Public License, version 2, 1991.
 #undef HAVE_FCNTL_H
 #undef HAVE_FORK
 #undef HAVE_INT64_T
+#undef HAVE_INTTYPES_H
 #undef HAVE_ISNAN
 #undef HAVE_LIMITS_H
 #undef HAVE_LONG_LONG
 #undef HAVE_MATHERR
 #undef HAVE_MATH__LIB_VERSION
+#undef HAVE_MEMORY_H
 #undef HAVE_MKTIME
 #undef HAVE_PIPE
 #undef HAVE_REAL_PIPES
@@ -43,8 +45,13 @@ the GNU General Public License, version 2, 1991.
 #undef HAVE_SIGACTION_SA_SIGACTION
 #undef HAVE_SIGINFO_H
 #undef HAVE_STDINT_H
+#undef HAVE_STDLIB_H
 #undef HAVE_STRFTIME
+#undef HAVE_STRINGS_H
+#undef HAVE_STRING_H
 #undef HAVE_STRTOD_OVF_BUG
+#undef HAVE_SYS_STAT_H
+#undef HAVE_SYS_TYPES_H
 #undef HAVE_SYS_WAIT_H
 #undef HAVE_TDESTROY
 #undef HAVE_TSEARCH
@@ -69,6 +76,7 @@ the GNU General Public License, version 2, 1991.
 #undef SIZEOF_LONG_LONG
 #undef SIZE_T_STDDEF_H
 #undef SIZE_T_TYPES_H
+#undef STDC_HEADERS
 #undef SYSTEM_NAME
 #undef TURN_OFF_FPE_TRAPS
 #undef TURN_ON_FPE_TRAPS

@@ -2,9 +2,10 @@
 # $FreeBSD: head/lang/mawk/Makefile 516890 2019-11-06 14:17:48Z wen $
 
 PORTNAME=	mawk
-DISTVERSION=	1.3.4.20230203
+DISTVERSION=	1.3.4.20230215
 CATEGORIES=	lang
-MASTER_SITES=	ftp://ftp.invisible-island.net/${PORTNAME}/
+MASTER_SITES=	https://invisible-island.net/archives/${PORTNAME}/ \
+		https://invisible-mirror.net/archives/${PORTNAME}/
 
 MAINTAINER=	wen@FreeBSD.org
 COMMENT=	Interpreter for the AWK Programming Language

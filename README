@@ -1,4 +1,4 @@
--- $MawkId: README,v 1.6 2019/01/29 02:05:45 tom Exp $
+-- $MawkId: README,v 1.7 2023/02/16 00:19:21 tom Exp $
 -- vile:txtmode fc=78
 
 mawk -- an implementation of new/posix awk
@@ -11,7 +11,6 @@ Send bug reports, comments, questions, etc. to
 
 	Thomas E. Dickey <dickey@invisible-island.net>
 	https://invisible-island.net/mawk/
-	ftp://ftp.invisible-island.net/mawk/
 
 -------------------------------------------------------------------------------
 

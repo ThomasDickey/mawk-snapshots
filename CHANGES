@@ -1,9 +1,14 @@
--- $MawkId: CHANGES,v 1.331 2023/02/04 01:03:36 tom Exp $
+-- $MawkId: CHANGES,v 1.333 2023/02/16 00:18:47 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230215
+	+ update URLs, changing ftp to https
+	+ modify configure.in, moving checks for standard headers before the
+	  options, to improve check for arc4random (Redhat #2167291).
 
 20230203
 	+ split up do_printf to fix build with fortified mingw stdio.h
