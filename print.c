@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.41 2023/02/03 20:21:24 tom Exp $
+ * $MawkId: print.c,v 1.42 2023/03/22 23:27:21 tom Exp $
  */
 
 #include "mawk.h"
@@ -532,13 +532,8 @@ do_printf(FILE *fp,
 		break;
 
 	    case C_STRING:
-#ifndef NO_INTERVAL_EXPR
-		/* fall thru to check for bad number formats */
-		/* fall thru */
-#else
 		Ival = string(cp)->str[0];
 		break;
-#endif
 
 	    case C_MBSTRN:
 		check_strnum(cp);

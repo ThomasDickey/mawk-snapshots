@@ -1,9 +1,14 @@
--- $MawkId: CHANGES,v 1.333 2023/02/16 00:18:47 tom Exp $
+-- $MawkId: CHANGES,v 1.335 2023/03/23 00:24:25 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230322
+	+ remove an unwanted string/number conversion in print.c, from changes
+	  in 20200717 (report by Jan Psota).
+	+ reduce compiler-warnings in configure script checks.
 
 20230215
 	+ update URLs, changing ftp to https
