@@ -1,9 +1,25 @@
--- $MawkId: CHANGES,v 1.335 2023/03/23 00:24:25 tom Exp $
+-- $MawkId: CHANGES,v 1.344 2023/04/04 23:41:27 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230404
+	+ add a null-pointer check in bi_mktime() (Original-Mawk #57).
+	+ cast parameter of srand() to double if it is not already (patch by
+	  "q3cpma", Original-Mawk #66).   
+	+ manpage fixes (report/suggested by David Apps).
+	+ fix parsing of "--" token on command-line, from 20200828 changes
+	  (report by Pavel Vinogradov).
+	+ add a null-pointer check in the case for "-W" when parsing command
+	  options (Original-Mawk #68).
+	+ improve CF_XOPEN_SOURCE configure macro to avoid clearing the host's
+	  definition for _XOPEN_SOURCE if _POSIX_C_SOURCE is defined (report
+	  by A. Wilcox).
+	+ modify makefile "clean" rule to remove ".i" files.
+	+ modify configure script to allow for using clock_gettime vs
+	  gettimeofday.
 
 20230322
 	+ remove an unwanted string/number conversion in print.c, from changes

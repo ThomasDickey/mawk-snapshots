@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2020,2021, Thomas E. Dickey
+copyright 2008-2021,2023, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.74 2021/05/29 00:00:53 tom Exp $
+ * $MawkId: init.c,v 1.76 2023/04/04 22:51:48 tom Exp $
  */
 
 /* init.c */
@@ -595,7 +595,11 @@ process_cmdline(int argc, char **argv)
 	switch (curArg[1]) {
 
 	case 'W':
-	    for (j = 0; j < (int) strlen(optArg); j = (int) (optNext - optArg)) {
+	    for (j = 0;
+		 j < (int) strlen(optArg);
+		 j = (optNext
+		      ? (int) (optNext - optArg)
+		      : (int) strlen(optArg))) {
 		char *name = optArg + j;
 		int args = 0;
 		W_OPTIONS code = parse_w_opt(name, &optNext, &args);
@@ -641,7 +645,7 @@ process_cmdline(int argc, char **argv)
 	    if (curArg[2] != 0) {
 		bad_option(curArg);
 	    }
-	    i++;
+	    curArg = argv[++i];
 	    goto no_more_opts;
 
 	case 'f':

@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2020,2021, Thomas E. Dickey
+copyright 2008-2021,2023, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.114 2021/05/28 23:38:12 tom Exp $
+ * $MawkId: bi_funct.c,v 1.117 2023/04/04 23:39:23 tom Exp $
  */
 
 #include <mawk.h>
@@ -451,7 +451,7 @@ bi_mktime(CELL *sp)
 	my_tm.tm_mon -= 1;
 	result = mktime(&my_tm);
     }
-    TRACE(("...bi_mktime(%s) ->%s", sval->str, ctime(&result)));
+    TRACE(("...bi_mktime(%s) ->%s", sval ? sval->str : "?", ctime(&result)));
 
     cell_destroy(sp);
     sp->type = C_DOUBLE;
@@ -753,10 +753,18 @@ static double
 initial_seed(void)
 {
     double result;
-#if defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_CLOCK_GETTIME)
+    struct timespec data;
+    if (clock_gettime(CLOCK_REALTIME, &data) == 0)
+	result = (data.tv_sec * 1000000000L) + data.tv_nsec;
+    else
+	result = 0.0;
+#elif defined(HAVE_GETTIMEOFDAY)
     struct timeval data;
-    gettimeofday(&data, (struct timezone *) 0);
-    result = (data.tv_sec * 1000000) + data.tv_usec;
+    if (gettimeofday(&data, (struct timezone *) 0) == 0)
+	result = (data.tv_sec * 1000000) + data.tv_usec;
+    else
+	result = 0.0;
 #elif defined(WINVER) && (WINVER >= 0x501)
     union {
 	FILETIME ft;
@@ -800,6 +808,8 @@ bi_srand(CELL *sp)
 	c = *sp;
 	*sp = cseed;
 	cseed = c;
+	if (cseed.type != C_DOUBLE)
+	    cast1_to_d(&cseed);
     }
 
 #ifdef USE_SYSTEM_SRAND

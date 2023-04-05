@@ -1,6 +1,6 @@
-.\" $MawkId: mawk.1,v 1.58 2020/08/26 22:11:20 tom Exp $
+.\" $MawkId: mawk.1,v 1.60 2023/04/04 23:05:06 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2019,2020, Thomas E. Dickey
+.\" # copyright 2008-2020,2023, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 "2020-08-26" "Version 1.3.4" "USER COMMANDS"
+.TH MAWK 1 "2023-04-04" "Version 1.3.4" "USER COMMANDS"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -565,7 +565,7 @@ back and between every character.
 For example,
 .nf
 .sp
-	echo  abc | \*n { gsub(//, "X") ; print }
+	echo  abc | \*n '{ gsub(//, "X")' ; print }
 	XaXbXcX
 .sp
 .fi
@@ -1384,12 +1384,12 @@ a file is "a\ b\enc\en\en",
 then there is one record \*(``a\ b\enc\*('' with three
 fields \*(``a\*('', \*(``b\*('' and \*(``c\*('':
 .bP
-Changing
+using
 .B FS
 = \*(``\en\*('', gives two
 fields \*(``a b\*('' and \*(``c\*('';
 .bP
-changing
+using
 .B FS
 = \*(``\*('', gives one field
 identical to the record.
@@ -1428,13 +1428,16 @@ First
 .B ARGC
 is set to the total number of command line arguments passed to
 the execution phase of the program.
+.bP
 .B ARGV[0]
-is set the name of the AWK interpreter and
+is set to the name of the AWK interpreter and
+.bP
 \fBARGV[1]\fR ...
 .B ARGV[ARGC\-1]
 holds the remaining command line arguments exclusive of
 options and program source.
-For example with
+.PP
+For example, with
 .nf
 .sp
 	\*n  \-f  prog  v=1  A  t=hello  B
@@ -1442,16 +1445,22 @@ For example with
 .fi
 .B ARGC
 = 5 with
+.RS
 .B ARGV[0]
 = "\*n",
+.br
 .B ARGV[1]
 = "v=1",
+.br
 .B ARGV[2]
 = "A",
+.br
 .B ARGV[3]
 = "t=hello" and
+.br
 .B ARGV[4]
 = "B".
+.RE
 .PP
 Next, each
 .B BEGIN

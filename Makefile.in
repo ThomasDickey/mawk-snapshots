@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.56 2021/05/28 22:49:07 tom Exp $
+# $MawkId: Makefile.in,v 1.57 2023/04/03 07:37:24 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2020,2021 Thomas E. Dickey
+# copyright 2009-2021,2023 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -142,7 +142,7 @@ uninstall :
 clean :
 	-cd man && $(MAKE) $(MAKE_RECUR) $@
 	-rm -f y.tab.c y.tab.h makescan$x
-	-rm -f *$o test/$(PROG) *core* test/*core* $(PROG)
+	-rm -f *$o *.i test/$(PROG) *core* test/*core* $(PROG)
 
 distclean :  clean
 	-cd man && $(MAKE) $(MAKE_RECUR) $@
