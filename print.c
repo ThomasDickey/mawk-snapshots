@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.42 2023/03/22 23:27:21 tom Exp $
+ * $MawkId: print.c,v 1.43 2023/05/26 00:08:54 tom Exp $
  */
 
 #include "mawk.h"
@@ -25,8 +25,10 @@ the GNU General Public License, version 2, 1991.
 
 #ifdef USE_LL_FORMAT
 #define ELL_LIMIT 2
+#define SpliceFormat(n)		splice = 1
 #else
 #define ELL_LIMIT 1
+#define SpliceFormat(n)		if (n) splice = 1
 #endif
 
 #ifdef	SHORT_INTS
@@ -417,7 +419,7 @@ do_printf(FILE *fp,
 				   (on the eval stack) */
 {
     char save;			/* saves when temporary null ends format */
-    int splice;
+    int splice;			/* set to pad format with l's for Long */
     char *p;
     register char *q = format;
     int l_flag, h_flag;		/* seen %ld or %hd  */
@@ -561,18 +563,14 @@ do_printf(FILE *fp,
 		Ival = d_to_L(cp->dval);
 		pf_type = PF_D;
 	    }
-	    if (!l_flag || h_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag || h_flag);
 	    break;
 	case 'i':
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
 	    Ival = d_to_L(cp->dval);
 	    pf_type = PF_D;
-	    if (!l_flag || h_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag || h_flag);
 	    break;
 
 	case 'o':
@@ -583,9 +581,7 @@ do_printf(FILE *fp,
 		cast1_to_d(cp);
 	    Uval = d_to_UL(cp->dval);
 	    pf_type = PF_U;
-	    if (!l_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag);
 	    break;
 
 	case 'e':
@@ -911,18 +907,14 @@ do_sprintf(
 		Ival = d_to_L(cp->dval);
 		pf_type = PF_D;
 	    }
-	    if (!l_flag || h_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag || h_flag);
 	    break;
 	case 'i':
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
 	    Ival = d_to_L(cp->dval);
 	    pf_type = PF_D;
-	    if (!l_flag || h_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag || h_flag);
 	    break;
 
 	case 'o':
@@ -933,9 +925,7 @@ do_sprintf(
 		cast1_to_d(cp);
 	    Uval = d_to_UL(cp->dval);
 	    pf_type = PF_U;
-	    if (!l_flag) {
-		splice = 1;
-	    }
+	    SpliceFormat(!l_flag);
 	    break;
 
 	case 'e':

@@ -1,9 +1,14 @@
--- $MawkId: CHANGES,v 1.344 2023/04/04 23:41:27 tom Exp $
+-- $MawkId: CHANGES,v 1.345 2023/05/26 00:08:06 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230525
+	+ fix a regression for big-endian machines caused by mismatch between
+	  printf/sprintf format and long integer types (Original-Mawk #69, cf:
+	  20200731).
 
 20230404
 	+ add a null-pointer check in bi_mktime() (Original-Mawk #57).
@@ -108,6 +113,9 @@ NOTE:
 
 20200731
 	+ amend fix for Debian #303825 to more closely match gawk and BWK.
+	  Those use larger data types, e.g., long vs int, for limits, and also
+	  provide for using int64_t and uint64_t.  Internally, mawk now uses
+	  long long's where those are supported.
 	+ add --help and --version options
 
 20200724
