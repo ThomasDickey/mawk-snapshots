@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.23 2020/01/20 11:49:54 tom Exp $
+ * $MawkId: parse.y,v 1.24 2023/07/11 23:05:34 tom Exp $
  */
 
 %{
@@ -555,13 +555,14 @@ while_front :  WHILE LPAREN expr RPAREN
 /* while_statement */
 statement  :    while_front  statement
                 {
-                  int  saved_offset ;
-                  int len ;
                   INST *p1 = CDP($1) ;
                   INST *p2 = CDP($2) ;
 
                   if ( p1 != p2 )  /* real test in loop */
                   {
+                    int  saved_offset ;
+                    int len ;
+
                     p1[1].op = CodeOffset(p1 + 1) ;
                     saved_offset = code_offset ;
                     len = (int) code_pop(code_ptr) ;
@@ -1184,18 +1185,21 @@ save_arglist(const char *s)
 {
     SYMTAB *result = save_id(s);
     CA_REC *saveit = ZMALLOC(CA_REC);
-    CA_REC *p, *q;
 
     if (saveit != 0) {
+        CA_REC *p, *q;
 	int arg_num = 0;
+
 	for (p = active_arglist, q = 0; p != 0; q = p, p = p->link) {
 	    ++arg_num;
 	}
+
 	saveit->link = 0;
 	saveit->type = ST_LOCAL_NONE;
 	saveit->arg_num = (short) arg_num;
 	saveit->call_lineno = token_lineno;
 	saveit->sym_p = result;
+
 	if (q != 0) {
 	    q->link = saveit;
 	} else {
@@ -1241,8 +1245,6 @@ resize_fblock(FBLOCK * fbp)
 static void
 field_A2I(void)
 {
-    CELL *cp;
-
     if (code_ptr[-1].op == FE_PUSHA &&
 	code_ptr[-1].ptr == (PTR) 0) {
 	/* On most architectures, the two tests are the same; a good
@@ -1250,7 +1252,7 @@ field_A2I(void)
 	   segmented architectures, they are not */
 	code_ptr[-1].op = FE_PUSHI;
     } else {
-	cp = (CELL *) code_ptr[-1].ptr;
+	CELL *cp = (CELL *) code_ptr[-1].ptr;
 
 	if ((cp == field) || ((cp > NF) && (cp <= LAST_PFIELD))) {
 	    code_ptr[-2].op = _PUSHI;

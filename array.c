@@ -1,8 +1,8 @@
 /* array.c */
 /*
-$MawkId: array.c,v 1.26 2021/05/28 23:59:47 tom Exp $
+$MawkId: array.c,v 1.27 2023/07/11 23:01:31 tom Exp $
 
-copyright 2009-2020,2021 Thomas E. Dickey
+copyright 2009-2021,2023 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -371,7 +371,7 @@ find_by_ival(
 		/* need to search by string */
 		char buff[256];
 		STRING *sval;
-		sprintf(buff, LONG_FMT, ival);
+		sprintf(buff, LONG_FMT, (Long) ival);
 		sval = new_STRING(buff);
 		p = find_by_sval(A, sval, create_flag, redo);
 		if (*redo) {
@@ -487,7 +487,7 @@ add_string_associations(ARRAY A)
 	for (i = 0; (unsigned) i <= A->hmask; i++) {
 	    p = table[i].ilink;
 	    while (p) {
-		sprintf(buff, LONG_FMT, p->ival);
+		sprintf(buff, LONG_FMT, (Long) p->ival);
 		p->sval = new_STRING(buff);
 		p->hval = ahash(p->sval);
 		p->slink = table[A->hmask & p->hval].slink;

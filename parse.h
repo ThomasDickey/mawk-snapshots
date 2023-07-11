@@ -1,3 +1,6 @@
+#ifndef _yy_defines_h_
+#define _yy_defines_h_
+
 #define UNEXPECTED 257
 #define BAD_DECIMAL 258
 #define NL 259
@@ -79,7 +82,7 @@
 #endif
 #ifndef YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
-typedef union{
+typedef union YYSTYPE{
   CELL     *cp ;
   SYMTAB   *stp ;
   int      start ;   /* code starting address as offset from code_base */
@@ -93,3 +96,5 @@ typedef union{
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
 extern YYSTYPE yylval;
+
+#endif /* _yy_defines_h_ */

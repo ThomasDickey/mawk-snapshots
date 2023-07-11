@@ -1,9 +1,12 @@
--- $MawkId: CHANGES,v 1.345 2023/05/26 00:08:06 tom Exp $
+-- $MawkId: CHANGES,v 1.346 2023/07/11 23:57:56 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230711
+	+ regenerate parse.c using byacc 20230521
 
 20230525
 	+ fix a regression for big-endian machines caused by mismatch between
