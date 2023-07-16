@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2017,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1996,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.45 2020/07/30 22:44:07 tom Exp $
+ * $MawkId: scan.c,v 1.50 2023/07/16 23:38:30 tom Exp $
  */
 
 #include  "mawk.h"
@@ -30,6 +30,25 @@ the GNU General Public License, version 2, 1991.
 
 #include  "files.h"
 
+#define CHR_LPAREN '('
+#define CHR_RPAREN ')'
+
+#define STR_LBRACE "{"
+#define STR_RBRACE "}"
+
+#define  ct_ret(x)  return scan_scope(current_token = (x))
+
+#define  next() (*buffp ? *buffp++ : slow_next())
+#define  un_next()  buffp--
+
+#define  test1_ret(c,x,d)  if ( next() == (c) ) ct_ret(x) ;\
+                           else { un_next() ; ct_ret(d) ; }
+
+#define  test2_ret(c1,x1,c2,x2,d)   switch( next() )\
+                                   { case c1: ct_ret(x1) ;\
+                                     case c2: ct_ret(x2) ;\
+                                     default: un_next() ;\
+                                              ct_ret(d) ; }
 double double_zero = 0.0;
 double double_one = 1.0;
 
@@ -55,6 +74,31 @@ static UChar *buffp;
  /* unsigned so it works with 8 bit chars */
 static int program_fd;
 static int eof_flag;
+
+/*
+ * Data for scan_scope()
+ */
+#define MAX_REPAIR 10
+static SYMTAB *current_symbol;
+static SYMTAB *current_funct;
+
+typedef enum {
+    ssDEFAULT = 0
+    ,ssHEADER
+    ,ssFUNCTN
+    ,ssLPAREN
+    ,ssRPAREN
+    ,ssLBRACE
+    ,ssRBRACE
+} SCAN_SCOPE;
+
+static SCAN_SCOPE current_scope;
+static int braces_level;
+static int max_repair;
+static struct {
+    SYMTAB *stp;
+    char type;
+} repair_syms[MAX_REPAIR];
 
 /* use unsigned chars for index into scan_code[] */
 #define NextUChar(c) (UChar)(c = (char) next())
@@ -282,6 +326,68 @@ eat_nl(void)			/* eat all space including newlines */
     }
 }
 
+/*
+ * Function parameters are local to a function, but because mawk uses a single
+ * hash table, it may have conflicts with global symbols (function names).
+ * Work around this by saving the conflicting symbol, overriding it an ordinary
+ * symbol and restoring at the end of the function.
+ */
+static int
+scan_scope(int state)
+{
+    switch (state) {
+    case FUNCTION:
+	if (braces_level == 0)
+	    current_scope = ssHEADER;
+	break;
+    case LPAREN:
+	if (current_scope == ssFUNCTN)
+	    current_scope = ssLPAREN;
+	break;
+    case FUNCT_ID:
+	if (current_scope == ssHEADER) {
+	    current_scope = ssFUNCTN;
+	    current_funct = current_symbol;
+	} else if (current_scope == ssLPAREN) {
+	    if (current_symbol == current_funct) {
+		compile_error("function parameter cannot be the function");
+	    } else if (max_repair < MAX_REPAIR) {
+		repair_syms[max_repair].stp = current_symbol;
+		repair_syms[max_repair].type = current_symbol->type;
+		++max_repair;
+		state = ID;
+	    } else {
+		compile_error("too many local/global symbol conflicts");
+	    }
+	}
+	break;
+    case RPAREN:
+	if (current_scope == ssLPAREN)
+	    current_scope = ssRPAREN;
+	break;
+    case LBRACE:
+	++braces_level;
+	if (current_scope == ssRPAREN)
+	    current_scope = ssLBRACE;
+	break;
+    case RBRACE:
+	if (braces_level > 0 && current_scope == ssLBRACE) {
+	    if (--braces_level == 0) {
+		current_scope = ssDEFAULT;
+		while (max_repair > 0) {
+		    --max_repair;
+		    (repair_syms[max_repair].stp)->type =
+			repair_syms[max_repair].type;
+		}
+	    }
+	} else {
+	    current_scope = ssDEFAULT;
+	}
+	break;
+    }
+    return state;
+}
+
 int
 yylex(void)
 {
@@ -475,7 +581,7 @@ yylex(void)
 		yylval.ival = F_TRUNC;
 		string_buff[1] = 0;
 	    }
-	    return current_token = IO_OUT;
+	    return scan_scope(current_token = IO_OUT);
 	}
 
 	test1_ret('=', GTE, GT);
@@ -515,7 +621,7 @@ yylex(void)
 
     case SC_RBRACE:
 	if (--brace_cnt < 0) {
-	    compile_error("extra '}'");
+	    compile_error("extra '" STR_RBRACE "'");
 	    eat_semi_colon();
 	    brace_cnt = 0;
 	    goto reswitch;
@@ -536,11 +642,11 @@ yylex(void)
 	}
 
 	/* supply missing semi-colon to statement that
-	   precedes a '}' */
+	   precedes a right-brace */
 	brace_cnt++;
 	un_next();
 	current_token = SC_FAKE_SEMI_COLON;
-	return SEMI_COLON;
+	return scan_scope(SEMI_COLON);
 
     case SC_DIGIT:
     case SC_DOT:
@@ -595,7 +701,7 @@ yylex(void)
 	}
 
     case SC_DQUOTE:
-	return current_token = collect_string();
+	return scan_scope(current_token = collect_string());
 
     case SC_IDCHAR:		/* collect an identifier */
 	{
@@ -614,10 +720,11 @@ yylex(void)
 	    un_next();
 	    *--p = 0;
 
-	    switch ((stp = find(string_buff))->type) {
+	    current_symbol = stp = find(string_buff);
+	    switch (stp->type) {
 	    case ST_NONE:
 		/* check for function call before defined */
-		if (next() == '(') {
+		if (next() == CHR_LPAREN) {
 		    stp->type = ST_FUNCT;
 		    stp->stval.fbp = (FBLOCK *)
 			zmalloc(sizeof(FBLOCK));
@@ -684,7 +791,7 @@ yylex(void)
 		};
 		un_next();
 
-		current_token = c == '(' ? BUILTIN : LENGTH;
+		current_token = c == CHR_LPAREN ? BUILTIN : LENGTH;
 		break;
 
 	    case ST_FIELD:
@@ -695,14 +802,14 @@ yylex(void)
 	    default:
 		bozo("find returned bad st type");
 	    }
-	    return current_token;
+	    return scan_scope(current_token);
 	}
 
     case SC_UNEXPECTED:
 	yylval.ival = c & 0xff;
 	ct_ret(UNEXPECTED);
     }
-    return 0;			/* never get here make lint happy */
+    return scan_scope(0);	/* never get here make lint happy */
 }
 
 /* collect a decimal constant in temp_buff.

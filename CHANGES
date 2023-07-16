@@ -1,11 +1,15 @@
--- $MawkId: CHANGES,v 1.346 2023/07/11 23:57:56 tom Exp $
+-- $MawkId: CHANGES,v 1.348 2023/07/16 23:11:31 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
 
-20230711
+20230716
+	+ modify scanner to accommodate scripts which use the same name for
+	  some function-parameters as for a function (report by Kaz Kylheku).
+	+ amend/limit special case optimization for redundant wildwards
+	  (Original-Mawk #36).
 	+ regenerate parse.c using byacc 20230521
 
 20230525

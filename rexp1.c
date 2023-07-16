@@ -1,6 +1,6 @@
 /********************************************
 rexp1.c
-copyright 2009-2016,2020, Thomas E. Dickey
+copyright 2009-2020,2023, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.21 2020/10/23 00:28:14 tom Exp $
+ * $MawkId: rexp1.c,v 1.23 2023/07/13 08:09:35 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -147,37 +147,32 @@ RE_or(MACHINE * mp, MACHINE * np)
  * Ignore attempts to wrap an atom using zero-or-more repetitions in another
  * loop with the same condition.
  */
-static int
-ignore_star_star(MACHINE * mp)
-{
-    size_t sz = (size_t) (mp->stop - mp->start + 1);
-
-    if (sz >= 4) {
-	STATE *p = mp->start;
-	STATE *q = mp->stop;
-
-	if ((p->s_type % U_ON) != M_2JA) {
-	    ;
-	} else if (p->s_data.jump != 4) {
-	    TRACE((".. expected jump %d\n", p->s_data.jump));
-	} else if (((p + 1)->s_type % U_ON) != M_SAVE_POS) {
-	    TRACE((".. expected save %s\n", REs_type(p + 1)));
-	} else if (((q - 2)->s_type % U_ON) != M_CLASS &&
-		   ((q - 2)->s_type % U_ON) != M_STR &&
-		   ((q - 2)->s_type % U_ON) != M_U) {
-	    TRACE((".. expected atom %s\n", REs_type(q - 2)));
-	} else if (((q - 1)->s_type % U_ON) != M_2JC) {
-	    TRACE(("ignored loop %s\n", REs_type(q - 1)));
-	} else {
-	    TRACE(("ignore repeated loop\n"));
-	    return 1;
-	}
-    }
-    return 0;
+#define ignore_star_star(mp, sz) \
+{ \
+    if (sz == 5) { \
+	STATE *ps = mp->start; \
+ \
+	if ((ps->s_type % U_ON) != M_2JA) { \
+	    ; \
+	} else if (ps->s_data.jump != 4) { \
+	    TRACE((".. expected jump %d\n", ps->s_data.jump)); \
+	} else if (((ps + 1)->s_type % U_ON) != M_SAVE_POS) { \
+	    TRACE((".. expected save %s\n", REs_type(ps + 1))); \
+	} else if (((ps + 2)->s_type % U_ON) != M_CLASS && \
+		   ((ps + 2)->s_type % U_ON) != M_STR && \
+		   ((ps + 2)->s_type % U_ON) != M_U) { \
+	    TRACE((".. expected atom %s\n", REs_type(ps + 2))); \
+	} else if (((ps + 3)->s_type % U_ON) != M_2JC) { \
+	    TRACE((".. expected loop %s\n", REs_type(ps + 3))); \
+	} else { \
+	    TRACE(("ignore repeated loop\n")); \
+	    return NULL; \
+	} \
+    } \
 }
 
 #ifndef NO_INTERVAL_EXPR
-/*  replace m with m*  limited to the max iterations 
+/*  replace m with m*  limited to the max iterations
         (variation of m*   closure)   */
 void
 RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
@@ -198,7 +193,7 @@ RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
 #endif
 }
 
-/*  replace m with m+  limited to the max iterations 
+/*  replace m with m+  limited to the max iterations
      which is one or more, limited
         (variation of m+   positive closure)   */
 void
@@ -230,8 +225,6 @@ RE_close(MACHINE * mp)
     register STATE *p;
     size_t sz;
 
-    if (ignore_star_star(mp))
-	return NULL;
     /*
      *                2JA end
      * loop:
@@ -242,6 +235,8 @@ RE_close(MACHINE * mp)
      *          ACCEPT
      */
     sz = (size_t) (mp->stop - mp->start + 1);
+    ignore_star_star(mp, sz);
+
     p = (STATE *) RE_malloc((sz + 3) * STATESZ);
     memcpy(p + 2, mp->start, sz * STATESZ);
     RE_free(mp->start);
@@ -269,8 +264,6 @@ RE_poscl(MACHINE * mp)
     register STATE *p;
     size_t sz;
 
-    if (ignore_star_star(mp))
-	return NULL;
     /*
      * loop:
      *          SAVE_POS
@@ -279,6 +272,8 @@ RE_poscl(MACHINE * mp)
      *          ACCEPT
      */
     sz = (size_t) (mp->stop - mp->start + 1);
+    ignore_star_star(mp, sz);
+
     p = (STATE *) RE_malloc((sz + 2) * STATESZ);
     memcpy(p + 1, mp->start, sz * STATESZ);
     RE_free(mp->start);
@@ -305,8 +300,8 @@ RE_01(MACHINE * mp)
     size_t sz;
     register STATE *p;
 
-    /* 
-     *          2JB end (jump desirable if not found) 
+    /*
+     *          2JB end (jump desirable if not found)
      *          m
      * end:
      *          ACCEPT
