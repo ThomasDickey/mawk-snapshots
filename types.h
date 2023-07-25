@@ -1,6 +1,6 @@
 /********************************************
 types.h
-copyright 2009-2014,2016 Thomas E. Dickey
+copyright 2009-2016,2023 Thomas E. Dickey
 copyright 1991-1993,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: types.h,v 1.13 2016/09/27 00:59:29 tom Exp $
+ * $MawkId: types.h,v 1.14 2023/07/23 11:32:20 tom Exp $
  */
 
 /*  types.h  */
@@ -90,6 +90,5 @@ typedef union {
 
 /* regex types */
 typedef int SType;
-typedef size_t SLen;
 
 #endif /* MAWK_TYPES_H */

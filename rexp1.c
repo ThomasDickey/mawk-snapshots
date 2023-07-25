@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.23 2023/07/13 08:09:35 tom Exp $
+ * $MawkId: rexp1.c,v 1.24 2023/07/23 11:30:35 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -90,7 +90,7 @@ RE_str(char *str, size_t len)
     MACHINE x;
 
     new_TWO(M_STR, &x);
-    x.start->s_len = (SLen) len;
+    x.start->s_len = len;
     x.start->s_data.str = str;
     return x;
 }

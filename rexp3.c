@@ -1,6 +1,6 @@
 /********************************************
 rexp3.c
-copyright 2008-2017,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.48 2020/10/22 22:45:12 tom Exp $
+ * $MawkId: rexp3.c,v 1.50 2023/07/24 20:43:39 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -206,7 +206,7 @@ REmatch(char *str,		/* string to test */
 
     case M_STR + U_ON + END_ON:
 	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
-	t = (int) ((SLen) (str_end - s) - m->s_len);
+	t = (int) ((size_t) (str_end - s) - m->s_len);
 	if (t < 0 || memcmp(ts = s + t, m->s_data.str, (size_t) m->s_len)) {
 	    RE_FILL();
 	}

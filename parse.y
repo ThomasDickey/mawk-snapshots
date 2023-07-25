@@ -1,6 +1,6 @@
 /********************************************
 parse.y
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,25 +11,29 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.24 2023/07/11 23:05:34 tom Exp $
+ * $MawkId: parse.y,v 1.28 2023/07/25 19:03:52 tom Exp $
  */
 
 %{
 
-#include <stdio.h>
-#include "mawk.h"
-#include "symtype.h"
-#include "code.h"
-#include "memory.h"
-#include "bi_funct.h"
-#include "bi_vars.h"
-#include "jmp.h"
-#include "field.h"
-#include "files.h"
+#include <mawk.h>
+#include <symtype.h>
+#include <code.h>
+#include <memory.h>
+#include <bi_funct.h>
+#include <bi_vars.h>
+#include <jmp.h>
+#include <field.h>
+#include <files.h>
 
-#define  YYMAXDEPTH	200
+#define YYMAXDEPTH 200
+
+#if defined(YYBYACC) && (YYBYACC < 2)
+extern int yylex(void);
+#endif
 
 extern void eat_nl(void);
+
 static SYMTAB *save_arglist(const char *);
 static int init_arglist(void);
 static void RE_as_arg(void);
@@ -335,10 +339,10 @@ p_expr  :   DOUBLE
           { $$ = code_offset ; code2(_PUSHS, $1) ; }
       |   ID   %prec AND /* anything less than IN */
           { check_var($1) ;
-	    $$ = code_offset ;
-	    if ( is_local($1) )
-	    { code2op(L_PUSHI, $1->offset) ; }
-	    else code2(_PUSHI, $1->stval.cp) ;
+            $$ = code_offset ;
+            if ( is_local($1) )
+            { code2op(L_PUSHI, $1->offset) ; }
+            else code2(_PUSHI, $1->stval.cp) ;
           }
 
       |   LPAREN   expr  RPAREN
@@ -413,30 +417,7 @@ args    :  expr        %prec  LPAREN
         ;
 
 builtin :
-        BUILTIN mark  LPAREN  ID RPAREN
-        { const BI_REC *p = $1 ;
-          $$ = $2 ;
-          if ( (int)p->min_args > 1 || (int)p->max_args < 1 )
-            compile_error(
-            "wrong number of arguments in call to %s" ,
-            p->name ) ;
-          /* if we have length(array), emit a different code */
-          if ( p->fp == bi_length && is_array($4) ) {
-            check_array($4) ;
-            code_array($4) ;
-            { code1(_PUSHINT) ;  code1(1) ; }
-            code1(A_LENGTH) ;
-          } else {
-            check_var($4);
-            if ( is_local($4) )
-            { code1(L_PUSHI); code1($4->offset) ; }
-            else { code2(_PUSHI, $4->stval.cp) ; }
-            if ( p->min_args != p->max_args ) /* variable args */
-                { code1(_PUSHINT) ;  code1(1) ; }
-            code2(_BUILTIN, p->fp) ;
-          }
-        }
-        | BUILTIN mark  LPAREN  arglist RPAREN
+        BUILTIN mark  LPAREN  arglist RPAREN
         { const BI_REC *p = $1 ;
           $$ = $2 ;
           if ( (int)p->min_args > $4 || (int)p->max_args < $4 )
@@ -447,12 +428,6 @@ builtin :
               { code1(_PUSHINT) ;  code1($4) ; }
           code2(_BUILTIN , p->fp) ;
         }
-        | LENGTH   /* this is an irritation */
-          {
-            $$ = code_offset ;
-            code1(_PUSHINT) ; code1(0) ;
-            code2(_BUILTIN, $1->fp) ;
-          }
         ;
 
 /* an empty production to store the code_ptr */
@@ -484,7 +459,7 @@ pr_args :  arglist { code2op(_PUSHINT, $1) ; }
         ;
 
 arg2   :   expr  COMMA  expr
-           { $$ = (ARG2_REC*) zmalloc(sizeof(ARG2_REC)) ;
+           { $$ = ZMALLOC(ARG2_REC) ;
              $$->start = $1 ;
              $$->cnt = 2 ;
            }
@@ -816,8 +791,9 @@ split_back  :   RPAREN
                 {
                   if ( CDP($2) == code_ptr - 2 )
                   {
-                    if ( code_ptr[-2].op == _MATCH0 )
+                    if ( code_ptr[-2].op == _MATCH0 ) {
                         RE_as_arg() ;
+                    }
                     else
                     if ( code_ptr[-2].op == _PUSHS )
                     { CELL *cp = ZMALLOC(CELL) ;
@@ -833,7 +809,69 @@ split_back  :   RPAREN
                 }
             ;
 
+/* distinguish length vs length(string) vs length(array) */
+p_expr :  LENGTH
+          { $$ = code_offset ;
+            code2(_PUSHI,field) ;
+            code2(_BUILTIN,bi_length) ;
+          }
+       |  LENGTH LPAREN  RPAREN
+          { $$ = code_offset ;
+            code2(_PUSHI,field) ;
+            code2(_BUILTIN,bi_length) ;
+          }
+       |  LENGTH LPAREN expr RPAREN
+          { $$ = $3 ;
+            code2(_BUILTIN,bi_length) ;
+          }
+       |  LENGTH LPAREN ID RPAREN
+          {
+              SYMTAB* stp = $3;
+              $$ = code_offset;
+              switch (stp->type) {
+              case ST_VAR:
+                  code2(_PUSHI, stp->stval.cp);
+                  code2(_BUILTIN, bi_length);
+                  break;
 
+              case ST_ARRAY:
+                  code2(A_PUSHA, stp->stval.array);
+                  code2(_BUILTIN, bi_alength);
+                  break;
+
+              case ST_LOCAL_VAR:
+                  code2op(L_PUSHI, stp->offset);
+                  code2(_BUILTIN, bi_length);
+                  break;
+
+              case ST_LOCAL_ARRAY:
+                  code2op(LA_PUSHA, stp->offset);
+                  code2(_BUILTIN, bi_alength);
+                  break;
+
+              case ST_NONE:
+                  /* defer_alen */
+                  code2(A_LENGTH, stp);
+                  code2(_BUILTIN, bi_length);
+                  break;
+
+              case ST_LOCAL_NONE:
+                  /* defer_len */
+                  {
+                      DEFER_LEN* pi = ZMALLOC(DEFER_LEN);
+                      pi->fbp = active_funct;
+                      pi->offset = stp->offset;
+                      code2(_LENGTH, pi);
+                      code2(_BUILTIN, bi_length);
+                  }
+                  break;
+
+              default:
+                  type_error(stp);
+                  break;
+              }
+          }
+       ;
 
 /*  match(expr, RE) */
 
@@ -993,8 +1031,8 @@ funct_start   :  funct_head  LPAREN  f_arglist  RPAREN
                        (INST *) zmalloc(INST_BYTES(PAGESZ));
                    code_limit = code_base + PAGESZ ;
                    code_warn = code_limit - CODEWARN ;
-		   improve_arglist($1->name);
-		   free_arglist();
+                   improve_arglist($1->name);
+                   free_arglist();
                  }
               ;
 
@@ -1004,8 +1042,7 @@ funct_head    :  FUNCTION  ID
                    if ( $2->type == ST_NONE )
                    {
                          $2->type = ST_FUNCT ;
-                         fbp = $2->stval.fbp =
-                             (FBLOCK *) zmalloc(sizeof(FBLOCK)) ;
+                         fbp = $2->stval.fbp = ZMALLOC(FBLOCK) ;
                          fbp->name = $2->name ;
                          fbp->code = (INST*) 0 ;
                    }
@@ -1015,7 +1052,7 @@ funct_head    :  FUNCTION  ID
 
                          /* this FBLOCK will not be put in
                             the symbol table */
-                         fbp = (FBLOCK*) zmalloc(sizeof(FBLOCK)) ;
+                         fbp = ZMALLOC(FBLOCK) ;
                          fbp->name = "" ;
                    }
                    $$ = fbp ;
@@ -1034,7 +1071,7 @@ f_arglist  :  /* empty */ { $$ = init_arglist() ; }
 
 f_args     :  ID
               { init_arglist();
-	        $1 = save_arglist($1->name) ;
+                $1 = save_arglist($1->name) ;
                 $1->offset = 0 ;
                 $$ = 1 ;
               }
@@ -1080,7 +1117,7 @@ call_args  :   LPAREN   RPAREN
                { $$ = $2 ;
                  $$->link = $1 ;
                  $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
-		 $$->call_lineno = token_lineno;
+                 $$->call_lineno = token_lineno;
                }
            ;
 
@@ -1100,14 +1137,14 @@ ca_front   :  LPAREN
                 $$->type = CA_EXPR  ;
                 $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
                 $$->call_offset = code_offset ;
-		$$->call_lineno = token_lineno;
+                $$->call_lineno = token_lineno;
               }
            |  ca_front  ID   COMMA
               { $$ = ZMALLOC(CA_REC) ;
                 $$->type = ST_NONE ;
                 $$->link = $1 ;
                 $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
-		$$->call_lineno = token_lineno;
+                $$->call_lineno = token_lineno;
 
                 code_call_id($$, $2) ;
               }
@@ -1187,7 +1224,7 @@ save_arglist(const char *s)
     CA_REC *saveit = ZMALLOC(CA_REC);
 
     if (saveit != 0) {
-        CA_REC *p, *q;
+	CA_REC *p, *q;
 	int arg_num = 0;
 
 	for (p = active_arglist, q = 0; p != 0; q = p, p = p->link) {

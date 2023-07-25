@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2020,2021, Thomas E. Dickey
+copyright 2008-2021,2023, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.39 2021/05/28 08:23:39 tom Exp $
+ * $MawkId: rexp.h,v 1.40 2023/07/23 11:32:20 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -61,7 +61,7 @@ typedef UChar BV[32];		/* bit vector */
 
 typedef struct {
     SType s_type;
-    SLen s_len;			/* used for M_STR  */
+    size_t s_len;		/* used for M_STR  */
     union {
 	char *str;		/* string */
 	BV *bvp;		/*  class  */

@@ -1,6 +1,6 @@
 /********************************************
 re_cmpl.c
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 1991-1994,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.32 2020/09/25 08:11:16 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.34 2023/07/20 00:32:26 tom Exp $
  */
 
 /*  re_cmpl.c  */
@@ -98,14 +98,14 @@ re_compile(STRING * sval)
 
 /* this is only used by da() */
 
-char *
+STRING *
 re_uncompile(PTR m)
 {
     register RE_NODE *p;
 
     for (p = re_list; p; p = p->link)
 	if (p->re.compiled == cast_to_re(m))
-	    return p->sval->str;
+	    return p->sval;
 #ifdef DEBUG
     bozo("non compiled machine");
 #else
@@ -364,7 +364,7 @@ repl_compile(STRING * sval)
 /* return the string for a CELL or type REPL or REPLV,
    this is only used by da()  */
 
-char *
+const STRING *
 repl_uncompile(CELL *cp)
 {
     register REPL_NODE *p = repl_list;
@@ -372,7 +372,7 @@ repl_uncompile(CELL *cp)
     if (cp->type == C_REPL) {
 	while (p) {
 	    if (p->cp->type == C_REPL && p->cp->ptr == cp->ptr)
-		return p->sval->str;
+		return p->sval;
 	    else
 		p = p->link;
 	}
@@ -381,7 +381,7 @@ repl_uncompile(CELL *cp)
 	    if (p->cp->type == C_REPLV &&
 		memcmp(cp->ptr, p->cp->ptr, cp->vcnt * sizeof(STRING *))
 		== 0)
-		return p->sval->str;
+		return p->sval;
 	    else
 		p = p->link;
 	}

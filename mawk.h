@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2020,2021 Thomas E. Dickey
+copyright 2008-2021,2023 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.62 2021/05/28 22:02:11 tom Exp $
+ * $MawkId: mawk.h,v 1.63 2023/07/20 00:11:29 tom Exp $
  */
 
 /*  mawk.h  */
@@ -170,18 +170,19 @@ extern char *str_str(char *, size_t, const char *, size_t);
 extern void parse(void);
 extern void scan_cleanup(void);
 
-#ifndef YYBYACC 
+#ifndef YYBYACC
 extern int yylex(void);
 #endif
 extern void yyerror(const char *);
 
 extern GCC_NORETURN void bozo(const char *);
-extern void errmsg(int, const char *,...) GCC_PRINTFLIKE(2,3);
-extern void compile_error(const char *,...) GCC_PRINTFLIKE(1,2);
+extern void errmsg(int, const char *, ...) GCC_PRINTFLIKE(2,3);
+extern void compile_error(const char *, ...) GCC_PRINTFLIKE(1,2);
 
 extern void execute(INST *, CELL *, CELL *);
 extern const char *find_kw_str(int);
-extern void da_string(FILE *fp, const char *, size_t);
+extern void da_string(FILE *fp, const STRING *, int);
+extern void da_string2(FILE *fp, const char *, size_t, int);
 
 #ifdef HAVE_STRTOD_OVF_BUG
 extern double strtod_with_ovf_bug(const char *, char **);
@@ -189,7 +190,7 @@ extern double strtod_with_ovf_bug(const char *, char **);
 #endif
 
 #if OPT_TRACE > 0
-extern void Trace(const char *,...) GCC_PRINTFLIKE(1,2);
+extern void Trace(const char *, ...) GCC_PRINTFLIKE(1,2);
 extern void TraceVA(const char *, va_list);
 #define TRACE(params) Trace params
 #if OPT_TRACE > 1

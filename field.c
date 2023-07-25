@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2020,2021 Thomas E. Dickey
+copyright 2008-2021,2023 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.39 2021/05/29 00:00:11 tom Exp $
+ * $MawkId: field.c,v 1.41 2023/07/23 11:33:56 tom Exp $
  */
 
 /* field.c */
@@ -106,7 +106,7 @@ set_rs_shadow(void)
     CELL c;
     STRING *sval;
     char *s;
-    SLen len;
+    size_t len;
 
     if (posix_space_flag && mawk_state == EXECUTION)
 	scan_code['\n'] = SC_UNEXPECTED;
@@ -207,7 +207,7 @@ field_init(void)
 }
 
 void
-set_field0(char *s, size_t len)
+set_field0(const char *s, size_t len)
 {
     cell_destroy(&field[0]);
     nf = -1;

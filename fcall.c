@@ -1,6 +1,6 @@
 /********************************************
 fcall.c
-copyright 2009-2012,2020 Thomas E. Dickey
+copyright 2009-2020,2023 Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.11 2020/01/07 00:47:38 tom Exp $
+ * $MawkId: fcall.c,v 1.12 2023/07/25 21:04:05 tom Exp $
  */
 
 #include "mawk.h"
@@ -139,8 +139,10 @@ call_arg_check(FBLOCK * callee,
 		callee->typev[q->arg_num] = (char) q->type;
 	    } else if (q->type != callee->typev[q->arg_num]) {
 		token_lineno = q->call_lineno;
-		compile_error("type error in arg(%d) in call to %s",
-			      q->arg_num + 1, callee->name);
+		compile_error("type error in arg(%d) in call to %s (actual %s vs %s)",
+			      q->arg_num + 1, callee->name,
+			      type_to_str(q->type),
+			      type_to_str(callee->typev[q->arg_num]));
 	    }
 
 	    ZFREE(q);

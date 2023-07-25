@@ -1,6 +1,6 @@
 /********************************************
 jmp.h
-copyright 2009,2010 Thomas E. Dickey
+copyright 2009-2010,2023 Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,20 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.h,v 1.5 2010/12/10 17:00:00 tom Exp $
- * @Log: jmp.h,v @
- * Revision 1.2  1995/04/21  14:20:19  mike
- * move_level variable to fix bug in arglist patching of moved code.
- *
- * Revision 1.1.1.1  1993/07/03  18:58:15  mike
- * move source to cvs
- *
- * Revision 5.2  1993/01/09  19:03:44  mike
- * code_pop checks if the resolve_list needs relocation
- *
- * Revision 5.1  1991/12/05  07:59:24  brennan
- * 1.1 pre-release
- *
+ * $MawkId: jmp.h,v 1.6 2023/07/22 22:28:22 tom Exp $
  */
 
 #ifndef   MAWK_JMP_H

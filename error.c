@@ -1,6 +1,6 @@
 /********************************************
 error.c
-copyright 2008-2016,2020 Thomas E. Dickey
+copyright 2008-2020,2023 Thomas E. Dickey
 copyright 1991-1994,1995 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.24 2020/08/25 20:08:35 tom Exp $
+ * $MawkId: error.c,v 1.25 2023/07/24 21:18:55 tom Exp $
  */
 
 #include <mawk.h>
@@ -102,11 +102,6 @@ missing(int c, const char *n, unsigned ln)
     errmsg(0, "%s%sline %u: missing %c near %s", s0, s1, ln, c, n);
 }
 
-/* we won't use s as input
-   (yacc and bison force this).
-   We will use s for storage to keep lint or the compiler
-   off our back.
-*/
 void
 yyerror(const char *s GCC_UNUSED)
 {
@@ -319,9 +314,6 @@ type_to_str(int type)
 	break;
     case ST_FUNCT:
 	retval = "function";
-	break;
-    case ST_LENGTH:
-	retval = "length";
 	break;
     case ST_LOCAL_VAR:
 	retval = "local variable";

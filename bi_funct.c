@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.117 2023/04/04 23:39:23 tom Exp $
+ * $MawkId: bi_funct.c,v 1.118 2023/07/24 08:23:33 tom Exp $
  */
 
 #include <mawk.h>
@@ -54,7 +54,6 @@ the GNU General Public License, version 2, 1991.
 const BI_REC bi_funct[] =
 {				/* info to load builtins */
 
-   { "length",   bi_length,   0, 1 },	/* special must come first */
    { "index",    bi_index,    2, 2 },
    { "substr",   bi_substr,   2, 3 },
    { "sprintf",  bi_sprintf,  1, 255 },
@@ -93,12 +92,7 @@ bi_funct_init(void)
     register const BI_REC *p;
     register SYMTAB *stp;
 
-    /* length is special (posix bozo) */
-    stp = insert(bi_funct->name);
-    stp->type = ST_LENGTH;
-    stp->stval.bip = bi_funct;
-
-    for (p = bi_funct + 1; p->name; p++) {
+    for (p = bi_funct; p->name; p++) {
 	stp = insert(p->name);
 	stp->type = ST_BUILTIN;
 	stp->stval.bip = p;
@@ -128,11 +122,6 @@ bi_length(CELL *sp)
 
     TRACE_FUNC("bi_length", sp);
 
-    if (sp->type == 0)
-	cellcpy(sp, field);
-    else
-	sp--;
-
     if (sp->type < C_STRING)
 	cast1_to_s(sp);
     len = string(sp)->len;
@@ -142,6 +131,18 @@ bi_length(CELL *sp)
     sp->dval = (double) len;
 
     return_CELL("bi_length", sp);
+}
+
+/* length (size) of an array */
+CELL *
+bi_alength(CELL *sp)
+{
+    TRACE_FUNC("bi_alength", sp);
+
+    sp->type = C_DOUBLE;
+    sp->dval = (double) ((ARRAY) sp->ptr)->size;
+
+    return_CELL("bi_alength", sp);
 }
 
 char *

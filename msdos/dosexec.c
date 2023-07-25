@@ -1,6 +1,6 @@
 /********************************************
 dosexec.c
-copyright 2009,2010,2014, Thomas E. Dickey
+copyright 2009-2014,2023, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,31 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: dosexec.c,v 1.5 2014/09/14 22:29:49 tom Exp $
- *
- * @Log: dosexec.c,v @
- * Revision 1.3  1995/08/20  16:37:22  mike
- * exit(1) -> exit(2)
- *
- * Revision 1.2  1994/10/08  18:50:03  mike
- * remove SM_DOS
- *
- * Revision 1.1.1.1  1993/07/03  18:58:47  mike
- * move source to cvs
- *
- * Revision 1.4  1992/12/05  22:29:43  mike
- * dos patch 112d:
- * don't use string_buff
- * check COMSPEC
- *
- * Revision 1.3  1992/07/10  16:21:57  brennan
- * store exit code of input pipes
- *
- * Revision 1.2  1991/11/16  10:27:18  brennan
- * BINMODE
- *
- * Revision 1.1  91/10/29  09:45:56  brennan
- * Initial revision
+ * $MawkId: dosexec.c,v 1.6 2023/07/25 21:27:16 tom Exp $
  */
 
 /* system() and pipes() for MSDOS and Win32 console */

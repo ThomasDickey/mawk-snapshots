@@ -12,13 +12,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.h,v 1.6 2023/07/16 19:21:02 tom Exp $
+ * $MawkId: scan.h,v 1.7 2023/07/23 08:56:43 tom Exp $
  */
 
 /* scan.h  */
 
-#ifndef  SCAN_H_INCLUDED
-#define  SCAN_H_INCLUDED   1
+#ifndef MAWK_SCAN_H
+#define MAWK_SCAN_H
 
 #include <stdio.h>
 
@@ -34,4 +34,4 @@ extern void eat_nl(void);
 /* in error.c */
 extern void unexpected_char(void);
 
-#endif /* SCAN_H_INCLUDED */
+#endif /* MAWK_SCAN_H */

@@ -1,9 +1,14 @@
--- $MawkId: CHANGES,v 1.348 2023/07/16 23:11:31 tom Exp $
+-- $MawkId: CHANGES,v 1.351 2023/07/25 23:33:45 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230725
+	+ use da_string more consistently in dumps.
+	+ improve scanner to some type-checks of arrays versus scalars by
+	  deferring this into the runtime execution (report by Rajeev V Pillai).
 
 20230716
 	+ modify scanner to accommodate scripts which use the same name for

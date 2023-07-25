@@ -1,6 +1,6 @@
 /********************************************
 symtype.h
-copyright 2009-2016,2020, Thomas E. Dickey
+copyright 2009-2020,2023, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.20 2020/01/07 02:20:06 tom Exp $
+ * $MawkId: symtype.h,v 1.21 2023/07/24 21:40:11 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -73,7 +73,6 @@ typedef enum {
     ,ST_FUNCT
     ,ST_NR			/*  NR is special */
     ,ST_ENV			/* and so is ENVIRON */
-    ,ST_LENGTH			/* ditto and bozo */
     ,ST_LOCAL_NONE
     ,ST_LOCAL_VAR
     ,ST_LOCAL_ARRAY
@@ -131,6 +130,12 @@ typedef struct fcall {
     CA_REC *arg_list;
     short arg_cnt_checked;
 } FCALL_REC;
+
+/* defer analysis from length() parameter for forward-references */
+typedef struct {
+    short offset;
+    FBLOCK *fbp;
+} DEFER_LEN;
 
 extern FCALL_REC *resolve_list;
 

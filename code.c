@@ -1,6 +1,6 @@
 /********************************************
 code.c
-copyright 2009-2016,2019, Thomas E. Dickey
+copyright 2009-2019,2023, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.39 2019/02/02 01:09:45 tom Exp $
+ * $MawkId: code.c,v 1.40 2023/07/24 20:08:54 tom Exp $
  */
 
 #include "mawk.h"
@@ -40,9 +40,9 @@ INST *execution_start = 0;
 void
 code_grow(void)
 {
-    unsigned oldsize = (unsigned) (code_limit - code_base);
-    unsigned newsize = PAGESZ + oldsize;
-    unsigned delta = (unsigned) (code_ptr - code_base);
+    size_t oldsize = (size_t) (code_limit - code_base);
+    size_t newsize = PAGESZ + oldsize;
+    size_t delta = (size_t) (code_ptr - code_base);
 
     if (code_ptr > code_limit)
 	bozo("CODEWARN is too small");
@@ -286,6 +286,7 @@ free_codes(const char *tag, INST * base, size_t size)
 	    case A_PUSHA:
 	    case L_PUSHA:
 	    case L_PUSHI:
+	    case _LENGTH:
 	    case _BUILTIN:
 	    case _PRINT:
 	    case _PUSHA:

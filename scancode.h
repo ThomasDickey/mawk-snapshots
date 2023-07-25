@@ -1,5 +1,6 @@
 /********************************************
 scancode.h
+copyright 2023, Thomas E. Dickey
 copyright 2009, Jonathan Nieder
 copyright 1991, Michael D. Brennan
 
@@ -11,8 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scancode.h,v 1.2 2010/12/10 17:00:00 tom Exp $
- * @Log: scancode.h,v @
+ * $MawkId: scancode.h,v 1.3 2023/07/22 22:31:02 tom Exp $
  */
 
 /* scancode.h  */
@@ -24,39 +24,41 @@ extern char scan_code[256];
 
 /*  the scan codes to compactify the main switch */
 
-#define  SC_SPACE               1
-#define  SC_NL                  2
-#define  SC_SEMI_COLON          3
-#define  SC_FAKE_SEMI_COLON     4
-#define  SC_LBRACE              5
-#define  SC_RBRACE              6
-#define  SC_QMARK               7
-#define  SC_COLON               8
-#define  SC_OR                  9
-#define  SC_AND                10
-#define  SC_PLUS               11
-#define  SC_MINUS              12
-#define  SC_MUL                13
-#define  SC_DIV                14
-#define  SC_MOD                15
-#define  SC_POW                16
-#define  SC_LPAREN             17
-#define  SC_RPAREN             18
-#define  SC_LBOX               19
-#define  SC_RBOX               20
-#define  SC_IDCHAR             21
-#define  SC_DIGIT              22
-#define  SC_DQUOTE             23
-#define  SC_ESCAPE             24
-#define  SC_COMMENT            25
-#define  SC_EQUAL              26
-#define  SC_NOT                27
-#define  SC_LT                 28
-#define  SC_GT                 29
-#define  SC_COMMA              30
-#define  SC_DOT                31
-#define  SC_MATCH              32
-#define  SC_DOLLAR             33
-#define  SC_UNEXPECTED         34
+typedef enum {
+    SC_SPACE = 1
+    ,SC_NL
+    ,SC_SEMI_COLON
+    ,SC_FAKE_SEMI_COLON
+    ,SC_LBRACE
+    ,SC_RBRACE
+    ,SC_QMARK
+    ,SC_COLON
+    ,SC_OR
+    ,SC_AND
+    ,SC_PLUS
+    ,SC_MINUS
+    ,SC_MUL
+    ,SC_DIV
+    ,SC_MOD
+    ,SC_POW
+    ,SC_LPAREN
+    ,SC_RPAREN
+    ,SC_LBOX
+    ,SC_RBOX
+    ,SC_IDCHAR
+    ,SC_DIGIT
+    ,SC_DQUOTE
+    ,SC_ESCAPE
+    ,SC_COMMENT
+    ,SC_EQUAL
+    ,SC_NOT
+    ,SC_LT
+    ,SC_GT
+    ,SC_COMMA
+    ,SC_DOT
+    ,SC_MATCH
+    ,SC_DOLLAR
+    ,SC_UNEXPECTED
+} SCAN_CODES;
 
 #endif /* SCANCODE_H_INCLUDED */

@@ -1,6 +1,6 @@
 /********************************************
 kw.c
-copyright 2008-2020,2021, Thomas E. Dickey
+copyright 2008-2021,2023, Thomas E. Dickey
 copyright 1991-1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,15 +11,16 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: kw.c,v 1.9 2021/05/29 00:17:26 tom Exp $
+ * $MawkId: kw.c,v 1.10 2023/07/24 08:10:12 tom Exp $
  */
 
 /* kw.c */
 
-#include "mawk.h"
-#include "symtype.h"
-#include "parse.h"
-#include "init.h"
+#include <mawk.h>
+#include <symtype.h>
+#include <parse.h>
+#include <init.h>
+
 /* *INDENT-OFF* */
 static const struct kw
 {
@@ -28,29 +29,30 @@ static const struct kw
 }
 keywords[] =
 {
-    { "print",    PRINT },
-    { "printf",   PRINTF },
-    { "do",       DO },
-    { "while",    WHILE },
-    { "for",      FOR },
-    { "break",    BREAK },
-    { "continue", CONTINUE },
-    { "if",       IF },
-    { "else",     ELSE },
-    { "in",       IN },
-    { "delete",   DELETE },
-    { "split",    SPLIT },
-    { "match",    MATCH_FUNC },
     { "BEGIN",    BEGIN },
     { "END",      END },
+    { "break",    BREAK },
+    { "continue", CONTINUE },
+    { "delete",   DELETE },
+    { "do",       DO },
+    { "else",     ELSE },
     { "exit",     EXIT },
+    { "for",      FOR },
+    { "function", FUNCTION },
+    { "getline",  GETLINE },
+    { "gsub",     GSUB },
+    { "if",       IF },
+    { "in",       IN },
+    { "length",   LENGTH },
+    { "match",    MATCH_FUNC },
     { "next",     NEXT },
     { "nextfile", NEXTFILE },
+    { "print",    PRINT },
+    { "printf",   PRINTF },
     { "return",   RETURN },
-    { "getline",  GETLINE },
+    { "split",    SPLIT },
     { "sub",      SUB },
-    { "gsub",     GSUB },
-    { "function", FUNCTION },
+    { "while",    WHILE },
     { "",         0 }
 };
 /* *INDENT-ON* */

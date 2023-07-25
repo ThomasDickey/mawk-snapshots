@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2018,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,20 +11,20 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.47 2020/09/11 23:32:09 tom Exp $
+ * $MawkId: execute.c,v 1.48 2023/07/25 22:25:27 tom Exp $
  */
 
-#include "mawk.h"
-#include "files.h"
-#include "code.h"
-#include "memory.h"
-#include "symtype.h"
-#include "field.h"
-#include "bi_funct.h"
-#include "bi_vars.h"
-#include "regexp.h"
-#include "repl.h"
-#include "fin.h"
+#include <mawk.h>
+#include <files.h>
+#include <code.h>
+#include <memory.h>
+#include <symtype.h>
+#include <field.h>
+#include <bi_funct.h>
+#include <bi_vars.h>
+#include <regexp.h>
+#include <repl.h>
+#include <fin.h>
 
 #include <math.h>
 
@@ -99,9 +99,7 @@ clear_aloop_stack(ALOOP_STATE * top)
     } while (top);
 }
 
-static INST *restart_label;	/* control flow labels */
-INST *next_label;
-static CELL tc;			/*useful temp */
+INST *next_label;		/* control flow label */
 
 void
 execute(INST * cdp,		/* code ptr, start execution here */
@@ -109,6 +107,10 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	CELL *fp)		/* frame ptr into eval_stack for
 				   user defined functions */
 {
+    static INST *restart_label;	/* control flow label */
+    static CELL tc;		/*useful temp */
+    static CELL missing;	/* no value (use zero) */
+
     /* some useful temporaries */
     CELL *cp;
     int t;
@@ -348,6 +350,69 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		inc_sp();
 		sp->ptr = fp[(cdp++)->op].ptr;
 	    }
+	    break;
+
+	case A_LENGTH:
+	    /* parameter for length() was ST_NONE; improve it here */
+	    {
+		SYMTAB *stp = (SYMTAB *) cdp->ptr;
+		cdp--;
+		TRACE(("patching %s\n", type_to_str(stp->type)));
+		switch (stp->type) {
+		case ST_VAR:
+		    cdp[0].op = _PUSHI;
+		    cdp[1].ptr = stp->stval.cp;
+		    break;
+		case ST_ARRAY:
+		    cdp[0].op = A_PUSHA;
+		    cdp[1].ptr = stp->stval.array;
+		    assert(cdp[2].op == _BUILTIN);
+		    cdp[3].ptr = (PTR) bi_alength;
+		    break;
+		case ST_NONE:
+		    cdp[0].op = _PUSHI;
+		    cdp[1].ptr = &missing;
+		    break;
+		default:
+		    bozo("execute A_LENGTH");
+		    /* NOTREACHED */
+		}
+	    }
+	    /* resume, interpreting the updated code */
+	    break;
+
+	case _LENGTH:
+	    /* parameter for length() was ST_LOCAL_NONE; improve it here */
+	    {
+		DEFER_LEN *dl = (DEFER_LEN *) cdp->ptr;
+		FBLOCK *fbp = dl->fbp;
+		short offset = dl->offset;
+		int type = fbp->typev[offset];
+
+		ZFREE(dl);
+		cdp--;
+		TRACE(("patching %s\n", type_to_str(type)));
+		switch (type) {
+		case ST_LOCAL_VAR:
+		    cdp[0].op = L_PUSHI;
+		    cdp[1].op = offset;
+		    break;
+		case ST_LOCAL_ARRAY:
+		    cdp[0].op = LA_PUSHA;
+		    cdp[1].op = offset;
+		    assert(cdp[2].op == _BUILTIN);
+		    cdp[3].ptr = (PTR) bi_alength;
+		    break;
+		case ST_LOCAL_NONE:
+		    cdp[0].op = _PUSHI;
+		    cdp[1].ptr = &missing;
+		    break;
+		default:
+		    bozo("execute _LENGTH");
+		    /* NOTREACHED */
+		}
+	    }
+	    /* resume, interpreting the updated code */
 	    break;
 
 	case SET_ALOOP:
@@ -1024,12 +1089,6 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    no_leaks_re_ptr((sp + 1)->ptr);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t ? 1.0 : 0.0;
-	    break;
-
-	case A_LENGTH:
-	    dec_sp();
-	    sp->type = C_DOUBLE;
-	    sp->dval = (double) (((ARRAY) ((sp + 0)->ptr))->size);
 	    break;
 
 	case A_TEST:

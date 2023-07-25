@@ -1,6 +1,6 @@
 /********************************************
 fpe_check.c
-copyright 2008-2010,2013 Thomas E. Dickey
+copyright 2008-2013,2023 Thomas E. Dickey
 copyright 1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -15,28 +15,8 @@ the GNU General Public License, version 2, 1991.
 */
 
 /*
- * $MawkId: fpe_check.c,v 1.16 2013/12/27 00:44:59 tom Exp $
- * @Log: fpe_check.c,v @
- * Revision 1.7  1996/08/30 00:07:14  mike
- * Modifications to the test and implementation of the bug fix for
- * solaris overflow in strtod.
- *
- * Revision 1.6  1996/08/25 19:25:46  mike
- * Added test for solaris strtod overflow bug.
- *
- * Revision 1.5  1996/08/11 22:10:39  mike
- * Some systems blow the !(d==d) test for a NAN.  Added a work around.
- *
- * Revision 1.4  1995/01/09  01:22:28  mike
- * check sig handler ret type to make fpe_check.c more robust
- *
- * Revision 1.3  1994/12/18  20:54:00  mike
- * check NetBSD mathlib defines
- *
- * Revision 1.2  1994/12/14  14:37:26  mike
- * add messages to user
- *
-*/
+ * $MawkId: fpe_check.c,v 1.17 2023/07/22 22:27:46 tom Exp $
+ */
 
 #include <stdlib.h>
 #include <stdio.h>

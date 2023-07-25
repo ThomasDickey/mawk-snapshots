@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2017,2020, Thomas E. Dickey
+copyright 2008-2020,2023, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.34 2020/10/23 08:07:50 tom Exp $
+ * $MawkId: rexp.c,v 1.35 2023/07/24 20:46:40 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -348,7 +348,7 @@ REdestroy(STATE * ptr)
     int n = 0;
     STATE *q = ptr;
 
-    TRACE(("REdestroy %p\n", ptr));
+    TRACE(("REdestroy %p\n", (void *) ptr));
     while (!done) {
 	TRACE(("...%d type %d\n", n, q->s_type));
 	switch (q->s_type) {

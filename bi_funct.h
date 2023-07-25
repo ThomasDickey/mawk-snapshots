@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.h
-copyright 2009-2012,2016 Thomas E. Dickey
+copyright 2009-2016,2023 Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.h,v 1.6 2016/09/29 23:13:04 tom Exp $
+ * $MawkId: bi_funct.h,v 1.7 2023/07/23 15:32:26 tom Exp $
  */
 
 #ifndef  BI_FUNCT_H
@@ -27,6 +27,7 @@ void bi_init(void);
 CELL *bi_print(CELL *);
 CELL *bi_printf(CELL *);
 CELL *bi_length(CELL *);
+CELL *bi_alength(CELL *);	/* length/size of an array */
 CELL *bi_index(CELL *);
 CELL *bi_substr(CELL *);
 CELL *bi_sprintf(CELL *);

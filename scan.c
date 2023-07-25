@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.50 2023/07/16 23:38:30 tom Exp $
+ * $MawkId: scan.c,v 1.52 2023/07/25 19:12:26 tom Exp $
  */
 
 #include  "mawk.h"
@@ -420,7 +420,7 @@ yylex(void)
     case SC_ESCAPE:
 	while (scan_code[NextUChar(c)] == SC_SPACE) {
 	    ;			/* empty */
-	};
+	}
 	if (c == '\n') {
 	    token_lineno = ++lineno;
 	    goto reswitch;
@@ -533,8 +533,8 @@ yylex(void)
 	ct_ret(RBOX);
 
     case SC_MATCH:
-	string_buff[1] = '~';
-	string_buff[0] = 0;
+	string_buff[0] = '~';
+	string_buff[1] = 0;
 	yylval.ival = 1;
 	ct_ret(MATCH);
 
@@ -675,7 +675,7 @@ yylex(void)
 
 	    while (scan_code[NextUChar(c)] == SC_SPACE) {
 		;		/* empty */
-	    };
+	    }
 	    if (scan_code[c] != SC_DIGIT &&
 		scan_code[c] != SC_DOT) {
 		un_next();
@@ -726,8 +726,7 @@ yylex(void)
 		/* check for function call before defined */
 		if (next() == CHR_LPAREN) {
 		    stp->type = ST_FUNCT;
-		    stp->stval.fbp = (FBLOCK *)
-			zmalloc(sizeof(FBLOCK));
+		    stp->stval.fbp = ZMALLOC(FBLOCK);
 		    stp->stval.fbp->name = stp->name;
 		    stp->stval.fbp->code = (INST *) 0;
 		    stp->stval.fbp->size = 0;
@@ -778,20 +777,6 @@ yylex(void)
 	    case ST_BUILTIN:
 		yylval.bip = stp->stval.bip;
 		current_token = BUILTIN;
-		break;
-
-	    case ST_LENGTH:
-
-		yylval.bip = stp->stval.bip;
-
-		/* check for length alone, this is an ugly
-		   hack */
-		while (scan_code[NextUChar(c)] == SC_SPACE) {
-		    ;		/* empty */
-		};
-		un_next();
-
-		current_token = c == CHR_LPAREN ? BUILTIN : LENGTH;
 		break;
 
 	    case ST_FIELD:

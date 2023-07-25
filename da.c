@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2020,2021, Thomas E. Dickey
+copyright 2008-2021,2023, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.30 2021/05/29 00:00:01 tom Exp $
+ * $MawkId: da.c,v 1.35 2023/07/25 22:21:08 tom Exp $
  */
 
 /*  da.c  */
@@ -58,7 +58,6 @@ static const OP_NAME simple_code[] =
     { _STOP,      "stop" },
     { FE_PUSHA,   "fe_pusha" },
     { FE_PUSHI,   "fe_pushi" },
-    { A_LENGTH,   "a_length" },
     { A_TEST,     "a_test" },
     { A_DEL,      "a_del" },
     { DEL_A,      "del_a" },
@@ -124,30 +123,59 @@ static const char *jfmt = "%s%s%03d\n";
 static const char *tab2 = "\t\t";
 
 void
-da_string(FILE *fp, const char *str, size_t len)
+da_string2(FILE *fp, const char *value, size_t length, int delim)
 {
     size_t n;
 
-    fputc('"', fp);
-    for (n = 0; n < len; ++n) {
-	UChar ch = (UChar) str[n];
+    fputc(delim, fp);
+    for (n = 0; n < length; ++n) {
+	UChar ch = (UChar) value[n];
 	switch (ch) {
 	case '\\':
-	    fprintf(fp, "\\\\");
+	    fputc(ch, fp);
 	    break;
-	case '"':
-	    fprintf(fp, "\"");
+	case '\a':		/* alert, ascii 7 */
+	    fputs("\\\\", fp);
+	    break;
+	case '\b':		/* backspace, ascii 8 */
+	    fputs("\\b", fp);
+	    break;
+	case '\t':		/* tab, ascii 9 */
+	    fputs("\\t", fp);
+	    break;
+	case '\n':		/* newline, ascii 10 */
+	    fputs("\\n", fp);
+	    break;
+	case '\v':		/* vertical tab, ascii 11 */
+	    fputs("\\v", fp);
+	    break;
+	case '\f':		/* formfeed, ascii 12 */
+	    fputs("\\f", fp);
+	    break;
+	case '\r':		/* carriage return, ascii 13 */
+	    fputs("\\r", fp);
 	    break;
 	default:
-	    if (ch >= 32 && ch < 127)
-		fprintf(fp, "%c", ch);
+	    if (ch == delim)
+		fprintf(fp, "\\%c", ch);
+	    else if (ch >= 32 && ch < 127)
+		fputc(ch, fp);
 	    else
 		fprintf(fp, "\\%03o", ch);
 	    break;
 	}
     }
-    fputc('"', fp);
+    fputc(delim, fp);
 }
+
+void
+da_string(FILE *fp, const STRING * sparm, int delim)
+{
+    da_string2(fp, sparm->str, sparm->len, delim);
+}
+
+#define NORMAL_FORM "%03ld .\t"
+#define ADJUST_FORM  "# patching %s\n    .\t"
 
 INST *
 da_this(INST * p, INST * start, FILE *fp)
@@ -155,8 +183,7 @@ da_this(INST * p, INST * start, FILE *fp)
     CELL *cp;
 
     /* print the relative code address (label) */
-    fprintf(fp, "%03ld ", (long) (p - start));
-    fprintf(fp, ".\t");
+    fprintf(fp, NORMAL_FORM, (long) (p - start));
 
     switch ((MAWK_OPCODES) (p++->op)) {
 
@@ -165,8 +192,9 @@ da_this(INST * p, INST * start, FILE *fp)
 	switch (cp->type) {
 	case C_RE:
 	    add_to_regex_list(cp->ptr);
-	    fprintf(fp, "pushc\t%p\t/%s/\n", cp->ptr,
-		    re_uncompile(cp->ptr));
+	    fprintf(fp, "pushc\t%p\t", cp->ptr);
+	    da_string(fp, re_uncompile(cp->ptr), '/');
+	    fputc('\n', fp);
 	    break;
 
 	case C_SPACE:
@@ -176,13 +204,18 @@ da_this(INST * p, INST * start, FILE *fp)
 	case C_SNULL:
 	    fprintf(fp, "pushc\tnull split\n");
 	    break;
+
 	case C_REPL:
-	    fprintf(fp, "pushc\trepl\t%s\n",
-		    repl_uncompile(cp));
+
+	    fprintf(fp, "pushc\trepl\t");
+	    da_string(fp, repl_uncompile(cp), '"');
+	    fputc('\n', fp);
 	    break;
+
 	case C_REPLV:
-	    fprintf(fp, "pushc\treplv\t%s\n",
-		    repl_uncompile(cp));
+	    fprintf(fp, "pushc\treplv\t");
+	    da_string(fp, repl_uncompile(cp), '"');
+	    fputc('\n', fp);
 	    break;
 
 	default:
@@ -194,21 +227,19 @@ da_this(INST * p, INST * start, FILE *fp)
     case _PUSHD:
 	fprintf(fp, "pushd\t%.6g\n", *(double *) p++->ptr);
 	break;
+
     case _PUSHS:
-	{
-	    STRING *sval = (STRING *) p++->ptr;
-	    fprintf(fp, "pushs\t");
-	    da_string(fp, sval->str, sval->len);
-	    fprintf(fp, "\n");
-	    break;
-	}
+	fprintf(fp, "pushs\t");
+	da_string(fp, (STRING *) p++->ptr, '"');
+	fputc('\n', fp);
+	break;
 
     case _MATCH0:
     case _MATCH1:
 	add_to_regex_list(p->ptr);
-	fprintf(fp, "match%d\t%p\t/%s/\n",
-		p[-1].op == _MATCH1, p->ptr,
-		re_uncompile(p->ptr));
+	fprintf(fp, "match%d\t%p\t", p[-1].op == _MATCH1, p->ptr);
+	da_string(fp, re_uncompile(p->ptr), '/');
+	fputc('\n', fp);
 	p++;
 	break;
 
@@ -284,6 +315,54 @@ da_this(INST * p, INST * start, FILE *fp)
 		reverse_find(ST_ARRAY, &p++->ptr));
 	break;
 
+    case A_LENGTH:
+	{
+	    SYMTAB *stp = (SYMTAB *) p++->ptr;
+	    fprintf(fp, ADJUST_FORM, type_to_str(stp->type));
+	    switch (stp->type) {
+	    case ST_VAR:
+		fprintf(fp, "pushi\t%s\t# defer_alen\n", stp->name);
+		break;
+	    case ST_ARRAY:
+		fprintf(fp, "a_pusha\t%s\t# defer_alen\n", stp->name);
+		p[1].ptr = (PTR) bi_alength;
+		break;
+	    case ST_NONE:
+		fprintf(fp, "pushi\t%s\t# defer_alen\n", "@missing");
+		break;
+	    default:
+		bozo("da A_LENGTH");
+		/* NOTREACHED */
+	    }
+	}
+	break;
+
+    case _LENGTH:
+	{
+	    DEFER_LEN *dl = (DEFER_LEN *) p++->ptr;
+	    FBLOCK *fbp = dl->fbp;
+	    short offset = dl->offset;
+	    int type = fbp->typev[offset];
+	    fprintf(fp, ADJUST_FORM, type_to_str(type));
+	    switch (type) {
+	    case ST_LOCAL_VAR:
+		fprintf(fp, "lpushi\t%s %u\t# defer_len\n",
+			fbp->name, offset);
+		break;
+	    case ST_LOCAL_ARRAY:
+		fprintf(fp, "la_pusha\t%s %u\t# defer_len\n",
+			fbp->name, offset);
+		p[1].ptr = (PTR) bi_alength;
+		break;
+	    case ST_LOCAL_NONE:
+		fprintf(fp, "pushi\t%s\t# defer_len\n", "@missing");
+		break;
+	    default:
+		bozo("da _LENGTH");
+		/* NOTREACHED */
+	    }
+	}
+	break;
     case _PUSHINT:
 	fprintf(fp, "pushint\t%d\n", p++->op);
 	break;
@@ -352,6 +431,7 @@ da_this(INST * p, INST * start, FILE *fp)
 		(long) (p - start + p[3].op));
 	p += 4;
 	break;
+
     default:
 	{
 	    const OP_NAME *q = simple_code;
@@ -378,19 +458,21 @@ da(INST * p, FILE *fp)
     fflush(fp);
 }
 /* *INDENT-OFF* */
-static struct
+static const struct
 {
    PF_CP action ;
-   const char *name ;
+   const char name[10] ;
 }
 special_cases[] =
 {
-   {bi_split,   "split"},
-   {bi_match,   "match"},
-   {bi_getline, "getline"},
-   {bi_sub,     "sub"},
-   {bi_gsub,    "gsub"},
-   {(PF_CP) 0, (char *) 0}
+    { bi_split,    "split" },
+    { bi_length,   "length" },
+    { bi_alength,  "alength" },
+    { bi_match,    "match" },
+    { bi_getline,  "getline" },
+    { bi_sub,      "sub" },
+    { bi_gsub,     "gsub" },
+    { (PF_CP) 0,   "" }
 } ;
 /* *INDENT-ON* */
 
@@ -530,6 +612,8 @@ static const OP_NAME other_codes[] = {
     { _PUSHINT,   "pushint" },
     { _PUSHS,     "pushs" },
     { _RANGE,     "range" },
+    { _LENGTH,    "defer_len" },
+    { A_LENGTH,   "defer_alen" },
     { _HALT,      "" }
 };
 /* *INDENT-ON* */

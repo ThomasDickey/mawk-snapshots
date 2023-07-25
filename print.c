@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.43 2023/05/26 00:08:54 tom Exp $
+ * $MawkId: print.c,v 1.44 2023/07/23 15:14:06 tom Exp $
  */
 
 #include "mawk.h"
@@ -105,8 +105,7 @@ print_cell(CELL *p, FILE *fp)
 */
 
 CELL *
-bi_print(
-	    CELL *sp)		/* stack ptr passed in */
+bi_print(CELL *sp)		/* stack ptr passed in */
 {
     register CELL *p;
     register int k;

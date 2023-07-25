@@ -1,6 +1,6 @@
 /********************************************
 nstd.h
-copyright 2009-2012,2017 Thomas E. Dickey
+copyright 2009-2017,2023 Thomas E. Dickey
 copyright 1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -18,27 +18,8 @@ the GNU General Public License, version 2, 1991.
 */
 
 /*
- * $MawkId: nstd.h,v 1.11 2017/10/17 01:19:15 tom Exp $
- * @Log: nstd.h,v @
- * Revision 1.6  1995/06/18  19:42:22  mike
- * Remove some redundant declarations and add some prototypes
- *
- * Revision 1.5  1995/04/20  20:26:56  mike
- * beta improvements from Carl Mascott
- *
- * Revision 1.4  1994/12/11  22:08:24  mike
- * add STDC_MATHERR
- *
- * Revision 1.3  1993/07/15  23:56:09  mike
- * general cleanup
- *
- * Revision 1.2  1993/07/07  00:07:43  mike
- * more work on 1.2
- *
- * Revision 1.1  1993/07/04  12:38:06  mike
- * Initial revision
- *
-*/
+ * $MawkId: nstd.h,v 1.12 2023/07/22 22:27:11 tom Exp $
+ */
 
 #ifndef  NSTD_H
 #define  NSTD_H		1

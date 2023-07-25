@@ -1,6 +1,6 @@
 /********************************************
 memory.c
-copyright 2009,2010  Thomas E. Dickey
+copyright 2009-2010,2023  Thomas E. Dickey
 copyright 1991-1992,1993  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,20 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: memory.c,v 1.8 2010/12/10 17:00:00 tom Exp $
- * @Log: memory.c,v @
- * Revision 1.2  1993/07/17  13:23:08  mike
- * indent and general code cleanup
- *
- * Revision 1.1.1.1  1993/07/03	 18:58:17  mike
- * move source to cvs
- *
- * Revision 5.2	 1993/01/01  21:30:48  mike
- * split new_STRING() into new_STRING and new_STRING0
- *
- * Revision 5.1	 1991/12/05  07:56:21  brennan
- * 1.1 pre-release
- *
+ * $MawkId: memory.c,v 1.9 2023/07/22 22:28:36 tom Exp $
  */
 
 /* memory.c */

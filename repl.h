@@ -1,6 +1,6 @@
 /********************************************
 repl.h
-copyright 2009-2014,2020, Thomas E. Dickey
+copyright 2009-2020,2023, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: repl.h,v 1.9 2020/07/17 23:16:52 tom Exp $
+ * $MawkId: repl.h,v 1.11 2023/07/20 00:32:26 tom Exp $
  */
 
 /* repl.h */
@@ -36,10 +36,10 @@ typedef struct re_data {
 #define refRE_DATA(re)  ((PTR) &(re))
 
 PTR re_compile(STRING *);
-char *re_uncompile(PTR);
+STRING *re_uncompile(PTR);
 
 CELL *repl_compile(STRING *);
-char *repl_uncompile(CELL *);
+const STRING *repl_uncompile(CELL *);
 void re_destroy(PTR);
 void repl_destroy(CELL *);
 CELL *replv_cpy(CELL *, CELL *);
