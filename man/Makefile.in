@@ -1,6 +1,6 @@
-# $MawkId: Makefile.in,v 1.5 2020/08/03 20:06:53 tom Exp $
+# $MawkId: Makefile.in,v 1.6 2023/07/26 23:15:24 tom Exp $
 ###############################################################################
-# copyright 2010-2015,2020 Thomas E. Dickey
+# copyright 2010-2020,2023 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -15,32 +15,56 @@ SHELL=/bin/sh
 srcdir		= @srcdir@
 VPATH		= @srcdir@
 
-PROG	= mawk
-manext	= 1
+prefix          = @prefix@
+datarootdir     = @datarootdir@
 
-.SUFFIXES : .html .$(manext) .man .ps .pdf .doc .txt
+mandir		= @mandir@
 
-.$(manext).html :
-	../man2html.tmp $* $(manext) man >$@
+INSTALL         = @INSTALL@
+INSTALL_DATA    = @INSTALL_DATA@
 
-.$(manext).ps :
-	$(SHELL) -c "tbl $*.$(manext) | groff -man" >$@
+# these are overridden by top-level makefile
+PROGRAM		= mawk
+TOPIC		=
+SECTION		= 1
 
-.$(manext).doc :
-	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(manext) | nroff -Tascii -man" >$@
+# what/where to put the man pages (do not override)
+MANDIR          = $(DESTDIR)$(mandir)
+TARGET_DIR	= $(MANDIR)/man$(SECTION)
+SOURCE_FILE	= mawk$(TOPIC).$(SECTION)
+TARGET_FILE	= $(PROGRAM)$(TOPIC).$(SECTION)
 
-.$(manext).txt :
-	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(manext) | nroff -Tascii -man | col -bx" >$@
+.SUFFIXES : .html .$(SECTION) .man .ps .pdf .doc .txt
+
+.$(SECTION).html :
+	../man2html.tmp $* $(SECTION) man >$@
+
+.$(SECTION).ps :
+	$(SHELL) -c "tbl $*.$(SECTION) | groff -man" >$@
+
+.$(SECTION).doc :
+	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -Tascii -man" >$@
+
+.$(SECTION).txt :
+	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -Tascii -man | col -bx" >$@
 
 .ps.pdf :
 	ps2pdf $*.ps
 
 ALL	= \
-	$(PROG).html \
-	$(PROG).pdf \
-	$(PROG).ps
+	$(PROGRAM).html \
+	$(PROGRAM).pdf \
+	$(PROGRAM).ps
 
-all:	$(PROG).txt $(PROG).doc $(ALL)
+all:	$(PROGRAM).txt $(PROGRAM).doc $(ALL)
+
+install: $(TARGET_DIR)
+	@echo "$@ing $(TARGET_DIR)/$(TARGET_FILE) manpage"
+	@$(INSTALL_DATA) $(SOURCE_FILE) $(TARGET_DIR)/$(TARGET_FILE)
+
+uninstall:
+	@echo "$@ing $(TARGET_DIR)/$(TARGET_FILE) manpage"
+	@-rm -f $(TARGET_DIR)/$(TARGET_FILE)
 
 clean:
 	-rm -f $(ALL)
@@ -49,6 +73,9 @@ distclean: clean
 	rm -f Makefile
 
 maintainer-clean: clean
-	rm -f $(PROG).txt $(PROG).doc
+	rm -f $(PROGRAM).txt $(PROGRAM).doc
 
-$(PROG).pdf : $(PROG).ps
+$(PROGRAM).pdf : $(PROGRAM).ps
+
+$(TARGET_DIR) :
+	mkdir -p "$@"

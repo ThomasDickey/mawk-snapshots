@@ -1,9 +1,12 @@
--- $MawkId: CHANGES,v 1.351 2023/07/25 23:33:45 tom Exp $
+-- $MawkId: CHANGES,v 1.352 2023/07/26 23:46:08 tom Exp $
 
 NOTE:
 	The regular expression changes begun in 2020 are incomplete, e.g., do
 	not handle a mixture of grouping and brace expressions.  Fixing that
 	issue is needed before a new stable release.
+
+20230726
+	+ modify makefile to install mawk-array and mawk-code manpages.
 
 20230725
 	+ use da_string more consistently in dumps.
