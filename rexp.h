@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.40 2023/07/23 11:32:20 tom Exp $
+ * $MawkId: rexp.h,v 1.41 2023/07/28 00:21:02 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -263,6 +263,12 @@ RE_set_limit(STATE * s, Int minlimit, Int maxlimit)
 }
 #endif /* ! NO_RI_LOOP_UNROLL */
 #endif /* ! NO_INTERVAL_EXPR */
+
+#ifdef NO_LEAKS
+extern void RE_copy_states(STATE *, const STATE *, size_t);
+#else
+#define RE_copy_states(d, s, n) memcpy((d), (s), (n) * STATESZ)
+#endif
 
 #endif /* LOCAL_REGEXP */
 

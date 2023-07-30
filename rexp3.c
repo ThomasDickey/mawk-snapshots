@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.50 2023/07/24 20:43:39 tom Exp $
+ * $MawkId: rexp3.c,v 1.51 2023/07/29 23:44:55 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -464,6 +464,7 @@ REmatch(char *str,		/* string to test */
 	} else
 #else /* !NO_RI_LOOP_UNROLL */
 	if (m->it_max < MAX__INT && ++(m->it_cnt) >= m->it_max) {
+	    ++m;
 	    RE_CASE();		/* test the next thing */
 	} else
 #endif /* NO_RI_LOOP_UNROLL */

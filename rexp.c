@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.35 2023/07/24 20:46:40 tom Exp $
+ * $MawkId: rexp.c,v 1.38 2023/07/30 20:48:27 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -114,6 +114,9 @@ typedef struct {
     int token;
     int prec;
 } OPS;
+
+/* duplicate_m() relies upon copying machines whose size is 1, i.e., atoms */
+#define BigMachine(mp) (((mp)->stop - (mp)->start) > 1)
 
 STATE *
 REcompile(char *re, size_t len)
@@ -220,6 +223,8 @@ REcompile(char *re, size_t len)
 		    RE_close_limit(m_ptr, intrvalmin, intrvalmax);
 		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
 		}
+	    } else if (BigMachine(m_ptr)) {
+		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
 #ifdef NO_RI_LOOP_UNROLL
 	    } else if (intrvalmin >= 1) {	/* one or more */
 		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
@@ -234,8 +239,8 @@ REcompile(char *re, size_t len)
 		/* copy 2 copies of m_ptr, use 2nd copy to replace
 		   the first copy that gets swallowed by concat */
 		MACHINE *result_mp = m_ptr;
-		MACHINE *concat_mp = (MACHINE *) (m_ptr + 1);
-		MACHINE *new_mp = (MACHINE *) (m_ptr + 2);
+		MACHINE *concat_mp = (m_ptr + 1);
+		MACHINE *new_mp = (m_ptr + 2);
 		duplicate_m(concat_mp, result_mp);
 		duplicate_m(new_mp, result_mp);
 		for (i = 2; i <= intrvalmin; i++) {
@@ -350,7 +355,7 @@ REdestroy(STATE * ptr)
 
     TRACE(("REdestroy %p\n", (void *) ptr));
     while (!done) {
-	TRACE(("...%d type %d\n", n, q->s_type));
+	TRACE(("...destroy[%d] %p type %s\n", n, q, REs_type(q)));
 	switch (q->s_type) {
 	case M_ACCEPT:
 	    done = 1;
@@ -411,7 +416,7 @@ duplicate_m(MACHINE * newmp, MACHINE * oldmp)
 {
     register STATE *p;
     p = (STATE *) RE_malloc(2 * STATESZ);
-    memcpy(p, oldmp->start, 2 * STATESZ);
+    RE_copy_states(p, oldmp->start, 2);
     newmp->start = (STATE *) p;
     newmp->stop = (STATE *) (p + 1);
 }

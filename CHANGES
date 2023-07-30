@@ -1,9 +1,11 @@
--- $MawkId: CHANGES,v 1.352 2023/07/26 23:46:08 tom Exp $
+-- $MawkId: CHANGES,v 1.355 2023/07/30 23:26:51 tom Exp $
 
-NOTE:
-	The regular expression changes begun in 2020 are incomplete, e.g., do
-	not handle a mixture of grouping and brace expressions.  Fixing that
-	issue is needed before a new stable release.
+20230730
+	+ rexp.c: do not unroll repetition into loops if the repetition applies
+	  to more than one character.
+	+ rexp3.c: increment machine on completing M_2JC step to fix a case
+	  with infinite loop.
+	+ print.c: improve parameter-passing, eliminating a duplicate check.
 
 20230726
 	+ modify makefile to install mawk-array and mawk-code manpages.
@@ -194,8 +196,8 @@ NOTE:
 
 20181114
 	+ revert a change for memory-leaks which made the forced-exit via a
-	  user function inconsistent with earlier versions (report by Sihera
-	  Andre).
+	  user function inconsistent with earlier versions (report by Andre
+	  Sihera).
 	+ amend a change for memory-leaks to avoid a double-free (Original-Mawk
 	  #56).
 

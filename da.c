@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.35 2023/07/25 22:21:08 tom Exp $
+ * $MawkId: da.c,v 1.36 2023/07/27 08:28:07 tom Exp $
  */
 
 /*  da.c  */
@@ -346,11 +346,11 @@ da_this(INST * p, INST * start, FILE *fp)
 	    fprintf(fp, ADJUST_FORM, type_to_str(type));
 	    switch (type) {
 	    case ST_LOCAL_VAR:
-		fprintf(fp, "lpushi\t%s %u\t# defer_len\n",
+		fprintf(fp, "lpushi\t%s %hd\t# defer_len\n",
 			fbp->name, offset);
 		break;
 	    case ST_LOCAL_ARRAY:
-		fprintf(fp, "la_pusha\t%s %u\t# defer_len\n",
+		fprintf(fp, "la_pusha\t%s %hd\t# defer_len\n",
 			fbp->name, offset);
 		p[1].ptr = (PTR) bi_alength;
 		break;

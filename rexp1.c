@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.24 2023/07/23 11:30:35 tom Exp $
+ * $MawkId: rexp1.c,v 1.25 2023/07/28 00:21:02 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -112,7 +112,7 @@ RE_cat(MACHINE * mp, MACHINE * np)
     --sz;
 #endif
     mp->stop = mp->start + (sz - 1);
-    memcpy(mp->start + sz1, np->start, sz2 * STATESZ);
+    RE_copy_states(mp->start + sz1, np->start, sz2);
 #ifndef NO_INTERVAL_EXPR
     mp->start[sz].s_type = M_ACCEPT;	/* this is needed in RE_init_it_cnt */
 #endif
@@ -131,13 +131,13 @@ RE_or(MACHINE * mp, MACHINE * np)
     szn = (size_t) (np->stop - np->start + 1);
 
     p = (STATE *) RE_malloc((szm + szn + 1) * STATESZ);
-    memcpy(p + 1, mp->start, szm * STATESZ);
+    RE_copy_states(p + 1, mp->start, szm);
     RE_free(mp->start);
     mp->start = p;
     (mp->stop = p + szm + szn)->s_type = M_ACCEPT;
     p->s_type = M_2JA;
     p->s_data.jump = (int) (szm + 1);
-    memcpy(p + szm + 1, np->start, szn * STATESZ);
+    RE_copy_states(p + szm + 1, np->start, szn);
     RE_free(np->start);
     (p += szm)->s_type = M_1J;
     p->s_data.jump = (int) szn;
@@ -238,7 +238,7 @@ RE_close(MACHINE * mp)
     ignore_star_star(mp, sz);
 
     p = (STATE *) RE_malloc((sz + 3) * STATESZ);
-    memcpy(p + 2, mp->start, sz * STATESZ);
+    RE_copy_states(p + 2, mp->start, sz);
     RE_free(mp->start);
     mp->start = p;
     mp->stop = p + (sz + 2);
@@ -275,7 +275,7 @@ RE_poscl(MACHINE * mp)
     ignore_star_star(mp, sz);
 
     p = (STATE *) RE_malloc((sz + 2) * STATESZ);
-    memcpy(p + 1, mp->start, sz * STATESZ);
+    RE_copy_states(p + 1, mp->start, sz);
     RE_free(mp->start);
     mp->start = p;
     mp->stop = p + (sz + 1);
@@ -308,7 +308,7 @@ RE_01(MACHINE * mp)
      */
     sz = (size_t) (mp->stop - mp->start + 1);
     p = (STATE *) RE_malloc((sz + 1) * STATESZ);
-    memcpy(p + 1, mp->start, sz * STATESZ);
+    RE_copy_states(p + 1, mp->start, sz);
     RE_free(mp->start);
     mp->start = p;
     mp->stop = p + sz;
@@ -350,5 +350,21 @@ RE_free(PTR p)
 {
     TRACE(("RE_free(%p)\n", p));
     free(p);
+}
+
+/* when copying states, ensure strings are new copies so we can destroy ok */
+void
+RE_copy_states(STATE * target, const STATE * source, size_t length)
+{
+    size_t n;
+
+    for (n = 0; n < length; ++n) {
+	memcpy(target + n, source + n, STATESZ);
+	switch (source[n].s_type) {
+	case M_STR:
+	    target[n].s_data.str = strdup(target[n].s_data.str);
+	    break;
+	}
+    }
 }
 #endif

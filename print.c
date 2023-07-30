@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.44 2023/07/23 15:14:06 tom Exp $
+ * $MawkId: print.c,v 1.46 2023/07/29 23:44:55 tom Exp $
  */
 
 #include "mawk.h"
@@ -315,7 +315,7 @@ SprintfFill(char *buffer, int ch, int fill)
 }
 
 static char *
-SprintfBlock(char *buffer, char *source, int length)
+SprintfBlock(char *buffer, const char *source, int length)
 {
     SprintfOverflow(buffer, length);
     memcpy(buffer, source, (size_t) length);
@@ -327,15 +327,12 @@ SprintfBlock(char *buffer, char *source, int length)
  */
 static void
 stream_puts_sfmt(FILE *fp,
-		 CELL *source,
-		 STRING * onechr,
+		 const char *src_str,
+		 int src_len,
 		 int width,
 		 int prec,
 		 int flags)
 {
-    char *src_str = onechr ? onechr->str : string(source)->str;
-    int src_len = onechr ? 1 : (int) string(source)->len;
-
     if (width < 0) {
 	width = -width;
 	flags |= sfmtMINUS;
@@ -367,15 +364,12 @@ stream_puts_sfmt(FILE *fp,
 
 static PTR
 buffer_puts_sfmt(char *target,
-		 CELL *source,
-		 STRING * onechr,
+		 const char *src_str,
+		 int src_len,
 		 int width,
 		 int prec,
 		 int flags)
 {
-    char *src_str = onechr ? onechr->str : string(source)->str;
-    int src_len = onechr ? 1 : (int) string(source)->len;
-
     if (width < 0) {
 	width = -width;
 	flags |= sfmtMINUS;
@@ -637,8 +631,8 @@ do_printf(FILE *fp,
 	    }
 	    p = xbuff;
 	}
-#define PUTS_C_ARGS fp, 0,  &onechr, sfmt_width, sfmt_prec, sfmt_flags
-#define PUTS_S_ARGS fp, cp, 0,       sfmt_width, sfmt_prec, sfmt_flags
+#define PUTS_C_ARGS fp, onechr.str,            1,               sfmt_width, sfmt_prec, sfmt_flags
+#define PUTS_S_ARGS fp, string(cp)->str, (int) string(cp)->len, sfmt_width, sfmt_prec, sfmt_flags
 
 	/* ready to call printf() */
 	switch (AST(ast_cnt, pf_type)) {
@@ -981,8 +975,8 @@ do_sprintf(
 	    }
 	    p = xbuff;
 	}
-#define PUTS_C_ARGS target, 0,  &onechr, sfmt_width, sfmt_prec, sfmt_flags
-#define PUTS_S_ARGS target, cp, 0,       sfmt_width, sfmt_prec, sfmt_flags
+#define PUTS_C_ARGS target, onechr.str,            1,                sfmt_width, sfmt_prec, sfmt_flags
+#define PUTS_S_ARGS target, string(cp)->str, (int) string(cp)->len,  sfmt_width, sfmt_prec, sfmt_flags
 
 	/* ready to call printf() */
 	s_format = 0;
