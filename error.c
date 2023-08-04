@@ -11,12 +11,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.25 2023/07/24 21:18:55 tom Exp $
+ * $MawkId: error.c,v 1.26 2023/08/01 21:50:59 tom Exp $
  */
 
 #include <mawk.h>
 #include <scan.h>
 #include <bi_vars.h>
+
+#ifdef DEBUG
+#define FLUSH() fflush(stdout)
+#else
+#define FLUSH() /* nothing */
+#endif
 
 /* for run time error messages only */
 unsigned rt_nr, rt_fnr;
@@ -174,6 +180,7 @@ errmsg(int errnum, const char *format, ...)
 {
     va_list args;
 
+    FLUSH();
     fprintf(stderr, "%s: ", progname);
 
 #if OPT_TRACE > 0
@@ -209,15 +216,13 @@ compile_error(const char *format, ...)
 	s0 = s1 = "";
     }
 
-#ifdef DEBUG
-    fflush(stdout);
-#endif
+    FLUSH();
     fprintf(stderr, "%s: %s%sline %u: ", progname, s0, s1, token_lineno);
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
     fprintf(stderr, "\n");
-    if (++compile_error_count == MAX_COMPILE_ERRORS)
+    if (++compile_error_count >= MAX_COMPILE_ERRORS)
 	mawk_exit(2);
 }
 
@@ -252,6 +257,7 @@ rt_error(const char *format, ...)
 {
     va_list args;
 
+    FLUSH();
     fprintf(stderr, "%s: run time error: ", progname);
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -275,6 +281,7 @@ unexpected_char(void)
 {
     int c = yylval.ival;
 
+    FLUSH();
     fprintf(stderr, "%s: %u: ", progname, token_lineno);
     if (c > ' ' && c < 127)
 	fprintf(stderr, "unexpected character '%c'\n", c);

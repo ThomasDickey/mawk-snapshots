@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.118 2023/07/24 08:23:33 tom Exp $
+ * $MawkId: bi_funct.c,v 1.123 2023/08/04 08:11:23 Miguel.Pineiro Exp $
  */
 
 #include <mawk.h>
@@ -167,7 +167,7 @@ str_str(char *target, size_t target_len, const char *key, size_t key_len)
 	while (target_len >= key_len && (target = memchr(target, k, target_len))) {
 	    target_len = target_len - (size_t) (target - prior) - 1;
 	    prior = ++target;
-	    if (target[0] == k1) {
+	    if (target_len > 0 && target[0] == k1) {
 		result = target - 1;
 		break;
 	    }
@@ -179,7 +179,7 @@ str_str(char *target, size_t target_len, const char *key, size_t key_len)
 	while (target_len > key_len && (target = memchr(target, k, target_len))) {
 	    target_len = target_len - (size_t) (target - prior) - 1;
 	    prior = ++target;
-	    if (memcmp(target, key + 1, key_len) == 0) {
+	    if (target_len >= key_len && memcmp(target, key + 1, key_len) == 0) {
 		result = target - 1;
 		break;
 	    }
@@ -343,53 +343,32 @@ bi_match(CELL *sp)
     return_CELL("bi_match", sp);
 }
 
-CELL *
-bi_toupper(CELL *sp)
-{
-    STRING *old;
-    register char *p, *q;
-
-    TRACE_FUNC("bi_toupper", sp);
-
-    if (sp->type != C_STRING)
-	cast1_to_s(sp);
-    old = string(sp);
-    sp->ptr = (PTR) new_STRING0(old->len);
-
-    q = string(sp)->str;
-    p = old->str;
-    while (*p) {
-	*q = *p++;
-	*q = (char) toupper((UChar) * q);
-	q++;
-    }
-    free_STRING(old);
-    return_CELL("bi_toupper", sp);
+#define BI_TOCASE(case) \
+CELL * \
+bi_to##case(CELL *sp) \
+{ \
+    STRING *old; \
+    size_t len; \
+    register char *p, *q; \
+\
+    TRACE_FUNC("bi_to" #case, sp); \
+\
+    if (sp->type != C_STRING) \
+        cast1_to_s(sp); \
+    old = string(sp); \
+    len = old->len; \
+    sp->ptr = (PTR) new_STRING0(len); \
+\
+    q = string(sp)->str; \
+    p = old->str; \
+    while (len--) \
+	*q++ = (char) to##case((UChar) *p++); \
+    free_STRING(old); \
+    return_CELL("bi_to" #case, sp); \
 }
-
-CELL *
-bi_tolower(CELL *sp)
-{
-    STRING *old;
-    register char *p, *q;
-
-    TRACE_FUNC("bi_tolower", sp);
-
-    if (sp->type != C_STRING)
-	cast1_to_s(sp);
-    old = string(sp);
-    sp->ptr = (PTR) new_STRING0(old->len);
-
-    q = string(sp)->str;
-    p = old->str;
-    while (*p) {
-	*q = *p++;
-	*q = (char) tolower((UChar) * q);
-	q++;
-    }
-    free_STRING(old);
-    return_CELL("bi_tolower", sp);
-}
+BI_TOCASE(upper)
+BI_TOCASE(lower)
+#undef BI_TOCASE
 
 /*
  * Like gawk...
@@ -918,7 +897,6 @@ bi_fflush(CELL *sp)
 CELL *
 bi_system(CELL *sp GCC_UNUSED)
 {
-#ifdef HAVE_REAL_PIPES
     int ret_val;
 
     TRACE_FUNC("bi_system", sp);
@@ -926,24 +904,22 @@ bi_system(CELL *sp GCC_UNUSED)
     if (sp->type < C_STRING)
 	cast1_to_s(sp);
 
+#ifdef HAVE_REAL_PIPES
     flush_all_output();
     ret_val = wait_status(system(string(sp)->str));
+#elif defined(__MINGW32__)
+    flush_all_output();
+    ret_val = system(string(sp)->str);
+#elif defined(MSDOS)
+    ret_val = DOSexec(string(sp)->str);
+#else
+    ret_val = -1;
+#endif
 
     cell_destroy(sp);
     sp->type = C_DOUBLE;
     sp->dval = (double) ret_val;
-#elif defined(MSDOS)
-    int retval;
 
-    if (sp->type < C_STRING)
-	cast1_to_s(sp);
-    retval = DOSexec(string(sp)->str);
-    free_STRING(string(sp));
-    sp->type = C_DOUBLE;
-    sp->dval = (double) retval;
-#else
-    sp = 0;
-#endif
     return_CELL("bi_system", sp);
 }
 
@@ -988,7 +964,7 @@ bi_getline(CELL *sp)
 	sp--;
 	if (sp->type < C_STRING)
 	    cast1_to_s(sp);
-	fin_p = (FIN *) file_find(sp->ptr, F_IN);
+	fin_p = (FIN *) file_find(string(sp), F_IN);
 	free_STRING(string(sp));
 	sp--;
 
@@ -1005,7 +981,7 @@ bi_getline(CELL *sp)
 	sp -= 2;
 	if (sp->type < C_STRING)
 	    cast1_to_s(sp);
-	fin_p = (FIN *) file_find(sp->ptr, PIPE_IN);
+	fin_p = (FIN *) file_find(string(sp), PIPE_IN);
 	free_STRING(string(sp));
 
 	if (!fin_p)

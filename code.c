@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.40 2023/07/24 20:08:54 tom Exp $
+ * $MawkId: code.c,v 1.41 2023/08/01 07:42:59 tom Exp $
  */
 
 #include "mawk.h"
@@ -69,9 +69,9 @@ code_shrink(CODEBLOCK * p, size_t *sizep)
     retval = (INST *) zrealloc(p->base, oldsize, newsize);
     TRACE(("code_shrink old %p %lu, new %p %lu\n",
 	   (void *) p->base,
-	   oldsize,
+	   (unsigned long) oldsize,
 	   (void *) retval,
-	   newsize));
+	   (unsigned long) newsize));
     ZFREE(p);
     return retval;
 }
@@ -259,7 +259,11 @@ free_codes(const char *tag, INST * base, size_t size)
 
     (void) tag;
 
-    TRACE(("free_codes(%s) base %p, size %lu\n", tag, (void *) base, size));
+    TRACE(("free_codes(%s) base %p, size %lu\n",
+	   tag,
+	   (void *) base,
+	   (unsigned long) size));
+
     if (base != 0 && size != 0) {
 	for (cdp = base; cdp < last; ++cdp) {
 	    TRACE_INST(cdp, base);

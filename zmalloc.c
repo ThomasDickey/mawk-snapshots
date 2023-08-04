@@ -1,6 +1,6 @@
 /********************************************
 zmalloc.c
-copyright 2008-2013,2019, Thomas E. Dickey
+copyright 2008-2019,2023, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.31 2019/01/30 01:30:02 tom Exp $
+ * $MawkId: zmalloc.c,v 1.33 2023/08/04 08:22:23 tom Exp $
  */
 
 /*  zmalloc.c  */
@@ -287,7 +287,11 @@ zrealloc(PTR p, size_t old_size, size_t new_size)
 {
     register PTR q;
 
-    TRACE(("zrealloc %p %lu ->%lu\n", p, old_size, new_size));
+    TRACE(("zrealloc %p %lu ->%lu\n",
+	   p,
+	   (unsigned long) old_size,
+	   (unsigned long) new_size));
+
     if (new_size > (BlocksToBytes(POOLSZ)) &&
 	old_size > (BlocksToBytes(POOLSZ))) {
 	if (!(q = realloc(p, new_size))) {

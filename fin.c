@@ -1,7 +1,7 @@
 /********************************************
 fin.c
-copyright 2008-2020,2021.  Thomas E. Dickey
-copyright 1991-1995,1996.  Michael D. Brennan
+copyright 2008-2021,2023, Thomas E. Dickey
+copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.48 2021/05/28 23:59:35 tom Exp $
+ * $MawkId: fin.c,v 1.49 2023/08/01 20:56:25 tom Exp $
  */
 
 /* fin.c */
@@ -508,7 +508,7 @@ next_main(int open_flag)	/* called by open_main() if on */
 	/* try to open it -- we used to continue on failure,
 	   but posix says we should quit */
 	if (!(main_fin = FINopen(string(cp)->str, 1))) {
-	    errmsg(errno, "cannot open %s", string(cp)->str);
+	    errmsg(errno, "cannot open \"%s\"", string(cp)->str);
 	    mawk_exit(2);
 	}
 

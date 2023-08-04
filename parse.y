@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.28 2023/07/25 19:03:52 tom Exp $
+ * $MawkId: parse.y,v 1.29 2023/08/03 20:27:26 tom Exp $
  */
 
 %{
@@ -484,11 +484,11 @@ statement : if_front statement
                 { patch_jmp( code_ptr ) ;  }
               ;
 
-else    :  ELSE { eat_nl() ; code_jmp(_JMP, (INST*)0) ; }
+else_back    :  ELSE { eat_nl() ; code_jmp(_JMP, (INST*)0) ; }
         ;
 
 /* if_else_statement */
-statement :  if_front statement else statement
+statement :  if_front statement else_back statement
                 { patch_jmp(code_ptr) ;
                   patch_jmp(CDP($4)) ;
                 }
@@ -810,12 +810,7 @@ split_back  :   RPAREN
             ;
 
 /* distinguish length vs length(string) vs length(array) */
-p_expr :  LENGTH
-          { $$ = code_offset ;
-            code2(_PUSHI,field) ;
-            code2(_BUILTIN,bi_length) ;
-          }
-       |  LENGTH LPAREN  RPAREN
+p_expr :  LENGTH LPAREN  RPAREN
           { $$ = code_offset ;
             code2(_PUSHI,field) ;
             code2(_BUILTIN,bi_length) ;
@@ -870,6 +865,12 @@ p_expr :  LENGTH
                   type_error(stp);
                   break;
               }
+          }
+       ;
+p_expr :  LENGTH %prec CAT	/* fixes s/r conflict length vs length() */
+          { $$ = code_offset ;
+            code2(_PUSHI,field) ;
+            code2(_BUILTIN,bi_length) ;
           }
        ;
 

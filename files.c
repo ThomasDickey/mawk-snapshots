@@ -1,7 +1,7 @@
 /********************************************
 files.c
-copyright 2008-2016,2019.  Thomas E. Dickey
-copyright 1991-1994,1996.  Michael D. Brennan
+copyright 2008-2019,2023, Thomas E. Dickey
+copyright 1991-1994,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.33 2019/01/30 00:37:08 tom Exp $
+ * $MawkId: files.c,v 1.35 2023/08/04 00:01:24 tom Exp $
  */
 
 /* files.c */
@@ -100,6 +100,29 @@ output_failed(const char *name)
     /* NOTREACHED */
 }
 
+/*
+ * Most open-failures are recoverable, or affect only certain files.
+ * However, running out of file-descriptors indicates a problem with
+ * the script, and it is unlikely that recovery is possible.
+ */
+#ifdef EMFILE			/* (POSIX.1-2001) */
+#define input_failed(name, p) \
+ 	do { \
+	    if (errno == EMFILE) { \
+		errmsg(errno, "cannot open \"%s\" for input", name); \
+		mawk_exit(2); \
+	    } \
+	    free_filenode(p); \
+	    return (PTR) 0; \
+	} while (0)
+#else
+#define input_failed(name, p) \
+	do { \
+	    free_filenode(p); \
+	    return (PTR) 0; \
+	} while (0)
+#endif
+
 #if USE_BINMODE
 #define BinMode2(t,f) ((binmode() & 2) ? (t) : (f))
 #else
@@ -134,10 +157,8 @@ file_find(STRING * sval, int type)
 		break;
 
 	    case F_IN:
-		if (!(p->ptr = (PTR) FINopen(name, 0))) {
-		    free_filenode(p);
-		    return (PTR) 0;
-		}
+		if (!(p->ptr = (PTR) FINopen(name, 0)))
+		    input_failed(name, p);
 		break;
 
 	    case PIPE_OUT:
@@ -148,10 +169,8 @@ file_find(STRING * sval, int type)
 		if (!(p->ptr = get_pipe(name, type, &p->pid))) {
 		    if (type == PIPE_OUT)
 			output_failed(name);
-		    else {
-			free_filenode(p);
-			return (PTR) 0;
-		    }
+		    else
+			input_failed(name, p);
 		}
 #else
 		rt_error("pipes not supported");
@@ -453,7 +472,7 @@ get_pipe(char *name, int type, int *pid_ptr)
 	IGNORE_RC(dup(remote_fd));
 	close(remote_fd);
 	execl(shell, shell, "-c", name, (char *) 0);
-	errmsg(errno, "failed to exec %s -c %s", shell, name);
+	errmsg(errno, "failed to exec %s -c \"%s\"", shell, name);
 	fflush(stderr);
 	_exit(128);
 
@@ -660,7 +679,7 @@ static void
 close_error(FILE_NODE * p)
 {
     TRACE(("close_error(%s)\n", p->name->str));
-    errmsg(errno, "close failed on file %s", p->name->str);
+    errmsg(errno, "close failed on file \"%s\"", p->name->str);
 #ifdef NO_LEAKS
     free_filenode(p);
 #endif

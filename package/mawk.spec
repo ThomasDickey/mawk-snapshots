@@ -1,9 +1,9 @@
 Summary: mawk - pattern scanning and text processing language
 %global AppProgram mawk
 %global AppVersion 1.3.4
-%global AppPatched 20230730
+%global AppPatched 20230804
 %global MySite https://invisible-island.net
-# $MawkId: mawk.spec,v 1.107 2023/07/30 23:31:15 tom Exp $
+# $MawkId: mawk.spec,v 1.109 2023/08/04 08:15:38 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppPatched}
@@ -49,9 +49,13 @@ strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 %defattr(-,root,root)
 %{_prefix}/bin/%{AppProgram}
 %{_mandir}/man1/%{AppProgram}.*
+%{_mandir}/man7/%{AppProgram}-*.*
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Wed Aug 02 2023 Thomas Dickey
+- add man7-pages for array/code
 
 * Thu Dec 29 2022 Thomas Dickey
 - update URLs

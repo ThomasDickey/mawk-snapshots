@@ -239,7 +239,7 @@ static const YYINT yylen[] = {                            2,
     4,    3,    4,    1,    2,    1,    2,    3,    5,    5,
     5,    6,    7,    3,    6,    2,    1,    2,    6,    2,
     3,    1,    3,    3,    3,    3,    3,    3,    3,    2,
-    5,    1,    3,    1,    3,    4,    4,    6,    1,    2,
+    5,    1,    3,    3,    4,    4,    1,    6,    1,    2,
     3,    2,    3,    1,    2,    2,    3,    4,    1,    1,
     1,    2,    3,    6,    1,    1,    1,    3,    2,    4,
     2,    2,    0,    1,    1,    3,    1,    3,    2,    2,
@@ -264,7 +264,7 @@ static const YYINT yydefred[] = {                         0,
    27,    0,    0,    0,  140,   29,   30,    0,  142,    0,
    16,   21,   23,  100,    0,  104,    0,    0,  116,    0,
     0,    0,    0,    0,    0,    0,    0,    0,  121,    0,
-   60,    0,    0,  168,    0,    0,  135,    0,    0,    0,
+   60,    0,    0,  168,    0,    0,  134,    0,    0,    0,
     0,    8,   10,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,  108,    0,   41,   42,   43,   44,   45,   46,   18,
@@ -272,8 +272,8 @@ static const YYINT yydefred[] = {                         0,
     0,    0,  165,    0,    0,  153,    0,  102,    0,    0,
     0,    0,  114,  141,  143,   95,    0,  105,  106,    0,
     0,    0,    0,    0,   86,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,  169,    0,    0,  170,    0,  137,
-  136,    0,    0,    0,    0,    0,    0,  148,  133,    0,
+    0,    0,    0,    0,  169,    0,    0,  170,    0,  136,
+  135,    0,    0,    0,    0,    0,    0,  148,  133,    0,
   160,    0,   99,    0,  103,   93,    0,   96,  107,  101,
    88,    0,    0,    0,    0,    0,    0,    0,    0,  109,
     0,  173,  175,  172,  174,   81,  131,    0,    0,   53,
@@ -537,13 +537,13 @@ static const YYINT yytable[] = {                         79,
    59,   59,   59,   59,    0,   59,   59,   59,   59,   59,
    59,   59,    0,    0,   59,   59,    0,   59,   59,   59,
    59,   59,   59,   59,   59,    0,   59,   59,   59,    0,
-    0,   59,   59,   59,   59,  134,  134,  134,    0,    0,
-  134,  134,  134,  134,  134,  134,  134,  134,  134,  134,
-  134,  134,  134,  134,  134,  134,  134,  134,  134,  134,
-  134,  134,    0,  134,  134,  134,  134,  134,  134,  134,
-    0,  134,  134,  134,  134,  134,  134,    0,  134,  134,
-  134,  134,  134,    0,  134,  134,  134,    0,    0,  134,
-  134,  134,  134,  122,  122,  122,    0,    0,  122,  122,
+    0,   59,   59,   59,   59,  137,  137,  137,    0,    0,
+  137,  137,  137,  137,  137,  137,  137,  137,  137,  137,
+  137,  137,  137,  137,  137,  137,  137,  137,  137,  137,
+  137,  137,    0,  137,  137,  137,  137,  137,  137,  137,
+    0,  137,  137,  137,  137,  137,  137,    0,  137,  137,
+  137,  137,  137,    0,  137,  137,  137,    0,    0,  137,
+  137,  137,  137,  122,  122,  122,    0,    0,  122,  122,
   122,  122,  122,  122,  122,  122,  122,  122,  122,  122,
   122,  122,  122,  122,  122,  122,  122,  122,  122,  122,
     0,  122,  122,  122,  122,  122,  122,  122,    0,  122,
@@ -1382,8 +1382,8 @@ static const char *const yyname[] = {
 "split_front","re_arg","sub_back","arglist","args","print","sub_or_gsub",
 "funct_start","funct_head","call_args","ca_front","ca_back","f_arglist",
 "f_args","program_block","PA_block","function_def","outside_error","$$1","$$2",
-"$$3","$$4","$$5","separator","$$6","$$7","$$8","$$9","pr_direction","else",
-"do","for3","split_back","getline","illegal-symbol",
+"$$3","$$4","$$5","separator","$$6","$$7","$$8","$$9","pr_direction",
+"else_back","do","for3","split_back","getline","illegal-symbol",
 };
 static const char *const yyrule[] = {
 "$accept : program",
@@ -1481,8 +1481,8 @@ static const char *const yyrule[] = {
 "pr_direction : IO_OUT expr",
 "if_front : IF LPAREN expr RPAREN",
 "statement : if_front statement",
-"else : ELSE",
-"statement : if_front statement else statement",
+"else_back : ELSE",
+"statement : if_front statement else_back statement",
 "do : DO",
 "statement : do statement WHILE LPAREN expr RPAREN separator",
 "while_front : WHILE LPAREN expr RPAREN",
@@ -1520,10 +1520,10 @@ static const char *const yyrule[] = {
 "split_front : SPLIT LPAREN expr COMMA ID",
 "split_back : RPAREN",
 "split_back : COMMA expr RPAREN",
-"p_expr : LENGTH",
 "p_expr : LENGTH LPAREN RPAREN",
 "p_expr : LENGTH LPAREN expr RPAREN",
 "p_expr : LENGTH LPAREN ID RPAREN",
+"p_expr : LENGTH",
 "p_expr : MATCH_FUNC LPAREN expr COMMA re_arg RPAREN",
 "re_arg : expr",
 "statement : EXIT separator",
@@ -1693,7 +1693,7 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 1167 "parse.y"
+#line 1168 "parse.y"
 
 /*
  * Check for special case where there is a forward reference to a newly
@@ -3580,21 +3580,13 @@ case 134:
 break;
 case 135:
 #line 819 "parse.y"
-	{ yyval.start = code_offset ;
-            code2(_PUSHI,field) ;
-            code2(_BUILTIN,bi_length) ;
-          }
-#line 3588 "parse.c"
-break;
-case 136:
-#line 824 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ;
             code2(_BUILTIN,bi_length) ;
           }
-#line 3595 "parse.c"
+#line 3587 "parse.c"
 break;
-case 137:
-#line 828 "parse.y"
+case 136:
+#line 823 "parse.y"
 	{
               SYMTAB* stp = yystack.l_mark[-1].stp;
               yyval.start = code_offset;
@@ -3641,17 +3633,25 @@ case 137:
                   break;
               }
           }
+#line 3637 "parse.c"
+break;
+case 137:
+#line 871 "parse.y"
+	{ yyval.start = code_offset ;
+            code2(_PUSHI,field) ;
+            code2(_BUILTIN,bi_length) ;
+          }
 #line 3645 "parse.c"
 break;
 case 138:
-#line 879 "parse.y"
+#line 880 "parse.y"
 	{ yyval.start = yystack.l_mark[-3].start ;
           code2(_BUILTIN, bi_match) ;
         }
 #line 3652 "parse.c"
 break;
 case 139:
-#line 886 "parse.y"
+#line 887 "parse.y"
 	{
                INST *p1 = CDP(yystack.l_mark[0].start) ;
 
@@ -3674,29 +3674,29 @@ case 139:
 #line 3675 "parse.c"
 break;
 case 140:
-#line 910 "parse.y"
+#line 911 "parse.y"
 	{ yyval.start = code_offset ;
                       code1(_EXIT0) ; }
 #line 3681 "parse.c"
 break;
 case 141:
-#line 913 "parse.y"
+#line 914 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ; code1(_EXIT) ; }
 #line 3686 "parse.c"
 break;
 case 142:
-#line 917 "parse.y"
+#line 918 "parse.y"
 	{ yyval.start = code_offset ;
                       code1(_RET0) ; }
 #line 3692 "parse.c"
 break;
 case 143:
-#line 920 "parse.y"
+#line 921 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ; code1(_RET) ; }
 #line 3697 "parse.c"
 break;
 case 144:
-#line 926 "parse.y"
+#line 927 "parse.y"
 	{ yyval.start = code_offset ;
             code2(F_PUSHA, &field[0]) ;
             code1(_PUSHINT) ; code1(0) ;
@@ -3706,7 +3706,7 @@ case 144:
 #line 3707 "parse.c"
 break;
 case 145:
-#line 933 "parse.y"
+#line 934 "parse.y"
 	{ yyval.start = yystack.l_mark[0].start ;
             code1(_PUSHINT) ; code1(0) ;
             code2(_BUILTIN, bi_getline) ;
@@ -3715,7 +3715,7 @@ case 145:
 #line 3716 "parse.c"
 break;
 case 146:
-#line 939 "parse.y"
+#line 940 "parse.y"
 	{ code1(_PUSHINT) ; code1(F_IN) ;
             code2(_BUILTIN, bi_getline) ;
             /* getline_flag already off in yylex() */
@@ -3723,7 +3723,7 @@ case 146:
 #line 3724 "parse.c"
 break;
 case 147:
-#line 944 "parse.y"
+#line 945 "parse.y"
 	{ code2(F_PUSHA, &field[0]) ;
             code1(_PUSHINT) ; code1(PIPE_IN) ;
             code2(_BUILTIN, bi_getline) ;
@@ -3731,7 +3731,7 @@ case 147:
 #line 3732 "parse.c"
 break;
 case 148:
-#line 949 "parse.y"
+#line 950 "parse.y"
 	{
             code1(_PUSHINT) ; code1(PIPE_IN) ;
             code2(_BUILTIN, bi_getline) ;
@@ -3739,24 +3739,24 @@ case 148:
 #line 3740 "parse.c"
 break;
 case 149:
-#line 955 "parse.y"
+#line 956 "parse.y"
 	{ getline_flag = 1 ; }
 #line 3745 "parse.c"
 break;
 case 152:
-#line 960 "parse.y"
+#line 961 "parse.y"
 	{ yyval.start = code_offset ;
                    code2(F_PUSHA, field+0) ;
                  }
 #line 3752 "parse.c"
 break;
 case 153:
-#line 964 "parse.y"
+#line 965 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ; }
 #line 3757 "parse.c"
 break;
 case 154:
-#line 972 "parse.y"
+#line 973 "parse.y"
 	{
              INST *p5 = CDP(yystack.l_mark[-1].start) ;
              INST *p6 = CDP(yystack.l_mark[0].start) ;
@@ -3777,29 +3777,29 @@ case 154:
 #line 3778 "parse.c"
 break;
 case 155:
-#line 991 "parse.y"
+#line 992 "parse.y"
 	{ yyval.fp = bi_sub ; }
 #line 3783 "parse.c"
 break;
 case 156:
-#line 992 "parse.y"
+#line 993 "parse.y"
 	{ yyval.fp = bi_gsub ; }
 #line 3788 "parse.c"
 break;
 case 157:
-#line 997 "parse.y"
+#line 998 "parse.y"
 	{ yyval.start = code_offset ;
                   code2(F_PUSHA, &field[0]) ;
                 }
 #line 3795 "parse.c"
 break;
 case 158:
-#line 1002 "parse.y"
+#line 1003 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ; }
 #line 3800 "parse.c"
 break;
 case 159:
-#line 1010 "parse.y"
+#line 1011 "parse.y"
 	{
                    resize_fblock(yystack.l_mark[-1].fbp) ;
                    restore_ids() ;
@@ -3808,7 +3808,7 @@ case 159:
 #line 3809 "parse.c"
 break;
 case 160:
-#line 1019 "parse.y"
+#line 1020 "parse.y"
 	{ eat_nl() ;
                    scope = SCOPE_FUNCT ;
                    active_funct = yystack.l_mark[-3].fbp ;
@@ -3830,7 +3830,7 @@ case 160:
 #line 3831 "parse.c"
 break;
 case 161:
-#line 1040 "parse.y"
+#line 1041 "parse.y"
 	{ FBLOCK  *fbp ;
 
                    if ( yystack.l_mark[0].stp->type == ST_NONE )
@@ -3854,7 +3854,7 @@ case 161:
 #line 3855 "parse.c"
 break;
 case 162:
-#line 1062 "parse.y"
+#line 1063 "parse.y"
 	{ yyval.fbp = yystack.l_mark[0].fbp ;
                    if ( yystack.l_mark[0].fbp->code )
                        compile_error("redefinition of %s" , yystack.l_mark[0].fbp->name) ;
@@ -3862,12 +3862,12 @@ case 162:
 #line 3863 "parse.c"
 break;
 case 163:
-#line 1068 "parse.y"
+#line 1069 "parse.y"
 	{ yyval.ival = init_arglist() ; }
 #line 3868 "parse.c"
 break;
 case 165:
-#line 1073 "parse.y"
+#line 1074 "parse.y"
 	{ init_arglist();
                 yystack.l_mark[0].stp = save_arglist(yystack.l_mark[0].stp->name) ;
                 yystack.l_mark[0].stp->offset = 0 ;
@@ -3876,7 +3876,7 @@ case 165:
 #line 3877 "parse.c"
 break;
 case 166:
-#line 1079 "parse.y"
+#line 1080 "parse.y"
 	{ if ( is_local(yystack.l_mark[0].stp) )
                   compile_error("%s is duplicated in argument list",
                     yystack.l_mark[0].stp->name) ;
@@ -3889,7 +3889,7 @@ case 166:
 #line 3890 "parse.c"
 break;
 case 167:
-#line 1091 "parse.y"
+#line 1092 "parse.y"
 	{  /* we may have to recover from a bungled function
                        definition */
                    /* can have local ids, before code scope
@@ -3901,7 +3901,7 @@ case 167:
 #line 3902 "parse.c"
 break;
 case 168:
-#line 1104 "parse.y"
+#line 1105 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ;
              code2(_CALL, yystack.l_mark[-2].fbp) ;
 
@@ -3913,12 +3913,12 @@ case 168:
 #line 3914 "parse.c"
 break;
 case 169:
-#line 1115 "parse.y"
+#line 1116 "parse.y"
 	{ yyval.ca_p = (CA_REC *) 0 ; }
 #line 3919 "parse.c"
 break;
 case 170:
-#line 1117 "parse.y"
+#line 1118 "parse.y"
 	{ yyval.ca_p = yystack.l_mark[0].ca_p ;
                  yyval.ca_p->link = yystack.l_mark[-1].ca_p ;
                  yyval.ca_p->arg_num = (short) (yystack.l_mark[-1].ca_p ? yystack.l_mark[-1].ca_p->arg_num+1 : 0) ;
@@ -3927,12 +3927,12 @@ case 170:
 #line 3928 "parse.c"
 break;
 case 171:
-#line 1133 "parse.y"
+#line 1134 "parse.y"
 	{ yyval.ca_p = (CA_REC *) 0 ; }
 #line 3933 "parse.c"
 break;
 case 172:
-#line 1135 "parse.y"
+#line 1136 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->link = yystack.l_mark[-2].ca_p ;
                 yyval.ca_p->type = CA_EXPR  ;
@@ -3943,7 +3943,7 @@ case 172:
 #line 3944 "parse.c"
 break;
 case 173:
-#line 1143 "parse.y"
+#line 1144 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = ST_NONE ;
                 yyval.ca_p->link = yystack.l_mark[-2].ca_p ;
@@ -3955,7 +3955,7 @@ case 173:
 #line 3956 "parse.c"
 break;
 case 174:
-#line 1154 "parse.y"
+#line 1155 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = CA_EXPR ;
                 yyval.ca_p->call_offset = code_offset ;
@@ -3963,7 +3963,7 @@ case 174:
 #line 3964 "parse.c"
 break;
 case 175:
-#line 1160 "parse.y"
+#line 1161 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = ST_NONE ;
                 code_call_id(yyval.ca_p, yystack.l_mark[-1].stp) ;

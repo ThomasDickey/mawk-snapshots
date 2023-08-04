@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.52 2023/07/25 19:12:26 tom Exp $
+ * $MawkId: scan.c,v 1.53 2023/08/01 20:50:42 tom Exp $
  */
 
 #include  "mawk.h"
@@ -154,7 +154,7 @@ scan_open(void)			/* open pfile_name */
     if (pfile_name[0] == '-' && pfile_name[1] == 0) {
 	program_fd = 0;
     } else if ((program_fd = open(pfile_name, O_RDONLY, 0)) == -1) {
-	errmsg(errno, "cannot open %s", pfile_name);
+	errmsg(errno, "cannot open \"%s\"", pfile_name);
 	mawk_exit(2);
     }
 }
