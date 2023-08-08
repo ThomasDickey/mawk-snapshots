@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.49 2023/08/01 20:56:25 tom Exp $
+ * $MawkId: fin.c,v 1.51 2023/08/08 21:57:08 tom Exp $
  */
 
 /* fin.c */
@@ -33,6 +33,17 @@ the GNU General Public License, version 2, 1991.
    records, FINgets().
 */
 
+/*
+ * An input buffer can grow much larger than the memory pool, and the number
+ * of open files is fairly constrained.  We allow for that in zmalloc(), by
+ * bypassing the memory pool.
+ */
+#ifdef MSDOS
+#define JUMPSZ BUFFSZ
+#else
+#define JUMPSZ (BUFFSZ * 64)
+#endif
+
 static FIN *next_main(int);
 static char *enlarge_fin_buffer(FIN *);
 int is_cmdline_assign(char *);	/* also used by init */
@@ -47,7 +58,7 @@ static void
 free_fin_data(FIN * fin)
 {
     if (fin != &dead_main) {
-	zfree(fin->buff, (size_t) (fin->nbuffs * BUFFSZ + 1));
+	zfree(fin->buff, fin->buff_size);
 	ZFREE(fin);
     }
 }
@@ -62,9 +73,9 @@ FINdopen(int fd, int main_flag)
 
     fin->fd = fd;
     fin->flags = main_flag ? (MAIN_FLAG | START_FLAG) : START_FLAG;
-    fin->buffp = fin->buff = (char *) zmalloc((size_t) BUFFSZ + 1);
+    fin->buff_size = JUMPSZ;
+    fin->buffp = fin->buff = (char *) zmalloc(fin->buff_size);
     fin->limit = fin->buffp;
-    fin->nbuffs = 1;
     fin->buff[0] = 0;
 
     if ((isatty(fd) && rs_shadow.type == SEP_CHAR && rs_shadow.c == '\n')
@@ -125,7 +136,7 @@ FINsemi_close(FIN * fin)
     static char dead = 0;
 
     if (fin->buff != &dead) {
-	zfree(fin->buff, (size_t) (fin->nbuffs * BUFFSZ + 1));
+	zfree(fin->buff, fin->buff_size);
 
 	if (fin->fd) {
 	    if (fin->fp)
@@ -213,17 +224,10 @@ FINgets(FIN * fin, size_t *len_p)
 			 * space.  Doing it this way assumes very-long lines
 			 * are rare.
 			 */
-			size_t old_size = (size_t) (fin->nbuffs++ * BUFFSZ + 1);
-			size_t new_size = old_size + BUFFSZ;
-			char *new_buff = (char *) zmalloc(new_size);
 			size_t my_size = (size_t) (p - fin->buff);
-			if (new_buff != fin->buff) {
-			    memcpy(new_buff, fin->buff, my_size);
-			    zfree(fin->buff, old_size);
-			    fin->buff = new_buff;
-			}
-			my_buff = my_size + fin->buff;
-			p = my_buff;
+
+			enlarge_fin_buffer(fin);
+			p = my_buff = my_size + fin->buff;
 			got_any = 1;
 		    }
 		}
@@ -239,13 +243,13 @@ FINgets(FIN * fin, size_t *len_p)
 	    return fin->buff;
 	} else {
 	    /* block buffering */
-	    r = fillbuff(fin->fd, fin->buff, (size_t) (fin->nbuffs * BUFFSZ));
+	    r = fillbuff(fin->fd, fin->buff, fin->buff_size);
 	    if (r == 0) {
 		fin->flags |= EOF_FLAG;
 		fin->buffp = fin->buff;
 		fin->limit = fin->buffp;
 		goto restart;	/* might be main */
-	    } else if (r < fin->nbuffs * BUFFSZ) {
+	    } else if (r < fin->buff_size) {
 		fin->flags |= EOF_FLAG;
 	    }
 
@@ -328,18 +332,17 @@ FINgets(FIN * fin, size_t *len_p)
 	/* move a partial line to front of buffer and try again */
 	size_t rr;
 	size_t amount = (size_t) (fin->limit - p);
-	size_t blocks = fin->nbuffs * BUFFSZ;
 
 	fin->flags |= FIN_FLAG;
 	r = amount;
-	if (blocks < r) {
+	if (fin->buff_size < r) {
 	    fin->flags |= EOF_FLAG;
 	    return 0;
 	}
 
 	p = (char *) memmove(fin->buff, p, r);
 	q = p + r;
-	rr = blocks - r;
+	rr = fin->buff_size - r;
 
 	if ((r = fillbuff(fin->fd, q, rr)) < rr) {
 	    fin->flags |= EOF_FLAG;
@@ -353,24 +356,28 @@ static char *
 enlarge_fin_buffer(FIN * fin)
 {
     size_t r;
-    size_t oldsize = fin->nbuffs * BUFFSZ + 1;
+    size_t oldsize = fin->buff_size;
+    size_t newsize = ((oldsize < JUMPSZ)
+		      ? (oldsize * 2)
+		      : (oldsize + JUMPSZ));
     size_t limit = (size_t) (fin->limit - fin->buff);
+    size_t extra = (newsize - oldsize);
 
 #ifdef  MSDOS
     /* I'm not sure this can really happen:
        avoid "16bit wrap" */
-    if (fin->nbuffs == MAX_BUFFS) {
+    if (fin->buff_size >= MAX_BUFFS) {
 	errmsg(0, "out of input buffer space");
 	mawk_exit(2);
     }
 #endif
 
+    fin->buff_size = newsize;
     fin->buffp =
-	fin->buff = (char *) zrealloc(fin->buff, oldsize, oldsize + BUFFSZ);
-    fin->nbuffs++;
+	fin->buff = (char *) zrealloc(fin->buff, oldsize, newsize);
 
-    r = fillbuff(fin->fd, fin->buff + (oldsize - 1), (size_t) BUFFSZ);
-    if (r < BUFFSZ)
+    r = fillbuff(fin->fd, fin->buff + oldsize, extra);
+    if (r < extra)
 	fin->flags |= EOF_FLAG;
 
     fin->limit = fin->buff + limit + r;

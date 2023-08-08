@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.33 2023/08/04 08:22:23 tom Exp $
+ * $MawkId: zmalloc.c,v 1.34 2023/08/08 21:22:04 tom Exp $
  */
 
 /*  zmalloc.c  */
@@ -33,21 +33,18 @@ the GNU General Public License, version 2, 1991.
 #define BlocksToBytes(size) ((size) << ZSHIFT)
 
 /*
-  zmalloc() gets mem from malloc() in CHUNKS of 2048 bytes
-  and cuts these blocks into smaller pieces that are multiples
-  of eight bytes.  When a piece is returned via zfree(), it goes
-  on a linked linear list indexed by its size.	The lists are
-  an array, pool[].
+ * zmalloc() gets memory from malloc() in chunks and cuts these blocks into
+ * smaller pieces that are multiples of eight bytes.  When a piece is returned
+ * via zfree(), it goes on a linked linear list indexed by its size.  The lists
+ * are an array, pool[].
+ *
+ * For examples, if you ask for 22 bytes with p = zmalloc(22), you actually get
+ * a piece of size 24.  When you free it with zfree(p,22), it is added to the
+ * list at pool[2].
+ */
 
-  E.g., if you ask for 22 bytes with p = zmalloc(22), you actually get
-  a piece of size 24.  When you free it with zfree(p,22) , it is added
-  to the list at pool[2].
-*/
-
-#define POOLSZ	    16
-
-#define	 CHUNK		256
- /* number of blocks to get from malloc */
+#define POOLSZ	        16	/* size of zmalloc's pool[] array */
+#define	CHUNK		256	/* number of ZBLOCKSZ's to get from malloc */
 
 /*****************************************************************************/
 

@@ -1,4 +1,8 @@
--- $MawkId: CHANGES,v 1.357 2023/08/04 08:12:38 tom Exp $
+-- $MawkId: CHANGES,v 1.358 2023/08/08 22:14:10 tom Exp $
+
+20230808
+	+ modify input buffer-resizing to improve performance with very long
+	  longs (report/testcase by Leif LeBaron).
 
 20230804
 	> fixes for nulls (patches by Miguel Pineiro Jr).
