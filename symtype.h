@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.21 2023/07/24 21:40:11 tom Exp $
+ * $MawkId: symtype.h,v 1.25 2023/08/10 18:12:55 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -21,11 +21,14 @@ the GNU General Public License, version 2, 1991.
 
 #include <types.h>
 
+typedef unsigned char NUM_ARGS;
+typedef unsigned char SYM_TYPE;
+
 /* struct to hold info about builtins */
 typedef struct {
     const char *name;
     PF_CP fp;			/* ptr to function that does the builtin */
-    unsigned char min_args, max_args;
+    NUM_ARGS min_args, max_args;
 /* info for parser to check correct number of arguments */
 } BI_REC;
 
@@ -51,8 +54,8 @@ typedef struct fblock {
     const char *name;
     INST *code;
     size_t size;
-    unsigned short nargs;
-    char *typev;		/* array of size nargs holding types */
+    NUM_ARGS nargs;
+    SYM_TYPE *typev;		/* array of size nargs holding types */
 } FBLOCK;			/* function block */
 
 extern void add_to_fdump_list(FBLOCK *);
@@ -64,26 +67,26 @@ extern void dump_regex(void);
   -----------------------*/
 
 typedef enum {
-    ST_NONE
-    ,ST_VAR
+    ST_NONE = 0
     ,ST_KEYWORD
     ,ST_BUILTIN			/* a pointer to a builtin record */
-    ,ST_ARRAY			/* a void * ptr to a hash table */
     ,ST_FIELD			/* a cell ptr to a field */
     ,ST_FUNCT
     ,ST_NR			/*  NR is special */
     ,ST_ENV			/* and so is ENVIRON */
-    ,ST_LOCAL_NONE
-    ,ST_LOCAL_VAR
-    ,ST_LOCAL_ARRAY
+    ,ST_VAR = 8			/* a scalar variable (bits from here) */
+    ,ST_ARRAY = 16		/* a void * ptr to a hash table */
+    ,ST_LOCAL_NONE = 32
+    ,ST_LOCAL_VAR = (ST_LOCAL_NONE | ST_VAR)
+    ,ST_LOCAL_ARRAY = (ST_LOCAL_NONE | ST_ARRAY)
 } SYMTAB_TYPES;
 
-#define  is_array(stp)   ((stp)->type == ST_ARRAY || (stp)->type == ST_LOCAL_ARRAY)
-#define  is_local(stp)   ((stp)->type >= ST_LOCAL_NONE)
+#define  is_array(stp)   (((stp)->type & ST_ARRAY) != 0)
+#define  is_local(stp)   (((stp)->type & ST_LOCAL_NONE) != 0)
 
 typedef struct {
     const char *name;
-    char type;
+    SYM_TYPE type;
     unsigned char offset;	/* offset in stack frame for local vars */
 #ifdef NO_LEAKS
     char free_name;
@@ -104,8 +107,8 @@ typedef struct {
 
 typedef struct ca_rec {
     struct ca_rec *link;
-    short type;
-    short arg_num;		/* position in callee's stack */
+    SYM_TYPE type;
+    NUM_ARGS arg_num;		/* position in callee's stack */
 /*---------  this data only set if we'll  need to patch -------*/
 /* happens if argument is an ID or type ST_NONE or ST_LOCAL_NONE */
 
@@ -113,7 +116,7 @@ typedef struct ca_rec {
     unsigned call_lineno;
 /* where the type is stored */
     SYMTAB *sym_p;		/* if type is ST_NONE  */
-    char *type_p;		/* if type  is ST_LOCAL_NONE */
+    SYM_TYPE *type_p;		/* if type  is ST_LOCAL_NONE */
 } CA_REC;			/* call argument record */
 
 /* type field of CA_REC matches with ST_ types */
@@ -128,7 +131,7 @@ typedef struct fcall {
     FBLOCK *call;		/* only used if call_scope == SCOPE_FUNCT  */
     INST *call_start;		/* computed later as code may be moved */
     CA_REC *arg_list;
-    short arg_cnt_checked;
+    NUM_ARGS arg_cnt_checked;
 } FCALL_REC;
 
 /* defer analysis from length() parameter for forward-references */

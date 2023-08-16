@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.29 2023/08/03 20:27:26 tom Exp $
+ * $MawkId: parse.y,v 1.34 2023/08/11 21:02:56 tom Exp $
  */
 
 %{
@@ -1022,11 +1022,11 @@ funct_start   :  funct_head  LPAREN  f_arglist  RPAREN
                    active_funct = $1 ;
                    *main_code_p = active_code ;
 
-                   $1->nargs = (unsigned short) $3 ;
+                   $1->nargs = (NUM_ARGS) $3 ;
                    if ( $3 )
-                        $1->typev = (char *)
+                        $1->typev = (SYM_TYPE *)
                         memset( zmalloc((size_t) $3), ST_LOCAL_NONE, (size_t) $3) ;
-                   else $1->typev = (char *) 0 ;
+                   else $1->typev = (SYM_TYPE *) 0 ;
 
                    code_ptr = code_base =
                        (INST *) zmalloc(INST_BYTES(PAGESZ));
@@ -1117,7 +1117,7 @@ call_args  :   LPAREN   RPAREN
            |   ca_front  ca_back
                { $$ = $2 ;
                  $$->link = $1 ;
-                 $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
+                 $$->arg_num = (NUM_ARGS) ($1 ? $1->arg_num+1 : 0) ;
                  $$->call_lineno = token_lineno;
                }
            ;
@@ -1136,7 +1136,7 @@ ca_front   :  LPAREN
               { $$ = ZMALLOC(CA_REC) ;
                 $$->link = $1 ;
                 $$->type = CA_EXPR  ;
-                $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
+                $$->arg_num = (NUM_ARGS) ($1 ? $1->arg_num+1 : 0) ;
                 $$->call_offset = code_offset ;
                 $$->call_lineno = token_lineno;
               }
@@ -1144,7 +1144,7 @@ ca_front   :  LPAREN
               { $$ = ZMALLOC(CA_REC) ;
                 $$->type = ST_NONE ;
                 $$->link = $1 ;
-                $$->arg_num = (short) ($1 ? $1->arg_num+1 : 0) ;
+                $$->arg_num = (NUM_ARGS) ($1 ? $1->arg_num+1 : 0) ;
                 $$->call_lineno = token_lineno;
 
                 code_call_id($$, $2) ;
@@ -1179,6 +1179,7 @@ improve_arglist(const char *name)
     CA_REC *p, *p2;
     FCALL_REC *q;
 
+    TRACE(("improve_arglist(%s)\n", name));
     for (p = active_arglist; p != 0; p = p->link) {
 	if (p->type == ST_LOCAL_NONE) {
 	    for (q = resolve_list; q != 0; q = q->link) {
@@ -1191,9 +1192,9 @@ improve_arglist(const char *name)
 				break;
 			    default:
 				p->type = p2->type;
-				p->sym_p->type = (char) p2->type;
-				TRACE(("...set argument %d of %s to %s\n",
-				       p->arg_num,
+				p->sym_p->type = p2->type;
+				TRACE(("...set arg %d of %s to %s\n",
+				       p->arg_num + 1,
 				       name,
 				       type_to_str(p->type)));
 				break;
@@ -1234,7 +1235,7 @@ save_arglist(const char *s)
 
 	saveit->link = 0;
 	saveit->type = ST_LOCAL_NONE;
-	saveit->arg_num = (short) arg_num;
+	saveit->arg_num = (NUM_ARGS) arg_num;
 	saveit->call_lineno = token_lineno;
 	saveit->sym_p = result;
 

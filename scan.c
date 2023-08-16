@@ -12,23 +12,23 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.53 2023/08/01 20:50:42 tom Exp $
+ * $MawkId: scan.c,v 1.55 2023/08/16 23:35:17 tom Exp $
  */
 
-#include  "mawk.h"
-#include  "scan.h"
-#include  "memory.h"
-#include  "field.h"
-#include  "init.h"
-#include  "fin.h"
-#include  "repl.h"
-#include  "code.h"
+#include <mawk.h>
+#include <scan.h>
+#include <memory.h>
+#include <field.h>
+#include <init.h>
+#include <fin.h>
+#include <repl.h>
+#include <code.h>
 
-#ifdef	  HAVE_FCNTL_H
-#include  <fcntl.h>
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
 #endif
 
-#include  "files.h"
+#include <files.h>
 
 #define CHR_LPAREN '('
 #define CHR_RPAREN ')'
@@ -97,7 +97,7 @@ static int braces_level;
 static int max_repair;
 static struct {
     SYMTAB *stp;
-    char type;
+    SYM_TYPE type;
 } repair_syms[MAX_REPAIR];
 
 /* use unsigned chars for index into scan_code[] */

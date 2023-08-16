@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.h,v 1.12 2023/07/24 08:22:18 tom Exp $
+ * $MawkId: code.h,v 1.14 2023/08/16 23:34:11 tom Exp $
  */
 
 /*  code.h  */
@@ -19,7 +19,7 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MAWK_CODE_H
 #define  MAWK_CODE_H
 
-#include "memory.h"
+#include <memory.h>
 
 #define  PAGESZ	512
 	/* number of code instructions allocated at one time */
@@ -156,6 +156,7 @@ typedef enum {
     ,_NEXTFILE
     ,_RANGE
     ,_CALL
+    ,_CALLX
     ,_RET
     ,_RET0
     ,SET_ALOOP

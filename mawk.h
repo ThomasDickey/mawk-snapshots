@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.63 2023/07/20 00:11:29 tom Exp $
+ * $MawkId: mawk.h,v 1.65 2023/08/16 23:32:10 tom Exp $
  */
 
 /*  mawk.h  */
@@ -19,7 +19,7 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MAWK_H
 #define  MAWK_H
 
-#include "nstd.h"
+#include <nstd.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -30,7 +30,7 @@ the GNU General Public License, version 2, 1991.
 
 #include <assert.h>
 
-#include "types.h"
+#include <types.h>
 
 #ifdef HAVE_STDNORETURN_H
 #include <stdnoreturn.h>
@@ -189,6 +189,10 @@ extern double strtod_with_ovf_bug(const char *, char **);
 #define strtod  strtod_with_ovf_bug
 #endif
 
+#ifndef OPT_CALLX
+#define OPT_CALLX 0
+#endif
+
 #if OPT_TRACE > 0
 extern void Trace(const char *, ...) GCC_PRINTFLIKE(1,2);
 extern void TraceVA(const char *, va_list);
@@ -233,10 +237,8 @@ extern void TraceInst(INST *, INST *);
 #define TRACE_INST(cp,base)	/* nothing */
 #endif
 
-#if OPT_TRACE > 0
 extern const char *da_type_name(CELL *);
 extern const char *da_op_name(INST *);
-#endif
 
 #ifdef NO_LEAKS
 

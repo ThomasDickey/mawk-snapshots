@@ -11,18 +11,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.41 2023/08/01 07:42:59 tom Exp $
+ * $MawkId: code.c,v 1.44 2023/08/15 23:24:13 tom Exp $
  */
 
-#include "mawk.h"
-#include "code.h"
-#include "init.h"
-#include "jmp.h"
-#include "field.h"
+#include <mawk.h>
+#include <code.h>
+#include <init.h>
+#include <jmp.h>
+#include <field.h>
 
 #ifdef NO_LEAKS
-#include "repl.h"
-#include "scan.h"
+#include <repl.h>
+#include <scan.h>
 #endif
 
 static CODEBLOCK *new_code(void);
@@ -210,12 +210,20 @@ be_setup(int scope)
     *main_code_p = active_code;
 
     if (scope == SCOPE_BEGIN) {
-	if (!begin_code_p)
+	if (!begin_code_p) {
+	    TRACE(("be_setup: BEGIN\n"));
 	    begin_code_p = new_code();
+	} else {
+	    TRACE(("be_setup: BEGIN (again)\n"));
+	}
 	active_code = *begin_code_p;
     } else {
-	if (!end_code_p)
+	if (!end_code_p) {
+	    TRACE(("be_setup: END\n"));
 	    end_code_p = new_code();
+	} else {
+	    TRACE(("be_setup: END (again)\n"));
+	}
 	active_code = *end_code_p;
     }
 }
@@ -266,7 +274,9 @@ free_codes(const char *tag, INST * base, size_t size)
 
     if (base != 0 && size != 0) {
 	for (cdp = base; cdp < last; ++cdp) {
+#ifndef NO_LEAKS
 	    TRACE_INST(cdp, base);
+#endif
 
 	    switch ((MAWK_OPCODES) (cdp->op)) {
 	    case AE_PUSHA:
@@ -314,6 +324,7 @@ free_codes(const char *tag, INST * base, size_t size)
 	    case _RANGE:
 		cdp += 4;	/* PAT1 */
 		break;
+	    case _CALLX:
 	    case _CALL:
 		cdp += 1 + cdp[2].op;
 		break;

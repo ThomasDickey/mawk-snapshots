@@ -11,12 +11,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.12 2023/07/25 21:04:05 tom Exp $
+ * $MawkId: fcall.c,v 1.17 2023/08/16 23:33:00 tom Exp $
  */
 
-#include "mawk.h"
-#include "symtype.h"
-#include "code.h"
+#include <mawk.h>
+#include <symtype.h>
+#include <code.h>
 
 /* This file has functions involved with type checking of
    function calls
@@ -34,9 +34,10 @@ trace_arg_list(CA_REC * arg_list)
 {
     CA_REC *item;
     int count = 0;
+    TRACE(("trace_arg_list\n"));
     while ((item = arg_list) != 0) {
 	arg_list = item->link;
-	TRACE(("   arg[%d] is %s\n", count, type_to_str(item->type)));
+	TRACE(("...arg %d is %s\n", item->arg_num + 1, type_to_str(item->type)));
 	++count;
     }
 }
@@ -66,7 +67,7 @@ call_arg_check(FBLOCK * callee,
     while ((q = entry_list)) {
 	entry_list = q->link;
 
-	TRACE(("...arg is %s\n", type_to_str(q->type)));
+	TRACE(("...arg %d is %s\n", q->arg_num + 1, type_to_str(q->type)));
 	if (q->type == ST_NONE) {
 	    /* try to infer the type */
 	    /* it might now be in symbol table */
@@ -136,13 +137,23 @@ call_arg_check(FBLOCK * callee,
 	    exit_list = q;
 	} else {		/* type known */
 	    if (callee->typev[q->arg_num] == ST_LOCAL_NONE) {
-		callee->typev[q->arg_num] = (char) q->type;
+		callee->typev[q->arg_num] = q->type;
 	    } else if (q->type != callee->typev[q->arg_num]) {
+#if OPT_CALLX
+		TRACE(("OOPS: arg %d (code %p, size %ld), actual %s vs %s\n",
+		       q->arg_num + 1,
+		       callee->code,
+		       callee->size,
+		       type_to_str(q->type),
+		       type_to_str(callee->typev[q->arg_num])));
+		callee->typev[q->arg_num] = q->type;
+#else
 		token_lineno = q->call_lineno;
 		compile_error("type error in arg(%d) in call to %s (actual %s vs %s)",
 			      q->arg_num + 1, callee->name,
 			      type_to_str(q->type),
 			      type_to_str(callee->typev[q->arg_num]));
+#endif
 	    }
 
 	    ZFREE(q);
@@ -256,6 +267,7 @@ resolve_fcalls(void)
 	p = old_list;
 	old_list = p->link;
 
+	TRACE(("%s@%d ", __FILE__, __LINE__));
 	if ((p->arg_list = call_arg_check(p->callee, p->arg_list,
 					  p->call_start))) {
 	    /* still have work to do , put on new_list   */
@@ -304,6 +316,7 @@ check_fcall(
 	/* usually arg_list disappears here and all is well
 	   otherwise add to resolve list */
 
+	TRACE(("%s@%d ", __FILE__, __LINE__));
 	if ((arg_list = call_arg_check(callee, arg_list,
 				       code_base))) {
 	    p = ZMALLOC(FCALL_REC);

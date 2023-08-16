@@ -1,4 +1,24 @@
--- $MawkId: CHANGES,v 1.358 2023/08/08 22:14:10 tom Exp $
+-- $MawkId: CHANGES,v 1.360 2023/08/16 23:26:29 tom Exp $
+
+20230816
+	+ start work on _CALLX
+	+ da.c:  replace most of the string-literals in fprintf's with result
+	  from da_op_name()
+	+ da.c, mawk.h:  simplify ifdef for da_op_name(), to reuse in
+	  refactoring of _CALL
+	+ da.c:  dumping the function name in front of the offset is
+	  distracting, use just "@"
+	+ da.c: make the trace show offsets like the -Wdump option
+	+ da.c:  add traces to show which function is being dumped (and
+	  possibly patched).  this improves on the fix for dump_funcs() as well,
+	  freeing the linked-list
+	+ code.c: fix a use-after-free when no-leaks and traces are combined.
+	+ code.c: add trace to be_setup()
+	+ parse.y: make trace message consistent with fcall.c
+	+ execute.c: eliminate a couple of comparisons
+	+ change SYMTAB_TYPES to mixed enum/masks, to reduce comparisons for
+	  array types.
+	+ some cleanup, using NUM_ARGS and SYM_TYPE typedefs.
 
 20230808
 	+ modify input buffer-resizing to improve performance with very long

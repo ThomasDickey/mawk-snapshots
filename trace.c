@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.18 2023/07/24 20:42:21 tom Exp $
+ * $MawkId: trace.c,v 1.19 2023/08/15 23:24:31 tom Exp $
  */
 #include <mawk.h>
 #include <repl.h>
@@ -123,6 +123,7 @@ TraceInst(INST * p, INST * base)
 	case _PRINT:
 	    TRACE(("\tPF_CP *%p\n", p->ptr));
 	    break;
+	case _CALLX:
 	case _CALL:
 	    TRACE(("\tFBLOCK *%p\n", p->ptr));
 	    break;

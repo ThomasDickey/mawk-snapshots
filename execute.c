@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.48 2023/07/25 22:25:27 tom Exp $
+ * $MawkId: execute.c,v 1.52 2023/08/15 23:24:18 tom Exp $
  */
 
 #include <mawk.h>
@@ -357,7 +357,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    {
 		SYMTAB *stp = (SYMTAB *) cdp->ptr;
 		cdp--;
-		TRACE(("patching %s\n", type_to_str(stp->type)));
+		TRACE(("patch/alen %s\n", type_to_str(stp->type)));
 		switch (stp->type) {
 		case ST_VAR:
 		    cdp[0].op = _PUSHI;
@@ -391,7 +391,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 		ZFREE(dl);
 		cdp--;
-		TRACE(("patching %s\n", type_to_str(type)));
+		TRACE(("patch/len %s\n", type_to_str(type)));
 		switch (type) {
 		case ST_LOCAL_VAR:
 		    cdp[0].op = L_PUSHI;
@@ -1294,6 +1294,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	    return;
 
+	case _CALLX:
 	case _CALL:
 
 	    /*  cdp[0] holds ptr to "function block"
@@ -1305,20 +1306,23 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		int a_args = (cdp++)->op;	/* actual number of args */
 		CELL *nfp = sp - a_args + 1;	/* new fp for callee */
 		CELL *local_p = sp + 1;		/* first local argument on stack */
-		char *type_p = 0;	/* pts to type of an argument */
+		SYM_TYPE *type_p = 0;	/* pts to type of an argument */
 
-		if (fbp->nargs)
+		if (fbp->nargs) {
 		    type_p = fbp->typev + a_args - 1;
 
-		/* create space for locals */
-		t = fbp->nargs - a_args;	/* t is number of locals */
-		while (t > 0) {
-		    t--;
-		    inc_sp();
-		    type_p++;
-		    sp->type = C_NOINIT;
-		    if ((type_p) != 0 && (*type_p == ST_LOCAL_ARRAY))
-			sp->ptr = (PTR) new_ARRAY();
+		    /* create space for locals */
+		    t = fbp->nargs - a_args;	/* t is number of locals */
+		    while (t > 0) {
+			t--;
+			inc_sp();
+			type_p++;
+			if (*type_p == ST_LOCAL_ARRAY) {
+			    sp->ptr = (PTR) new_ARRAY();
+			} else {
+			    sp->type = C_NOINIT;
+			}
+		    }
 		}
 
 		execute(fbp->code, sp, nfp);
