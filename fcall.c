@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.17 2023/08/16 23:33:00 tom Exp $
+ * $MawkId: fcall.c,v 1.18 2023/08/17 22:44:27 tom Exp $
  */
 
 #include <mawk.h>
@@ -44,6 +44,128 @@ trace_arg_list(CA_REC * arg_list)
 #else
 #define trace_arg_list(arg_list)	/* nothing */
 #endif
+
+#if OPT_TRACE
+/*
+ * FIXME: pass in the maximum offset, but keep track of jumps forward (and
+ * range) which extend beyond the last halt/stop/ret/ret0, to give a more
+ * precise value for the code size.
+ */
+static int
+inst_len(INST * p)
+{
+    int result = 0;
+    while (p != 0 && p->op != _HALT) {
+	++result;
+	switch ((MAWK_OPCODES) (p++->op)) {
+	case _HALT:
+	case _STOP:
+	case FE_PUSHA:
+	case FE_PUSHI:
+	case A_TEST:
+	case A_DEL:
+	case DEL_A:
+	case POP_AL:
+	case _POP:
+	case _ADD:
+	case _SUB:
+	case _MUL:
+	case _DIV:
+	case _MOD:
+	case _POW:
+	case _NOT:
+	case _UMINUS:
+	case _UPLUS:
+	case _TEST:
+	case _CAT:
+	case _ASSIGN:
+	case _ADD_ASG:
+	case _SUB_ASG:
+	case _MUL_ASG:
+	case _DIV_ASG:
+	case _MOD_ASG:
+	case _POW_ASG:
+	case NF_PUSHI:
+	case F_ASSIGN:
+	case F_ADD_ASG:
+	case F_SUB_ASG:
+	case F_MUL_ASG:
+	case F_DIV_ASG:
+	case F_MOD_ASG:
+	case F_POW_ASG:
+	case _POST_INC:
+	case _POST_DEC:
+	case _PRE_INC:
+	case _PRE_DEC:
+	case F_POST_INC:
+	case F_POST_DEC:
+	case F_PRE_INC:
+	case F_PRE_DEC:
+	case _EQ:
+	case _NEQ:
+	case _LT:
+	case _LTE:
+	case _GT:
+	case _GTE:
+	case _MATCH2:
+	case _EXIT:
+	case _EXIT0:
+	case _NEXT:
+	case _NEXTFILE:
+	case _RET:
+	case _RET0:
+	case _OMAIN:
+	case _JMAIN:
+	case OL_GL:
+	case OL_GL_NR:
+	    /* simple_codes */
+	    break;
+	case L_PUSHA:
+	case L_PUSHI:
+	case LAE_PUSHI:
+	case LAE_PUSHA:
+	case LA_PUSHA:
+	case F_PUSHA:
+	case F_PUSHI:
+	case AE_PUSHA:
+	case AE_PUSHI:
+	case A_PUSHA:
+	case _PUSHI:
+	case _PUSHA:
+	case _MATCH0:
+	case _MATCH1:
+	case _PUSHS:
+	case _PUSHD:
+	case _PUSHC:
+	case _PUSHINT:
+	case _BUILTIN:
+	case _PRINT:
+	case _JMP:
+	case _JNZ:
+	case _JZ:
+	case _LJZ:
+	case _LJNZ:
+	case SET_ALOOP:
+	case ALOOP:
+	case A_CAT:
+	    ++result;
+	    break;
+	case A_LENGTH:
+	case _LENGTH:
+	    ++result;
+	    break;
+	case _CALLX:
+	case _CALL:
+	    result += 2;
+	    break;
+	case _RANGE:
+	    result += 4;
+	    break;
+	}
+    }
+    return result;
+}
+#endif /* OPT_TRACE */
 
 /* type checks a list of call arguments,
    returns a list of arguments whose type is still unknown
@@ -147,6 +269,7 @@ call_arg_check(FBLOCK * callee,
 		       type_to_str(q->type),
 		       type_to_str(callee->typev[q->arg_num])));
 		callee->typev[q->arg_num] = q->type;
+		callee->defer = 1;
 #else
 		token_lineno = q->call_lineno;
 		compile_error("type error in arg(%d) in call to %s (actual %s vs %s)",
@@ -159,6 +282,10 @@ call_arg_check(FBLOCK * callee,
 	    ZFREE(q);
 	    check_progress = 1;
 	}
+	TRACE(("%s: code %p size %ld.%ld:%d\n", callee->name, callee->code,
+	       callee->size / sizeof(INST),
+	       callee->size % sizeof(INST),
+	       inst_len(callee->code)));
     }				/* while */
 
     return exit_list;

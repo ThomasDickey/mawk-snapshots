@@ -1,4 +1,13 @@
--- $MawkId: CHANGES,v 1.360 2023/08/16 23:26:29 tom Exp $
+-- $MawkId: CHANGES,v 1.364 2023/11/01 08:08:38 tom Exp $
+
+20231101
+	+ repair parsing for comma-separated -W options used in "#" lines
+	  (report by Leif Baron).
+	+ updated makedeps.sh and examples/deps.awk, to update Makefile.in
+	+ remove obsolete/incorrect zero-termination assignment from fillbuff()
+	  (Original-Mawk #71).
+	+ updated configure macros
+	+ update config.guess and config.sub
 
 20230816
 	+ start work on _CALLX

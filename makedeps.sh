@@ -1,7 +1,7 @@
 #!/bin/sh
-# $MawkId: makedeps.sh,v 1.2 2010/12/10 17:00:00 tom Exp $
+# $MawkId: makedeps.sh,v 1.3 2023/10/31 23:04:46 tom Exp $
 ###############################################################################
-# copyright 2009, Thomas E. Dickey
+# copyright 2009-2010,2023 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -30,7 +30,7 @@ function AddDeps() {
 		if ( name == ":" ) {
 			;
 		} else {
-			sub("\.o$", ".c", name);
+			sub("[.]o$", ".c", name);
 			deps[name] = 1;
 		}
 	}
@@ -38,7 +38,7 @@ function AddDeps() {
 BEGIN	{ count = 0; }
 EOF
 
-egrep 'include.*\.c"' regexp.c |
+grep -E 'include.*\.c"' regexp.c |
 	sed	-e 's/^#[^"]*"/\/^/' \
 		-e 's/\.c/\\.o/' \
 		-e 's/"/\/	{ AddDeps(); next; }/' \

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.51 2023/08/08 21:57:08 tom Exp $
+ * $MawkId: fin.c,v 1.52 2023/10/31 21:21:24 tom Exp $
  */
 
 /* fin.c */
@@ -384,10 +384,7 @@ enlarge_fin_buffer(FIN * fin)
     return fin->buff;
 }
 
-/*--------
-  target is big enough to hold size + 1 chars
-  on exit the back of the target is zero terminated
- *--------------*/
+/* fill the target with at most the number of bytes requested */
 size_t
 fillbuff(int fd, char *target, size_t size)
 {
@@ -410,7 +407,6 @@ fillbuff(int fd, char *target, size_t size)
 	}
 
   out:
-    *target = 0;
     return (size_t) (entry_size - size);
 }
 

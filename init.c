@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.76 2023/04/04 22:51:48 tom Exp $
+ * $MawkId: init.c,v 1.77 2023/11/01 07:54:27 tom Exp $
  */
 
 /* init.c */
@@ -301,7 +301,7 @@ numeric_option(const char *source)
 {
     char *next = NULL;
     long result = strtol(source, &next, 0);
-    if (next == source || next == NULL || *next != '\0') {
+    if (next == source || next == NULL || (*next != '\0' && *next != ',')) {
 	errmsg(0, "invalid numeric option: \"%s\"", source);
 	mawk_exit(2);
     }
@@ -451,12 +451,16 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
 	    mawk_exit(2);
 	}
 	optNext = skipValue(optNext);
-    } else {
+    } else if (glue) {
 	while (glue) {
 	    errmsg(0, "unexpected option value \"%s\"", option);
 	    optNext = skipValue(optNext);
 	    glue = haveValue(optNext);
 	}
+    } else if (*value == NULL) {
+	optNext = skipValue(option);
+	if (*optNext == ',')
+	    ++optNext;
     }
     *value = optNext;
     return result;
