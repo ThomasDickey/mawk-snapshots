@@ -1,4 +1,7 @@
--- $MawkId: CHANGES,v 1.364 2023/11/01 08:08:38 tom Exp $
+-- $MawkId: CHANGES,v 1.366 2023/11/02 23:27:07 tom Exp $
+
+20231102
+	+ environment-fixes for building with Solaris 10.
 
 20231101
 	+ repair parsing for comma-separated -W options used in "#" lines

@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.61 2023/10/31 23:01:07 tom Exp $
+# $MawkId: Makefile.in,v 1.62 2023/11/02 23:01:28 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
 # copyright 2009-2021,2023 Thomas E. Dickey
@@ -99,7 +99,10 @@ check :  mawk_test fpe_test
 $(PROGRAM) : $(OBJS)
 	@ECHO_LD@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-CHECK	= AWK=`pwd`/$(PROGRAM); export AWK; cd $(srcdir)/test; echo "** $@"
+CHECK	= AWK=`pwd`/$(PROGRAM); export AWK; \
+	EGREP="@EGREP@"; export EGREP; \
+	FGREP="@FGREP@"; export FGREP; \
+	cd $(srcdir)/test; echo "** $@"
 
 mawk_test :  $(PROGRAM)  # test that we have a sane mawk
 	@sh -c '$(CHECK); ./mawktest'

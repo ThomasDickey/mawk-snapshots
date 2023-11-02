@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: fpe_test,v 1.9 2023/07/25 21:27:38 tom Exp $
+# $MawkId: fpe_test,v 1.10 2023/11/02 23:20:31 tom Exp $
 ###############################################################################
 # copyright 2009-2022,2023, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
@@ -19,9 +19,6 @@ PROG="${MAWK:-../mawk}"
 
 : "${EGREP:=grep -E}"
 : "${FGREP:=grep -F}"
-
-PATH=/bin:/usr/bin
-export PATH
 
 echo "testing floating point exception handling"
 
