@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.52 2023/08/15 23:24:18 tom Exp $
+ * $MawkId: execute.c,v 1.54 2023/11/27 00:48:08 tom Exp $
  */
 
 #include <mawk.h>
@@ -108,7 +108,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 				   user defined functions */
 {
     static INST *restart_label;	/* control flow label */
-    static CELL tc;		/*useful temp */
+    static CELL tc;		/* useful temp */
     static CELL missing;	/* no value (use zero) */
 
     /* some useful temporaries */
@@ -219,14 +219,18 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case L_PUSHI:
 	    /* put the contents of a local var on stack,
 	       cdp->op holds the offset from the frame pointer */
-	    inc_sp();
-	    cellcpy(sp, fp + (cdp++)->op);
+	    if (fp != NULL) {
+		inc_sp();
+		cellcpy(sp, fp + (cdp++)->op);
+	    }
 	    break;
 
 	case L_PUSHA:
 	    /* put a local address on eval stack */
-	    inc_sp();
-	    sp->ptr = (PTR) (fp + (cdp++)->op);
+	    if (fp != NULL) {
+		inc_sp();
+		sp->ptr = (PTR) (fp + (cdp++)->op);
+	    }
 	    break;
 
 	case F_PUSHI:
@@ -1195,6 +1199,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		} else {
 		    set_field0(p, len);
 		    cdp = restart_label;
+		    if (cdp == NULL)
+			bozo("empty restart-label");
 		    rt_nr++;
 		    rt_fnr++;
 		}
@@ -1218,6 +1224,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		} else {
 		    set_field0(p, len);
 		    cdp = restart_label;
+		    if (cdp == NULL)
+			bozo("empty restart-label");
 
 		    if (TEST2(NR) != TWO_DOUBLES)
 			cast2_to_d(NR);

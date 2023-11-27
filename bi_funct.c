@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.123 2023/08/04 08:11:23 Miguel.Pineiro Exp $
+ * $MawkId: bi_funct.c,v 1.125 2023/11/26 10:00:47 tom Exp $
  */
 
 #include <mawk.h>
@@ -478,7 +478,7 @@ bi_strftime(CELL *sp)
     if (n_args > 1) {
 	if (sp[1].type != C_DOUBLE)
 	    cast1_to_d(sp + 1);
-	rawtime = d_to_i(sp[1].dval);
+	rawtime = d_to_l(sp[1].dval);
     } else {
 	time(&rawtime);
     }
@@ -793,7 +793,7 @@ bi_srand(CELL *sp)
     }
 
 #ifdef USE_SYSTEM_SRAND
-    seed = d_to_i(cseed.dval);
+    seed = d_to_l(cseed.dval);
     mawk_srand((unsigned) seed);
 #else
     /* The old seed is now in *sp ; move the value in cseed to
@@ -804,7 +804,7 @@ bi_srand(CELL *sp)
 	cast1_to_d(&c);
 
     seed = ((c.type == C_DOUBLE)
-	    ? (long) (d_to_i(c.dval) & M) % M + 1
+	    ? (long) (d_to_l(c.dval) & M) % M + 1
 	    : (long) hash(string(&c)->str) % M + 1);
     if (seed == M)
 	seed = M - 1;

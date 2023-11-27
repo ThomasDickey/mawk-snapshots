@@ -711,7 +711,7 @@ Miscellaneous options
   --disable-echo          do not display "compiling" commands
   --enable-warnings       test: turn on gcc compiler warnings
   --enable-stdnoreturn    enable C11 _Noreturn feature for diagnostics
-  --with-man2html=XXX     use XXX rather than groff
+  --with-man2html[=XXX]   use XXX rather than groff
   --without-builtin-regex do not use mawk's own regular-expressions engine
   --enable-builtin-srand  use mawk's own srand/rand functions
   --disable-init-srand    suppress automatic initialization of random numbers

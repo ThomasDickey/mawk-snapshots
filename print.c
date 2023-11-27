@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.46 2023/07/29 23:44:55 tom Exp $
+ * $MawkId: print.c,v 1.48 2023/11/27 00:33:56 tom Exp $
  */
 
 #include "mawk.h"
@@ -30,6 +30,14 @@ the GNU General Public License, version 2, 1991.
 #define ELL_LIMIT 1
 #define SpliceFormat(n)		if (n) splice = 1
 #endif
+
+#define CopySplice(dst,src) \
+	{ \
+	    size_t pp; \
+	    for (pp = 0; (pp < sizeof(dst) - 1) && (src[pp] != 0); ++pp) \
+		dst[pp] = src[pp]; \
+	    dst[pp] = 0; \
+	}
 
 #ifdef	SHORT_INTS
 #define MY_FMT	xbuff		/* format in xbuff */
@@ -602,7 +610,7 @@ do_printf(FILE *fp,
 
 	if (splice) {
 	    /* need to splice in long modifier */
-	    strcpy(xbuff, p);
+	    CopySplice(xbuff, p);
 
 	    if (l_flag < ELL_LIMIT) {
 		int k = (int) (q - p);
@@ -946,7 +954,7 @@ do_sprintf(
 
 	if (splice) {
 	    /* need to splice in long modifier */
-	    strcpy(xbuff, p);
+	    CopySplice(xbuff, p);
 
 	    if (l_flag < ELL_LIMIT) {
 		int k = (int) (q - p);

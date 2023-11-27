@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.108 2023/09/06 22:55:27 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.109 2023/11/23 11:40:35 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -2496,7 +2496,7 @@ if test "$with_dmalloc" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_MAN2HTML version: 12 updated: 2021/01/03 18:30:50
+dnl CF_WITH_MAN2HTML version: 13 updated: 2023/11/23 06:40:35
 dnl ----------------
 dnl Check for man2html and groff.  Prefer man2html over groff, but use groff
 dnl as a fallback.  See
@@ -2538,7 +2538,7 @@ esac
 
 AC_MSG_CHECKING(for program to convert manpage to html)
 AC_ARG_WITH(man2html,
-	[  --with-man2html=XXX     use XXX rather than groff],
+	[[  --with-man2html[=XXX]   use XXX rather than groff]],
 	[cf_man2html=$withval],
 	[cf_man2html=$cf_man2html])
 

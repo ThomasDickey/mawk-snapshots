@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.34 2023/07/20 00:32:26 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.35 2023/11/26 22:15:12 tom Exp $
  */
 
 /*  re_cmpl.c  */
@@ -156,13 +156,14 @@ re_destroy(PTR m)
 */
 
 /* FIXME  -- this function doesn't handle embedded nulls
-   split_buff[] and MAX_SPLIT are obsolete, but needed by this
-   function.  Putting
-   them here is temporary until the rewrite to handle nulls.
+   split_buff is obsolete, but needed by this function.
+   Putting them here is temporary until the rewrite to handle nulls.
 */
 
-#define MAX_SPLIT  256		/* handle up to 256 &'s as matched text */
-static STRING *split_buff[MAX_SPLIT];
+#define SPLIT_SIZE  256
+
+static STRING **split_buff;
+static size_t split_size;
 
 static CELL *
 REPL_compile(STRING * sval)
@@ -173,8 +174,22 @@ REPL_compile(STRING * sval)
     register char *r;
     char *xbuff;
     CELL *cp;
+    size_t limit = sval->len + 1;
 
-    q = xbuff = (char *) zmalloc(sval->len + 1);
+    if (limit > split_size) {
+	size_t new_size = limit + SPLIT_SIZE;
+	if (split_buff != NULL) {
+	    size_t old_size = split_size;
+	    split_buff = (STRING **) zrealloc(split_buff,
+					      old_size * sizeof(STRING *),
+					      new_size * sizeof(STRING *));
+	} else {
+	    split_buff = (STRING **) zmalloc(new_size * sizeof(STRING *));
+	}
+	split_size = new_size;
+    }
+
+    q = xbuff = (char *) zmalloc(limit);
 
     while (1) {
 	switch (*p) {
@@ -234,10 +249,6 @@ REPL_compile(STRING * sval)
     if (q > xbuff || count == 0)
 	split_buff[count++] = new_STRING(xbuff);
 
-    /* This will never happen */
-    if (count > MAX_SPLIT)
-	overflow("replacement pieces", MAX_SPLIT);
-
     cp = ZMALLOC(CELL);
     if (count == 1 && split_buff[0]) {
 	cp->type = C_REPL;
@@ -256,7 +267,7 @@ REPL_compile(STRING * sval)
 	cp->type = C_REPLV;
 	cp->vcnt = count;
     }
-    zfree(xbuff, sval->len + 1);
+    zfree(xbuff, limit);
     return cp;
 }
 
@@ -479,6 +490,10 @@ re_leaks(void)
 	free_cell_data(repl_list->cp);
 	ZFREE(repl_list);
 	repl_list = p;
+    }
+
+    if (split_size != 0) {
+	zfree(split_buff, split_size * sizeof(STRING *));
     }
 }
 #endif

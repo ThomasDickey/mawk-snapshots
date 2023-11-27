@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.65 2023/08/16 23:32:10 tom Exp $
+ * $MawkId: mawk.h,v 1.67 2023/11/27 01:03:52 tom Exp $
  */
 
 /*  mawk.h  */
@@ -127,7 +127,11 @@ extern unsigned rt_nr, rt_fnr;	/* ditto */
 	do { \
 	    if ( (cp)->type >= C_STRING && \
 	         (cp)->type <= C_MBSTRN ) { \
+	        unsigned final = string(cp)->ref_cnt; \
 		free_STRING(string(cp));  \
+		if (final <= 1) { \
+		    (cp)->ptr = NULL; \
+		} \
 	    } \
 	} while (0)
 #endif
