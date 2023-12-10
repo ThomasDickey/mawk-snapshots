@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.38 2023/07/30 20:48:27 tom Exp $
+ * $MawkId: rexp.c,v 1.39 2023/12/10 15:09:09 Paul.Eggert Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -235,7 +235,7 @@ REcompile(char *re, size_t len)
 		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
 #endif
 	    } else {		/* n or more */
-		register int i;
+		register Int i;
 		/* copy 2 copies of m_ptr, use 2nd copy to replace
 		   the first copy that gets swallowed by concat */
 		MACHINE *result_mp = m_ptr;

@@ -1,4 +1,9 @@
--- $MawkId: CHANGES,v 1.369 2023/11/26 23:51:54 tom Exp $
+-- $MawkId: CHANGES,v 1.372 2023/12/10 20:03:10 tom Exp $
+
+20231210
+	+ correct interator type in REcompile (Original-Mawk #73)
+	+ improve configure script check for arc4random
+	+ reduce compiler warnings in configure script checks
 
 20231126
 	+ fix a couple of problems reported by Coverity:

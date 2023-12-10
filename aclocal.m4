@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.109 2023/11/23 11:40:35 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.111 2023/12/10 14:53:45 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -623,7 +623,7 @@ if test "x$ifelse([$2],,CLANG_COMPILER,[$2])" = "xyes" ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 7 updated: 2021/06/07 17:39:17
+dnl CF_CONST_X_STRING version: 8 updated: 2023/12/01 17:22:50
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -658,6 +658,7 @@ AC_TRY_COMPILE(
 AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 	AC_TRY_COMPILE(
 		[
+#undef  _CONST_X_STRING
 #define _CONST_X_STRING	/* X11R7.8 (perhaps) */
 #undef  XTSTRINGDEFINES	/* X11R5 and later */
 #include <stdlib.h>
@@ -1258,7 +1259,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LARGEFILE version: 12 updated: 2020/03/19 20:23:48
+dnl CF_LARGEFILE version: 13 updated: 2023/12/03 19:09:59
 dnl ------------
 dnl Add checks for large file support.
 AC_DEFUN([CF_LARGEFILE],[
@@ -1292,11 +1293,15 @@ ifdef([AC_FUNC_FSEEKO],[
 #pragma GCC diagnostic error "-Wincompatible-pointer-types"
 #include <sys/types.h>
 #include <dirent.h>
+
+#ifndef __REDIRECT
+/* if transitional largefile support is setup, this is true */
+extern struct dirent64 * readdir(DIR *);
+#endif
 		],[
-		/* if transitional largefile support is setup, this is true */
-		extern struct dirent64 * readdir(DIR *);
-		struct dirent64 *x = readdir((DIR *)0);
-		struct dirent *y = readdir((DIR *)0);
+		DIR *dp = opendir(".");
+		struct dirent64 *x = readdir(dp);
+		struct dirent *y = readdir(dp);
 		int z = x - y;
 		(void)z;
 		],
@@ -1665,7 +1670,7 @@ int main(void)
 	${cf_cv_main_return:-return}(0);
 }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 15 updated: 2020/01/18 12:30:33
+dnl CF_MAWK_RUN_FPE_TESTS version: 16 updated: 2023/12/10 06:52:47
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -1694,6 +1699,7 @@ then
     AC_TRY_COMPILE([#include <signal.h>],[
 	struct sigaction foo;
 	foo.sa_sigaction = 0;
+	(void) foo;
 ],[cf_cv_use_sa_sigaction=yes])
 fi
 ])
@@ -2310,7 +2316,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 18 updated: 2023/02/15 19:14:44
+dnl CF_SRAND version: 19 updated: 2023/12/10 09:51:04
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2323,6 +2329,8 @@ dnl $1 = optional prefix for resulting shell variables.  The default "my_"
 dnl      gives $my_srand and $my_rand to the caller, as well as MY_RAND_MAX.
 dnl      These are all AC_SUBST'd and AC_DEFINE'd.
 AC_DEFUN([CF_SRAND],[
+AC_CHECK_HEADERS(limits.h)
+AC_CHECK_FUNC(arc2random,,[AC_CHECK_LIB(bsd,arc4random,CF_ADD_LIB(bsd))])
 AC_CACHE_CHECK(for random-integer functions, cf_cv_srand_func,[
 cf_cv_srand_func=unknown
 for cf_func in arc4random_push/arc4random arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
@@ -2367,11 +2375,21 @@ $ac_includes_default
 	case "$cf_cv_srand_func" in
 	(*/arc4random)
 		AC_MSG_CHECKING(if <bsd/stdlib.h> should be included)
-		AC_TRY_COMPILE([#include <bsd/stdlib.h>],
+		AC_TRY_COMPILE([
+$ac_includes_default
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#include <bsd/stdlib.h>],
 					   [void *arc4random(int);
 						void *x = arc4random(1); (void)x],
 					   [cf_bsd_stdlib_h=no],
-					   [AC_TRY_COMPILE([#include <bsd/stdlib.h>],
+					   [AC_TRY_COMPILE([
+$ac_includes_default
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#include <bsd/stdlib.h>],
 									   [unsigned x = arc4random(); (void)x],
 									   [cf_bsd_stdlib_h=yes],
 									   [cf_bsd_stdlib_h=no])])
@@ -2381,7 +2399,12 @@ $ac_includes_default
 			AC_DEFINE(HAVE_BSD_STDLIB_H,1,[Define to 1 if bsd/stdlib.h header should be used])
 		else
 			AC_MSG_CHECKING(if <bsd/random.h> should be included)
-			AC_TRY_COMPILE([#include <bsd/random.h>],
+			AC_TRY_COMPILE([
+$ac_includes_default
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#include <bsd/random.h>],
 						   [void *arc4random(int);
 							void *x = arc4random(1); (void)x],
 						   [cf_bsd_random_h=no],
