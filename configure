@@ -8126,17 +8126,17 @@ EOF
 fi
 done
 
-echo "$as_me:8129: checking for arc2random" >&5
-echo $ECHO_N "checking for arc2random... $ECHO_C" >&6
-if test "${ac_cv_func_arc2random+set}" = set; then
+echo "$as_me:8129: checking for arc4random" >&5
+echo $ECHO_N "checking for arc4random... $ECHO_C" >&6
+if test "${ac_cv_func_arc4random+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >"conftest.$ac_ext" <<_ACEOF
 #line 8135 "configure"
 #include "confdefs.h"
-#define arc2random autoconf_temporary
+#define arc4random autoconf_temporary
 #include <limits.h>	/* least-intrusive standard header which defines gcc2 __stub macros */
-#undef arc2random
+#undef arc4random
 
 #ifdef __cplusplus
 extern "C"
@@ -8144,7 +8144,7 @@ extern "C"
 
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char arc2random (void);
+char arc4random (void);
 
 int
 main (void)
@@ -8153,11 +8153,11 @@ main (void)
 /* The GNU C library defines stubs for functions which it implements
     to always fail with ENOSYS.  Some functions are actually named
     something starting with __ and the normal name is an alias.  */
-#if defined (__stub_arc2random) || defined (__stub___arc2random)
-#error found stub for arc2random
+#if defined (__stub_arc4random) || defined (__stub___arc4random)
+#error found stub for arc4random
 #endif
 
-	return arc2random ();
+	return arc4random ();
   ;
   return 0;
 }
@@ -8174,17 +8174,17 @@ if { (eval echo "$as_me:8166: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:8175: \$? = $ac_status" >&5
   (exit "$ac_status"); }; }; then
-  ac_cv_func_arc2random=yes
+  ac_cv_func_arc4random=yes
 else
   echo "$as_me: failed program was:" >&5
 cat "conftest.$ac_ext" >&5
-ac_cv_func_arc2random=no
+ac_cv_func_arc4random=no
 fi
 rm -f "conftest.$ac_objext" "conftest$ac_exeext" "conftest.$ac_ext"
 fi
-echo "$as_me:8185: result: $ac_cv_func_arc2random" >&5
-echo "${ECHO_T}$ac_cv_func_arc2random" >&6
-if test "$ac_cv_func_arc2random" = yes; then
+echo "$as_me:8185: result: $ac_cv_func_arc4random" >&5
+echo "${ECHO_T}$ac_cv_func_arc4random" >&6
+if test "$ac_cv_func_arc4random" = yes; then
   :
 else
   echo "$as_me:8190: checking for arc4random in -lbsd" >&5
@@ -8265,7 +8265,7 @@ if test "${cf_cv_srand_func+set}" = set; then
 else
 
 cf_cv_srand_func=unknown
-for cf_func in arc4random_push/arc4random arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
+for cf_func in arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
 do
 
 	cf_srand_func=`echo $cf_func | sed -e 's%/.*%%'`
@@ -8430,7 +8430,7 @@ $ac_includes_default
 int
 main (void)
 {
-unsigned x = arc4random(); (void)x
+unsigned long x = arc4random(); (void)x
   ;
   return 0;
 }
@@ -8509,7 +8509,7 @@ cat >"conftest.$ac_ext" <<_ACEOF
 int
 main (void)
 {
-unsigned x = arc4random(); (void)x
+unsigned long x = arc4random(); (void)x
   ;
   return 0;
 }

@@ -1,6 +1,6 @@
-.\" $MawkId: mawk-code.7,v 1.40 2020/08/22 01:06:09 tom Exp $
+.\" $MawkId: mawk-code.7,v 1.43 2024/01/23 22:05:35 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2020, Thomas E. Dickey
+.\" # copyright 2020,2024 Thomas E. Dickey
 .\" #
 .\" # This is a source file for mawk, an implementation of
 .\" # the AWK programming language.
@@ -10,19 +10,26 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK-CODE 7 2020-08-21 "Version 1.3.4" Miscellaneous
+.TH MAWK-CODE 7 2024-01-23 "Version 1.3.4" Miscellaneous
 .\" Bulleted paragraph
 .de bP
 .ie n  .IP \(bu 4
 .el    .IP \(bu 2
 ..
 .\" Escape single quotes in literal strings from groff's Unicode transform.
-.ie \n(.g .ds AQ \(aq
-.el       .ds AQ '
-.ie \n(.g .ds `` \(lq
-.el       .ds `` ``
-.ie \n(.g .ds '' \(rq
-.el       .ds '' ''
+.ie \n(.g \{\
+.ds `` \(lq
+.ds '' \(rq
+.ds '  \(aq
+.\}
+.el \{\
+.ie t .ds `` ``
+.el   .ds `` ""
+.ie t .ds '' ''
+.el   .ds '' ""
+.ie t .ds '  \(aq
+.el   .ds '  '
+.\}
 .\" superscript
 .de SU
 .ie n \\$1**(\\$2)\\$3
@@ -30,14 +37,15 @@
 ..
 .\" **************************************************************************
 .SH NAME
-mawk-code \- dumping \*n's byte-code
+mawk-code \-
+dumping \*n's byte-code
 .\" **************************************************************************
 .SH SYNOPSIS
-At startup, \fB\*n\fP compiles the script into byte-code.
+At startup,
+\fB\*n\fP compiles the script into byte-code.
 After that, it interprets the compiled byte-code.
 Use the \fB\-Wdump\fP option to show the byte-code.
-.SH PROGRAM CODES
-.PP
+.SH "PROGRAM CODES"
 As \fB\*n\fP executes the program, it maintains a reference to the
 command to execute in \fBcdp\fP.
 After that there may be data
@@ -71,7 +79,6 @@ cdp[0]
 .TP 5
 sp[0]..sp[1-\fIcnt\fP]
 hold reference to the elements to concatenate.
-.PP
 .RE
 Returns the index in sp[0].
 .SS a_del
@@ -791,7 +798,8 @@ cdp[0]
 holds the (signed) number of bytes by which to jump.
 .RE
 .SS jnz
-\fIJump to a new byte-code position if sp[0] is nonzero, by a given number of bytes\fP.
+\fIJump to a new byte-code position if sp[0] is nonzero,\fP
+\fIby a given number of bytes\fP.
 .PP
 Usage:
 .RS 5
@@ -1066,7 +1074,8 @@ sp[0]
 holds an expression to test.
 .RE
 .PP
-Returns 1 in sp[0] if the expression matches the regular expression, 0 otherwise.
+Returns 1 in sp[0] if the expression matches the regular expression,
+0 otherwise.
 .SS match2
 \fITest if an expression in sp[-1] matches the regular expression in sp[0]\fP.
 .PP
@@ -1087,7 +1096,8 @@ sp[-1]
 holds an expression to test.
 .RE
 .PP
-Returns 1 in sp[0] if the expression matches the regular expression, 0 otherwise.
+Returns 1 in sp[0] if the expression matches the regular expression,
+0 otherwise.
 .SS mktime
 \fIConverts  a date specification in systime format to a timestamp\fP.
 .PP
@@ -1908,7 +1918,7 @@ As a side-effect, if the value is a string, it is cast to double floating point.
 .PP
 Returns the result in sp[0].
 .RE
-.SH REGULAR EXPRESSIONS
+.SH "REGULAR EXPRESSIONS"
 .SS M_1J
 mandatory jump
 .SS M_2JA

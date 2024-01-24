@@ -1,6 +1,6 @@
-# $MawkId: Makefile.in,v 1.6 2023/07/26 23:15:24 tom Exp $
+# $MawkId: Makefile.in,v 1.7 2024/01/24 01:08:43 tom Exp $
 ###############################################################################
-# copyright 2010-2020,2023 Thomas E. Dickey
+# copyright 2010-2023,2024 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -31,8 +31,10 @@ SECTION		= 1
 # what/where to put the man pages (do not override)
 MANDIR          = $(DESTDIR)$(mandir)
 TARGET_DIR	= $(MANDIR)/man$(SECTION)
-SOURCE_FILE	= mawk$(TOPIC).$(SECTION)
-TARGET_FILE	= $(PROGRAM)$(TOPIC).$(SECTION)
+SOURCE_ROOT	= mawk$(TOPIC)
+TARGET_ROOT	= $(PROGRAM)$(TOPIC)
+SOURCE_FILE	= $(SOURCE_ROOT).$(SECTION)
+TARGET_FILE	= $(TARGET_ROOT).$(SECTION)
 
 .SUFFIXES : .html .$(SECTION) .man .ps .pdf .doc .txt
 
@@ -52,11 +54,11 @@ TARGET_FILE	= $(PROGRAM)$(TOPIC).$(SECTION)
 	ps2pdf $*.ps
 
 ALL	= \
-	$(PROGRAM).html \
-	$(PROGRAM).pdf \
-	$(PROGRAM).ps
+	$(SOURCE_ROOT).html \
+	$(SOURCE_ROOT).pdf \
+	$(SOURCE_ROOT).ps
 
-all:	$(PROGRAM).txt $(PROGRAM).doc $(ALL)
+all:	$(SOURCE_ROOT).txt $(SOURCE_ROOT).doc $(ALL)
 
 install: $(TARGET_DIR)
 	@echo "$@ing $(TARGET_DIR)/$(TARGET_FILE) manpage"
@@ -73,9 +75,9 @@ distclean: clean
 	rm -f Makefile
 
 maintainer-clean: clean
-	rm -f $(PROGRAM).txt $(PROGRAM).doc
+	rm -f $(SOURCE_ROOT).txt $(SOURCE_ROOT).doc
 
-$(PROGRAM).pdf : $(PROGRAM).ps
+$(SOURCE_ROOT).pdf : $(SOURCE_ROOT).ps
 
 $(TARGET_DIR) :
 	mkdir -p "$@"

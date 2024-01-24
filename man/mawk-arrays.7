@@ -1,6 +1,6 @@
-.\" $MawkId: mawk-arrays.7,v 1.12 2020/08/18 23:04:29 tom Exp $
+.\" $MawkId: mawk-arrays.7,v 1.14 2024/01/24 00:12:25 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2019,2020, Thomas E. Dickey
+.\" # copyright 2008-2020,2024, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,21 +11,26 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK-ARRAYS 7 2020-08-18 "Version 1.3.4" Miscellaneous
-.\" strings
-.ds ex \fIexpr\fR
+.TH MAWK-ARRAYS 7 2024-01-23 "Version 1.3.4" Miscellaneous
 .\" Bulleted paragraph
 .de bP
 .ie n  .IP \(bu 4
 .el    .IP \(bu 2
 ..
 .\" Escape single quotes in literal strings from groff's Unicode transform.
-.ie \n(.g .ds AQ \(aq
-.el       .ds AQ '
-.ie \n(.g .ds `` \(lq
-.el       .ds `` ``
-.ie \n(.g .ds '' \(rq
-.el       .ds '' ''
+.ie \n(.g \{\
+.ds `` \(lq
+.ds '' \(rq
+.ds '  \(aq
+.\}
+.el \{\
+.ie t .ds `` ``
+.el   .ds `` ""
+.ie t .ds '' ''
+.el   .ds '' ""
+.ie t .ds '  \(aq
+.el   .ds '  '
+.\}
 .\" superscript
 .de SU
 .ie n \\$1**(\\$2)\\$3
@@ -33,7 +38,8 @@
 ..
 .\" **************************************************************************
 .SH NAME
-mawk-arrays \- design notes for mawk's array implementation
+mawk-arrays \-
+design notes for mawk's array implementation
 .\" **************************************************************************
 .SH SYNOPSIS
 This is the documentation for the \fB\*n\fP implementation
@@ -42,13 +48,14 @@ Arrays in awk are associations of strings to awk scalar
 values.
 The \fB\*n\fP implementation stores the associations in
 hash tables.
-The hash table scheme was influenced by 
+The hash table scheme was influenced by
 and is similar to
 the design presented in Griswold and Townsend,
-\fIThe Design and Implementation of Dynamic Hashing Sets and Tables in Icon}\fP,
-\fBSoftware Practice and Experience\fP, 23, 351-367, 1993.
-.SH Data Structures
-.SS Array Structure
+.IR "The Design and Implementation of Dynamic Hashing Sets and Tables in Icon" ,
+.BR "Software Practice and Experience" ,
+23, 351-367, 1993.
+.SH "DATA STRUCTURES"
+.SS "Array Structure"
 The type \fBARRAY\fP is a pointer to a \fBstruct array\fP.
 The \fIsize\fP field is the number of elements in the table.
 The meaning of the other fields depends on the \fItype\fP field.
@@ -92,7 +99,7 @@ exceed \fIlimit\fP, the table grows by doubling the number of hash chains.
 The invariant,
 (\fIhmask\fP+1)\fImax\_ave\_list\_length\fP=\fIlimit\fP is always true.
 \fIMax\_ave\_list\_length\fP is a tunable constant.
-.SS Hash Tables
+.SS "Hash Tables"
 The hash tables are linked lists of nodes, called \fBANODE\fPs.
 The number of lists is \fIhmask+1\fP which is always a power of two.
 The \fIptr\fP field points at a vector of list heads.
@@ -134,7 +141,7 @@ valid.
 So the value of \fIA\fP[\fIexpr\fP is stored in the \fIcell\fP field, and if
 \fIexpr\fP is an integer, then \fIexpr\fP is stored in \fIival\fP, else it
 is stored in \fIsval\fP.
-.SH Array Operations
+.SH "ARRAY OPERATIONS"
 The functions that operate on arrays are,
 .TP 5
 \fICELL* array_find(ARRAY A, CELL *cp, int create_flag)\fP
@@ -170,8 +177,7 @@ compute an array index.
 For example, on a reference to \fIA\fP[i,j],
 \fIarray_cat\fP computes \fIi\fP \[ci] \fISUBSEP \[ci] \fIj\fP where
 \[ci] denotes concatenation.
-.PP
-.SS Array Find
+.SS "Array Find"
 Any reference to A[\fIexpr\fP] creates a call to
 \fIarray_find(A,cp,CREATE)\fP where \fIcp\fP points at the cell holding
 \fIexpr\fP.
@@ -224,7 +230,7 @@ On entry to \fIadd_string_associations\fP, we know that the \fBAY_STR\fP bit
 is not set.
 We convert to a dual hash table, then walk all the integer
 lists and put each \fBANODE\fP on a string list.
-.SS Array Delete
+.SS "Array Delete"
 The execution of the statement, \fBdelete\fP \fIA\fP[\fIexpr\fP], creates a
 call to \fIarray_delete(ARRAY A, CELL *cp)\fP.
 Depending on the
@@ -249,7 +255,7 @@ because our guess is that it would be a waste of time for most
 However, we do convert an array to \fBAY_NULL\fP
 when the size goes to zero which would resize a large hash table
 that had been completely cleared by successive deletions.
-.SS Building an Array with Split
+.SS "Building an Array with Split"
 A simple operation is to create an array with the \fIAWK\fP
 primitive \fIsplit\fP.
 The code that performs \fIsplit\fP puts the
@@ -263,7 +269,7 @@ If the array \fIA\fP is a split array and big enough then we reuse it,
 otherwise we need to allocate a new split array.
 When we allocate a block of \fBCELL\fPs for a split array, we round up
 to a multiple of 4.
-.SS Array Clear
+.SS "Array Clear"
 The function \fIarray_clear(ARRAY A)\fP converts \fIA\fP to type \fBAY_NULL\fP
 and frees all storage used by \fIA\fP except for the \fIstruct array\fP
 itself.
@@ -277,7 +283,7 @@ execution of the \fIAWK\fP statement, \fIdelete A\fP and
 .TP 5
 (3)
 when an existing changes type or size from \fIsplit()\fP.
-.SS Constructor and Conversions
+.SS "Constructor and Conversions"
 Arrays are always created as empty arrays of type \fBAY_NULL\fP.
 Global arrays are never destroyed although they can go empty or have
 their type change by conversion.
@@ -305,7 +311,7 @@ converted to a hash table of type \fBAY_INT\fP.
 To determine the size of the table, we set the initial size to
 \fISTARTING_HMASK+1\fP and then double the size until
 \fIA->size\fP\ \[<=]\ \fIA->limit\fP.
-.SS Doubling the Size of a Hash Table
+.SS "Doubling the Size of a Hash Table"
 The whole point of making the table size a power of two is to
 facilitate resizing the table.
 If the table size is
@@ -315,7 +321,7 @@ and
 .SU 2 n
 is the hash chain index
 which can be calculated with bit-wise and,
-\fIh\fP & 
+\fIh\fP &
 .SU (2 n-1 ).
 When the table size doubles, the new bit-mask has one more bit
 turned on.
@@ -345,7 +351,7 @@ special handling of boundary conditions.
 .PP
 The doubling of the integer lists is exactly the same except that
 \fIslink\fP is replaced by \fIilink\fP and \fIhval\fP is replaced by \fIival\fP.
-.SS Array Loops
+.SS "Array Loops"
 Our mechanism for dealing with execution of the statement,
 .RS
 .PP
@@ -385,7 +391,7 @@ As we walk over the hash table \fBANODE\fPs, putting each \fIsval\fP in
 \fIret\fP, we need to increment each reference count.
 The user of the
 return value is responsible for these new reference counts.
-.SS Concatenating Array Indices
+.SS "Concatenating Array Indices"
 In \fIAWK\fP, an array expression \fIA[i,j\fP] is equivalent to the
 expression \fIA[i SUBSEP j\fP], i.e., the index is the
 concatenation of the three

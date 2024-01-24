@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.125 2023/11/26 10:00:47 tom Exp $
+ * $MawkId: bi_funct.c,v 1.127 2024/01/23 21:22:25 tom Exp $
  */
 
 #include <mawk.h>
@@ -366,9 +366,11 @@ bi_to##case(CELL *sp) \
     free_STRING(old); \
     return_CELL("bi_to" #case, sp); \
 }
+/* *INDENT-OFF* */
 BI_TOCASE(upper)
 BI_TOCASE(lower)
 #undef BI_TOCASE
+/* *INDENT-ON* */
 
 /*
  * Like gawk...
@@ -765,11 +767,11 @@ CELL *
 bi_srand(CELL *sp)
 {
 #ifdef USE_SYSTEM_SRAND
-    static long seed = 1;
     static CELL cseed =
     {
 	C_DOUBLE, 0, 0, 1.0
     };
+    double seed32;
 #endif
 
     CELL c;
@@ -793,8 +795,8 @@ bi_srand(CELL *sp)
     }
 
 #ifdef USE_SYSTEM_SRAND
-    seed = d_to_l(cseed.dval);
-    mawk_srand((unsigned) seed);
+    seed32 = fmod(cseed.dval, (double) Max_UInt);
+    mawk_srand((unsigned) seed32);
 #else
     /* The old seed is now in *sp ; move the value in cseed to
        seed in range [1,M) */

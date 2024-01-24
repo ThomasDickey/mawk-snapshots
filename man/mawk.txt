@@ -1,4 +1,4 @@
-MAWK(1)                          USER COMMANDS                         MAWK(1)
+MAWK(1)                          User commands                         MAWK(1)
 
 
 
@@ -245,18 +245,16 @@ THE AWK LANGUAGE
 
             { }
 
-       are also regular expression metacharacters, and in this mode,
-       require escaping to be a literal character.
+       are  also  regular expression metacharacters, and in this mode, require
+       escaping to be a literal character.
 
        Regular expressions are built up from characters as follows:
 
-            c            matches any non-metacharacter
-                         c.
+            c            matches any non-metacharacter c.
 
-            \c           matches a character defined by the same
-                         escape sequences used
-                         in string constants or the literal
-                         character c if \c is not an escape sequence.
+            \c           matches a character defined by the  same  escape  se-
+                         quences used in string constants or the literal char-
+                         acter c if \c is not an escape sequence.
 
             .            matches any character (including newline).
 
@@ -264,39 +262,29 @@ THE AWK LANGUAGE
 
             $            matches the back of a string.
 
-            [c1c2c3...]  matches any character in the class
-                         c1c2c3... .
-                         An interval of characters is denoted
-                         c1-c2 inside a class [...].
+            [c1c2c3...]  matches any character in the  class  c1c2c3... .   An
+                         interval  of  characters  is  denoted  c1-c2 inside a
+                         class [...].
 
-            [^c1c2c3...] matches any character not in the class
-                         c1c2c3...
+            [^c1c2c3...] matches any character not in the class c1c2c3...
 
-       Regular expressions are built up from other regular expressions
-       as follows:
+       Regular expressions are built up from other regular expressions as fol-
+       lows:
 
-            r1r2         matches
-                         r1
-                         followed immediately by
-                         r2
-                         (concatenation).
+            r1r2         matches  r1  followed  immediately  by r2 (concatena-
+                         tion).
 
 
-            r1 | r2      matches
-                         r1 or
-                         r2
-                         (alternation).
+            r1 | r2      matches r1 or r2 (alternation).
 
 
             r*           matches r repeated zero or more times.
 
             r+           matches r repeated one or more times.
 
-            r?           matches r zero or once.
-                         (repetition).
+            r?           matches r zero or once.  (repetition).
 
-            (r)          matches r
-                         (grouping).
+            (r)          matches r (grouping).
 
 
             r{n}         matches r exactly n times.
@@ -305,7 +293,8 @@ THE AWK LANGUAGE
 
             r{n,m}       matches r repeated n to m (inclusive) times.
 
-            r{,m}        matches r repeated 0 to m times (a non-standard option).
+            r{,m}        matches r repeated 0 to m times (a  non-standard  op-
+                         tion).
 
        The increasing precedence of operators is:
 
@@ -884,61 +873,39 @@ THE AWK LANGUAGE
            END action.  The opt_expr sets the exit value of the program unless
            overridden by a later exit or subsequent error.
 
-EXAMPLES
-       1. emulate cat.
+ENVIRONMENT
+       Mawk recognizes these variables:
 
-            { print }
+          MAWKBINMODE
+             (see COMPATIBILITY)
 
-       2. emulate wc.
+          MAWK_LONG_OPTIONS
+             If this is set, mawk uses its value to decide  what  to  do  with
+             GNU-style long options:
 
-            { chars += length($0) + 1  # add one for the \n
-              words += NF
-            }
+               allow  Mawk allows the option to be checked against the (small)
+                      set of long options it recognizes.
 
-            END{ print NR, words, chars }
+                      The long names from the -W option are recognized,  e.g.,
+                      --version is derived from -Wversion.
 
-       3. count the number of unique "real words".
+               error  Mawk prints an error message and exits.  This is the de-
+                      fault.
 
-            BEGIN { FS = "[^A-Za-z]+" }
+               ignore Mawk ignores the option, unless it happens to be one  of
+                      the one it recognizes.
 
-            { for(i = 1 ; i <= NF ; i++)  word[$i] = "" }
+               warn   Print  an  warning  message and otherwise ignore the op-
+                      tion.
 
-            END { delete word[""]
-                  for ( i in word )  cnt++
-                  print cnt
-            }
+             If the variable is unset, mawk prints an error message and exits.
 
-       4. sum the second field of every record based on the first field.
+          WHINY_USERS
+             This is a gawk 3.1.0 feature, removed in the 4.0.0  release.   It
+             tells mawk to sort array indices before it starts to iterate over
+             the elements of an array.
 
-            $1 ~ /credit|gain/ { sum += $2 }
-            $1 ~ /debit|loss/  { sum -= $2 }
-
-            END { print sum }
-
-       5. sort a file, comparing as string
-
-            { line[NR] = $0 "" }  # make sure of comparison type
-                            # in case some lines look numeric
-
-            END {  isort(line, NR)
-              for(i = 1 ; i <= NR ; i++) print line[i]
-            }
-
-            #insertion sort of A[1..n]
-            function isort( A, n,    i, j, hold)
-            {
-              for( i = 2 ; i <= n ; i++)
-              {
-                hold = A[j = i]
-                while ( A[j-1] > hold )
-                { j-- ; A[j+1] = A[j] }
-                A[j] = hold
-              }
-              # sentinel A[0] = "" will be created if needed
-            }
-
-
-COMPATIBILITY ISSUES
+COMPATIBILITY
    MAWK 1.3.3 versus POSIX 1003.2 Draft 11.3
        The POSIX 1003.2(draft 11.3) definition of the AWK language is  AWK  as
        described  in  the AWK book with a few extensions that appeared in Sys-
@@ -1125,37 +1092,74 @@ COMPATIBILITY ISSUES
               changed.  Similarly, on entry to the END actions, $0, the fields
               and NF have their value unaltered from the last record.
 
-ENVIRONMENT VARIABLES
-       Mawk recognizes these variables:
+BUGS
+       mawk implements printf() and sprintf() using the C  library  functions,
+       printf  and  sprintf, so full ANSI compatibility requires an ANSI C li-
+       brary.  In practice this means the h conversion qualifier  may  not  be
+       available.
 
-          MAWKBINMODE
-             (see COMPATIBILITY ISSUES)
+       Also mawk inherits any bugs or limitations of the library functions.
 
-          MAWK_LONG_OPTIONS
-             If this is set, mawk uses its value to decide  what  to  do  with
-             GNU-style long options:
+       Implementors of the AWK language have shown a consistent lack of imagi-
+       nation when naming their programs.
 
-               allow  Mawk allows the option to be checked against the (small)
-                      set of long options it recognizes.
+EXAMPLES
+       1. emulate cat.
 
-                      The long names from the -W option are recognized,  e.g.,
-                      --version is derived from -Wversion.
+            { print }
 
-               error  Mawk prints an error message and exits.  This is the de-
-                      fault.
+       2. emulate wc.
 
-               ignore Mawk ignores the option, unless it happens to be one  of
-                      the one it recognizes.
+            { chars += length($0) + 1  # add one for the \n
+              words += NF
+            }
 
-               warn   Print  an  warning  message and otherwise ignore the op-
-                      tion.
+            END{ print NR, words, chars }
 
-             If the variable is unset, mawk prints an error message and exits.
+       3. count the number of unique "real words".
 
-          WHINY_USERS
-             This is a gawk 3.1.0 feature, removed in the 4.0.0  release.   It
-             tells mawk to sort array indices before it starts to iterate over
-             the elements of an array.
+            BEGIN { FS = "[^A-Za-z]+" }
+
+            { for(i = 1 ; i <= NF ; i++)  word[$i] = "" }
+
+            END { delete word[""]
+                  for ( i in word )  cnt++
+                  print cnt
+            }
+
+       4. sum the second field of every record based on the first field.
+
+            $1 ~ /credit|gain/ { sum += $2 }
+            $1 ~ /debit|loss/  { sum -= $2 }
+
+            END { print sum }
+
+       5. sort a file, comparing as string
+
+            { line[NR] = $0 "" }  # make sure of comparison type
+                            # in case some lines look numeric
+
+            END {  isort(line, NR)
+              for(i = 1 ; i <= NR ; i++) print line[i]
+            }
+
+            #insertion sort of A[1..n]
+            function isort( A, n,    i, j, hold)
+            {
+              for( i = 2 ; i <= n ; i++)
+              {
+                hold = A[j = i]
+                while ( A[j-1] > hold )
+                { j-- ; A[j+1] = A[j] }
+                A[j] = hold
+              }
+              # sentinel A[0] = "" will be created if needed
+            }
+
+
+AUTHORS
+       Mike Brennan (brennan@whidbey.com).
+       Thomas E. Dickey <dickey@invisible-island.net>.
 
 SEE ALSO
        grep(1)
@@ -1175,21 +1179,6 @@ SEE ALSO
 
        mawk-code(7) gives more information on the -W dump option.
 
-BUGS
-       mawk  implements  printf() and sprintf() using the C library functions,
-       printf and sprintf, so full ANSI compatibility requires an ANSI  C  li-
-       brary.   In  practice  this means the h conversion qualifier may not be
-       available.
-
-       Also mawk inherits any bugs or limitations of the library functions.
-
-       Implementors of the AWK language have shown a consistent lack of imagi-
-       nation when naming their programs.
-
-AUTHOR
-       Mike Brennan (brennan@whidbey.com).
-       Thomas E. Dickey <dickey@invisible-island.net>.
 
 
-
-Version 1.3.4                     2023-04-04                           MAWK(1)
+Version 1.3.4                     2024-01-23                           MAWK(1)

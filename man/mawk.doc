@@ -1,4 +1,4 @@
-MAWK(1)                          USER COMMANDS                         MAWK(1)
+MAWK(1)                          User commands                         MAWK(1)
 
 
 
@@ -245,18 +245,16 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
             { }
 
-       are also regular expression metacharacters, and in this mode,
-       require escaping to be a literal character.
+       are  also  regular expression metacharacters, and in this mode, require
+       escaping to be a literal character.
 
        Regular expressions are built up from characters as follows:
 
-            _c            matches any non-metacharacter
-                         _c.
+            _c            matches any non-metacharacter _c.
 
-            \_c           matches a character defined by the same
-                         escape sequences used
-                         in string constants or the literal
-                         character _c if \_c is not an escape sequence.
+            \_c           matches a character defined by the  same  escape  se-
+                         quences used in string constants or the literal char-
+                         acter _c if \_c is not an escape sequence.
 
             .            matches any character (including newline).
 
@@ -264,39 +262,29 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
             $            matches the back of a string.
 
-            [c1c2c3...]  matches any character in the class
-                         c1c2c3... .
-                         An interval of characters is denoted
-                         c1-c2 inside a class [...].
+            [c1c2c3...]  matches any character in the  class  c1c2c3... .   An
+                         interval  of  characters  is  denoted  c1-c2 inside a
+                         class [...].
 
-            [^c1c2c3...] matches any character not in the class
-                         c1c2c3...
+            [^c1c2c3...] matches any character not in the class c1c2c3...
 
-       Regular expressions are built up from other regular expressions
-       as follows:
+       Regular expressions are built up from other regular expressions as fol-
+       lows:
 
-            _r1_r2         matches
-                         _r1
-                         followed immediately by
-                         _r2
-                         (_c_o_n_c_a_t_e_n_a_t_i_o_n).
+            _r1_r2         matches  _r1  followed  immediately  by _r2 (_c_o_n_c_a_t_e_n_a_-
+                         _t_i_o_n).
 
 
-            _r1 | _r2      matches
-                         _r1 or
-                         _r2
-                         (_a_l_t_e_r_n_a_t_i_o_n).
+            _r1 | _r2      matches _r1 or _r2 (_a_l_t_e_r_n_a_t_i_o_n).
 
 
             _r*           matches _r repeated zero or more times.
 
             _r+           matches _r repeated one or more times.
 
-            _r?           matches _r zero or once.
-                         (_r_e_p_e_t_i_t_i_o_n).
+            _r?           matches _r zero or once.  (_r_e_p_e_t_i_t_i_o_n).
 
-            (_r)          matches _r
-                         (_g_r_o_u_p_i_n_g).
+            (_r)          matches _r (_g_r_o_u_p_i_n_g).
 
 
             _r{n}         matches _r exactly n times.
@@ -305,7 +293,8 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
 
             _r{n,m}       matches _r repeated n to m (inclusive) times.
 
-            _r{,m}        matches _r repeated 0 to m times (a non-standard option).
+            _r{,m}        matches _r repeated 0 to m times (a  non-standard  op-
+                         tion).
 
        The increasing pprreecceeddeennccee ooff ooppeerraattoorrss is:
 
@@ -884,61 +873,39 @@ TTHHEE AAWWKK LLAANNGGUUAAGGEE
            EENNDD action.  The _o_p_t___e_x_p_r sets the exit value of the program unless
            overridden by a later eexxiitt or subsequent error.
 
-EEXXAAMMPPLLEESS
-       1. emulate cat.
+EENNVVIIRROONNMMEENNTT
+       MMaawwkk recognizes these variables:
 
-            { print }
+          MAWKBINMODE
+             (see CCOOMMPPAATTIIBBIILLIITTYY)
 
-       2. emulate wc.
+          MAWK_LONG_OPTIONS
+             If this is set, mmaawwkk uses its value to decide  what  to  do  with
+             GNU-style long options:
 
-            { chars += length($0) + 1  # add one for the \n
-              words += NF
-            }
+               allow  MMaawwkk allows the option to be checked against the (small)
+                      set of long options it recognizes.
 
-            END{ print NR, words, chars }
+                      The long names from the --WW option are recognized,  e.g.,
+                      ----vveerrssiioonn is derived from --WWvveerrssiioonn.
 
-       3. count the number of unique "real words".
+               error  MMaawwkk prints an error message and exits.  This is the de-
+                      fault.
 
-            BEGIN { FS = "[^A-Za-z]+" }
+               ignore MMaawwkk ignores the option, unless it happens to be one  of
+                      the one it recognizes.
 
-            { for(i = 1 ; i <= NF ; i++)  word[$i] = "" }
+               warn   Print  an  warning  message and otherwise ignore the op-
+                      tion.
 
-            END { delete word[""]
-                  for ( i in word )  cnt++
-                  print cnt
-            }
+             If the variable is unset, mmaawwkk prints an error message and exits.
 
-       4. sum the second field of every record based on the first field.
+          WHINY_USERS
+             This is a ggaawwkk 3.1.0 feature, removed in the 4.0.0  release.   It
+             tells mmaawwkk to sort array indices before it starts to iterate over
+             the elements of an array.
 
-            $1 ~ /credit|gain/ { sum += $2 }
-            $1 ~ /debit|loss/  { sum -= $2 }
-
-            END { print sum }
-
-       5. sort a file, comparing as string
-
-            { line[NR] = $0 "" }  # make sure of comparison type
-                            # in case some lines look numeric
-
-            END {  isort(line, NR)
-              for(i = 1 ; i <= NR ; i++) print line[i]
-            }
-
-            #insertion sort of A[1..n]
-            function isort( A, n,    i, j, hold)
-            {
-              for( i = 2 ; i <= n ; i++)
-              {
-                hold = A[j = i]
-                while ( A[j-1] > hold )
-                { j-- ; A[j+1] = A[j] }
-                A[j] = hold
-              }
-              # sentinel A[0] = "" will be created if needed
-            }
-
-
-CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
+CCOOMMPPAATTIIBBIILLIITTYY
    MMAAWWKK 11..33..33 vveerrssuuss PPOOSSIIXX 11000033..22 DDrraafftt 1111..33
        The POSIX 1003.2(draft 11.3) definition of the AWK language is  AWK  as
        described  in  the AWK book with a few extensions that appeared in Sys-
@@ -1125,37 +1092,74 @@ CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS
               changed.  Similarly, on entry to the EENNDD actions, $$00, the fields
               and NNFF have their value unaltered from the last record.
 
-EENNVVIIRROONNMMEENNTT VVAARRIIAABBLLEESS
-       MMaawwkk recognizes these variables:
+BBUUGGSS
+       mmaawwkk implements pprriinnttff(()) and sspprriinnttff(()) using the C  library  functions,
+       printf  and  sprintf, so full ANSI compatibility requires an ANSI C li-
+       brary.  In practice this means the h conversion qualifier  may  not  be
+       available.
 
-          MAWKBINMODE
-             (see CCOOMMPPAATTIIBBIILLIITTYY IISSSSUUEESS)
+       Also mmaawwkk inherits any bugs or limitations of the library functions.
 
-          MAWK_LONG_OPTIONS
-             If this is set, mmaawwkk uses its value to decide  what  to  do  with
-             GNU-style long options:
+       Implementors of the AWK language have shown a consistent lack of imagi-
+       nation when naming their programs.
 
-               allow  MMaawwkk allows the option to be checked against the (small)
-                      set of long options it recognizes.
+EEXXAAMMPPLLEESS
+       1. emulate cat.
 
-                      The long names from the --WW option are recognized,  e.g.,
-                      ----vveerrssiioonn is derived from --WWvveerrssiioonn.
+            { print }
 
-               error  MMaawwkk prints an error message and exits.  This is the de-
-                      fault.
+       2. emulate wc.
 
-               ignore MMaawwkk ignores the option, unless it happens to be one  of
-                      the one it recognizes.
+            { chars += length($0) + 1  # add one for the \n
+              words += NF
+            }
 
-               warn   Print  an  warning  message and otherwise ignore the op-
-                      tion.
+            END{ print NR, words, chars }
 
-             If the variable is unset, mmaawwkk prints an error message and exits.
+       3. count the number of unique "real words".
 
-          WHINY_USERS
-             This is a ggaawwkk 3.1.0 feature, removed in the 4.0.0  release.   It
-             tells mmaawwkk to sort array indices before it starts to iterate over
-             the elements of an array.
+            BEGIN { FS = "[^A-Za-z]+" }
+
+            { for(i = 1 ; i <= NF ; i++)  word[$i] = "" }
+
+            END { delete word[""]
+                  for ( i in word )  cnt++
+                  print cnt
+            }
+
+       4. sum the second field of every record based on the first field.
+
+            $1 ~ /credit|gain/ { sum += $2 }
+            $1 ~ /debit|loss/  { sum -= $2 }
+
+            END { print sum }
+
+       5. sort a file, comparing as string
+
+            { line[NR] = $0 "" }  # make sure of comparison type
+                            # in case some lines look numeric
+
+            END {  isort(line, NR)
+              for(i = 1 ; i <= NR ; i++) print line[i]
+            }
+
+            #insertion sort of A[1..n]
+            function isort( A, n,    i, j, hold)
+            {
+              for( i = 2 ; i <= n ; i++)
+              {
+                hold = A[j = i]
+                while ( A[j-1] > hold )
+                { j-- ; A[j+1] = A[j] }
+                A[j] = hold
+              }
+              # sentinel A[0] = "" will be created if needed
+            }
+
+
+AAUUTTHHOORRSS
+       Mike Brennan (brennan@whidbey.com).
+       Thomas E. Dickey <dickey@invisible-island.net>.
 
 SSEEEE AALLSSOO
        ggrreepp(1)
@@ -1175,21 +1179,6 @@ SSEEEE AALLSSOO
 
        mmaawwkk--ccooddee(7) gives more information on the --WW dduummpp option.
 
-BBUUGGSS
-       mmaawwkk  implements  pprriinnttff(()) and sspprriinnttff(()) using the C library functions,
-       printf and sprintf, so full ANSI compatibility requires an ANSI  C  li-
-       brary.   In  practice  this means the h conversion qualifier may not be
-       available.
-
-       Also mmaawwkk inherits any bugs or limitations of the library functions.
-
-       Implementors of the AWK language have shown a consistent lack of imagi-
-       nation when naming their programs.
-
-AAUUTTHHOORR
-       Mike Brennan (brennan@whidbey.com).
-       Thomas E. Dickey <dickey@invisible-island.net>.
 
 
-
-Version 1.3.4                     2023-04-04                           MAWK(1)
+Version 1.3.4                     2024-01-23                           MAWK(1)

@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.62 2023/11/02 23:01:28 tom Exp $
+# $MawkId: Makefile.in,v 1.63 2024/01/24 01:17:43 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2021,2023 Thomas E. Dickey
+# copyright 2009-2023,2024 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -28,7 +28,6 @@ prefix          = @prefix@
 exec_prefix     = @exec_prefix@
 datarootdir     = @datarootdir@
 
-manext		= 1
 bindir		= @bindir@
 
 CC              = @CC@

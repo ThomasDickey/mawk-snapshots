@@ -1,11 +1,11 @@
-dnl $MawkId: aclocal.m4,v 1.111 2023/12/10 14:53:45 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.113 2024/01/23 00:32:35 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
 dnl renamed for consistency by Thomas E Dickey.
 dnl
 dnl ---------------------------------------------------------------------------
-dnl Copyright:  2008-2022,2023 by Thomas E. Dickey
+dnl Copyright:  2008-2023,2024 by Thomas E. Dickey
 dnl
 dnl Permission is hereby granted, free of charge, to any person obtaining a
 dnl copy of this software and associated documentation files (the
@@ -2316,24 +2316,21 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 19 updated: 2023/12/10 09:51:04
+dnl CF_SRAND version: 22 updated: 2024/01/22 19:30:53
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
 dnl which usually is only 16-bits.
-dnl
-dnl On MirOS, use arc4random_push() and arc4random().
-dnl Some systems support an asymmetric variation of this interface.
 dnl
 dnl $1 = optional prefix for resulting shell variables.  The default "my_"
 dnl      gives $my_srand and $my_rand to the caller, as well as MY_RAND_MAX.
 dnl      These are all AC_SUBST'd and AC_DEFINE'd.
 AC_DEFUN([CF_SRAND],[
 AC_CHECK_HEADERS(limits.h)
-AC_CHECK_FUNC(arc2random,,[AC_CHECK_LIB(bsd,arc4random,CF_ADD_LIB(bsd))])
+AC_CHECK_FUNC(arc4random,,[AC_CHECK_LIB(bsd,arc4random,CF_ADD_LIB(bsd))])
 AC_CACHE_CHECK(for random-integer functions, cf_cv_srand_func,[
 cf_cv_srand_func=unknown
-for cf_func in arc4random_push/arc4random arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
+for cf_func in arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
 do
 	CF_SRAND_PARSE($cf_func,cf_srand_func,cf_rand_func)
 
@@ -2390,7 +2387,7 @@ $ac_includes_default
 #include <limits.h>
 #endif
 #include <bsd/stdlib.h>],
-									   [unsigned x = arc4random(); (void)x],
+									   [unsigned long x = arc4random(); (void)x],
 									   [cf_bsd_stdlib_h=yes],
 									   [cf_bsd_stdlib_h=no])])
 	    AC_MSG_RESULT($cf_bsd_stdlib_h)
@@ -2409,7 +2406,7 @@ $ac_includes_default
 							void *x = arc4random(1); (void)x],
 						   [cf_bsd_random_h=no],
 						   [AC_TRY_COMPILE([#include <bsd/random.h>],
-										   [unsigned x = arc4random(); (void)x],
+										   [unsigned long x = arc4random(); (void)x],
 										   [cf_bsd_random_h=yes],
 										   [cf_bsd_random_h=no])])
 			AC_MSG_RESULT($cf_bsd_random_h)

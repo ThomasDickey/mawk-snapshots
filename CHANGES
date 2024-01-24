@@ -1,4 +1,10 @@
--- $MawkId: CHANGES,v 1.372 2023/12/10 20:03:10 tom Exp $
+-- $MawkId: CHANGES,v 1.376 2024/01/23 21:51:45 tom Exp $
+
+20240123
+	+ improve manpage style/formatting.
+	+ improve conversion of parameter of srand() when using srandom()
+	  (Original-Mawk #66).
+	+ minor improvement for configure script
 
 20231210
 	+ correct interator type in REcompile (Original-Mawk #73)
