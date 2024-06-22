@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1996,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.55 2023/08/16 23:35:17 tom Exp $
+ * $MawkId: scan.c,v 1.57 2024/06/22 19:16:39 tom Exp $
  */
 
 #include <mawk.h>
@@ -213,6 +213,8 @@ scan_fillbuff(void)
 	/* make sure eof is terminated */
 	buffer[r] = '\n';
 	buffer[r + 1] = 0;
+    } else {
+	buffer[r] = 0;
     }
 }
 

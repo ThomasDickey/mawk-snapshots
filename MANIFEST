@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20240123
+MANIFEST for mawk, version t20240622
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -105,6 +105,8 @@ man/mawk.doc                    formatted-text manpage
 man/mawk.txt                    plain-text manpage
 msdos                           subdirectory
 msdos/dosexec.c                 system() and pipes() for DOS
+msdos/vs2008.h                  definitions for building with Visual Studio 2008
+msdos/vs2008.mak                nmakefile for building with Visual Studio 2008
 msdos/examples                  subdirectory
 msdos/examples/add_cr.awk       convert files from Unix to Dos line-endings
 msdos/examples/doslist.awk      print truncated DOS file names
@@ -115,9 +117,8 @@ msdos/examples/srcstat2.awk     show sizes (line, char) of files
 msdos/examples/texttest.awk     print contents of quoted #include's
 msdos/examples/winexe.awk       sum segment-sizes of exe's in current directory
 msdos/examples/winobj.awk       sum sizes of obj's in current directory
-msdos                           subdirectory
-msdos/vs2008.h                  definitions for building with Visual Studio 2008
-msdos/vs2008.mak                nmakefile for building with Visual Studio 2008
+package                         subdirectory
+package/mawk.spec               RPM script for mawk
 package/debian                  subdirectory
 package/debian/changelog        start working on debian package
 package/debian/compat           debian build-script
@@ -129,16 +130,13 @@ package/debian/postrm           post-removal script
 package/debian/preinst          debian build script
 package/debian/prerm            debian build-script
 package/debian/rules            debian build-script
+package/debian/watch            debian build-script
 package/debian/source           subdirectory
 package/debian/source/format    debian build script
-package/debian                  subdirectory
-package/debian/watch            debian build-script
 package/freebsd                 subdirectory
 package/freebsd/Makefile        FreeBSD build-script
 package/freebsd/distinfo        FreeBSD build-script
 package/freebsd/pkg-descr       FreeBSD build-script
-package                         subdirectory
-package/mawk.spec               RPM script for mawk
 test                            subdirectory
 test/decl-awk.out               reference for test using decl.awk
 test/fpe_test                   scripts to test if fpe handling compiled OK
