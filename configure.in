@@ -1,7 +1,7 @@
-dnl $MawkId: configure.in,v 1.72 2023/04/03 00:01:59 tom Exp $
+dnl $MawkId: configure.in,v 1.74 2024/07/16 20:38:31 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
-dnl copyright 2008-2020,2023, Thomas E. Dickey
+dnl copyright 2008-2023,2024, Thomas E. Dickey
 dnl copyright 1991-1994,1995, Michael D. Brennan
 dnl
 dnl This is a source file for mawk, an implementation of
@@ -74,7 +74,7 @@ fi
 AC_MSG_RESULT($with_builtin_srand)
 
 if test "x${with_builtin_srand}" = xno; then
-    CF_SRAND(mawk_)
+    CF_SRAND(mawk_,no)
 	AC_DEFINE_UNQUOTED(NAME_RANDOM, "$cf_cv_srand_func", [Define to the name of the random-function])
 fi
 

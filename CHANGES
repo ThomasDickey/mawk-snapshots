@@ -1,4 +1,12 @@
--- $MawkId: CHANGES,v 1.378 2024/06/22 19:14:46 tom Exp $
+-- $MawkId: CHANGES,v 1.380 2024/07/16 20:34:42 tom Exp $
+
+20240716
+	+ add --enable-arc4random option to configure script; this is normally
+	  disabled for mawk because the developer of arc4random did not provide
+	  a useful method for initialization (Debian #1075717).
+	+ improve configure-check for clock_gettime, checking for both
+	  monotonic and realtime clocks, as well as adding a check for
+	  clock_gettime in the "rt" library for Solaris
 
 20240622
 	+ ensure input buffer is null-terminated (patch by James Cowgill,

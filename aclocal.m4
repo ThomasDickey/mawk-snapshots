@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.113 2024/01/23 00:32:35 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.115 2024/07/16 20:37:05 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -250,7 +250,7 @@ ifelse([$3],,[    :]dnl
 ])dnl
 ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 11 updated: 2022/12/04 15:40:08
+dnl CF_BUILD_CC version: 13 updated: 2024/06/22 13:42:22
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -831,19 +831,36 @@ fi
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_GETTIME version: 2 updated: 2023/02/25 08:45:56
+dnl CF_FUNC_GETTIME version: 3 updated: 2024/05/11 13:40:02
 dnl ---------------
 dnl Check for gettimeofday or clock_gettime.  In 2023, the former is still more
 dnl widely supported, but "deprecated" (2008), so we will use the latter if it
 dnl is available, to reduce compiler warnings.
 AC_DEFUN([CF_FUNC_GETTIME],[
-AC_CACHE_CHECK(for clock_gettime,cf_cv_func_clock_gettime,[
-		AC_TRY_LINK([#include <time.h>],
+cf_save_libs="$LIBS"
+AC_CHECK_FUNC(clock_gettime,
+	cf_cv_test_clock_gettime=yes,
+	AC_CHECK_LIB(rt, clock_gettime,
+		[LIBS="-lrt $LIBS"
+		 cf_cv_test_clock_gettime=yes],
+		 cf_cv_test_clock_gettime=no))
+
+if test "$cf_cv_test_clock_gettime" = yes ; then
+AC_CACHE_CHECK(if clock_gettime links,cf_cv_func_clock_gettime,[
+		AC_TRY_LINK([
+$ac_includes_default
+#include <time.h>
+		],
 		[struct timespec ts;
-		int rc = clock_gettime(CLOCK_REALTIME, &ts); (void) rc; (void)ts],
+		int rc = clock_gettime(CLOCK_REALTIME, &ts)
+			   + clock_gettime(CLOCK_MONOTONIC, &ts);
+		 (void) rc; (void)ts],
 		[cf_cv_func_clock_gettime=yes],
 		[cf_cv_func_clock_gettime=no])
 ])
+else
+	cf_cv_func_clock_gettime=no
+fi
 
 if test "$cf_cv_func_clock_gettime" = yes
 then
@@ -2316,7 +2333,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 22 updated: 2024/01/22 19:30:53
+dnl CF_SRAND version: 23 updated: 2024/07/16 16:35:55
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2325,12 +2342,26 @@ dnl
 dnl $1 = optional prefix for resulting shell variables.  The default "my_"
 dnl      gives $my_srand and $my_rand to the caller, as well as MY_RAND_MAX.
 dnl      These are all AC_SUBST'd and AC_DEFINE'd.
+dnl $2 = default for the arc4random option
 AC_DEFUN([CF_SRAND],[
 AC_CHECK_HEADERS(limits.h)
-AC_CHECK_FUNC(arc4random,,[AC_CHECK_LIB(bsd,arc4random,CF_ADD_LIB(bsd))])
+
+AC_MSG_CHECKING(if you want to use arc4random)
+AC_ARG_ENABLE(arc4random,
+	[  --enable-arc4random     enable arc4random if available],
+	[enable_arc4random=yes],
+	[enable_arc4random=ifelse($2,,yes,$2)])
+AC_MSG_RESULT($enable_arc4random)
+
+cf_srand_arc4random=
+if test "$enable_arc4random" = yes ; then
+	AC_CHECK_FUNC(arc4random,,[AC_CHECK_LIB(bsd,arc4random,CF_ADD_LIB(bsd))])
+	test "$ac_cv_func_arc4random" = yes && cf_srand_arc4random=arc4random_stir/arc4random
+fi
+
 AC_CACHE_CHECK(for random-integer functions, cf_cv_srand_func,[
 cf_cv_srand_func=unknown
-for cf_func in arc4random_stir/arc4random srandom/random srand48/lrand48 srand/rand
+for cf_func in $cf_srand_arc4random srandom/random srand48/lrand48 srand/rand
 do
 	CF_SRAND_PARSE($cf_func,cf_srand_func,cf_rand_func)
 
