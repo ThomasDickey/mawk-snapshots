@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.41 2023/07/28 00:21:02 tom Exp $
+ * $MawkId: rexp.h,v 1.42 2024/07/26 00:31:50 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -213,18 +213,18 @@ RE_pos_push(RT_POS_ENTRY * head, const RT_STATE * owner, const char *s)
 static /* inline */ const char *
 RE_pos_pop(RT_POS_ENTRY ** head, const RT_STATE * current)
 {
-    RT_POS_ENTRY *prev = *head - (*head)->prev_offset;
+    RT_POS_ENTRY *prev2 = *head - (*head)->prev_offset;
 
-    if (prev->owner == current - RE_run_stack_base) {	/* likely */
+    if (prev2->owner == current - RE_run_stack_base) {	/* likely */
 	/* no need to preserve intervening nodes */
-	*head = prev;
-    } else if (*head == prev) {
+	*head = prev2;
+    } else if (*head == prev2) {
 	RE_panic("unbalanced M_SAVE_POS and M_2JC");
     } else {
-	(*head)->prev_offset += prev->prev_offset;
+	(*head)->prev_offset += prev2->prev_offset;
     }
 
-    return prev->pos;
+    return prev2->pos;
 }
 
 #ifndef NO_INTERVAL_EXPR

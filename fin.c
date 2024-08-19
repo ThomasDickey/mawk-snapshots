@@ -1,6 +1,6 @@
 /********************************************
 fin.c
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.52 2023/10/31 21:21:24 tom Exp $
+ * $MawkId: fin.c,v 1.55 2024/08/14 07:57:53 tom Exp $
  */
 
 /* fin.c */
@@ -376,11 +376,12 @@ enlarge_fin_buffer(FIN * fin)
     fin->buffp =
 	fin->buff = (char *) zrealloc(fin->buff, oldsize, newsize);
 
-    r = fillbuff(fin->fd, fin->buff + oldsize, extra);
-    if (r < extra)
-	fin->flags |= EOF_FLAG;
-
-    fin->limit = fin->buff + limit + r;
+    if (fin->fp == 0) {
+	r = fillbuff(fin->fd, fin->buff + oldsize, extra);
+	if (r < extra)
+	    fin->flags |= EOF_FLAG;
+	fin->limit = fin->buff + limit + r;
+    }
     return fin->buff;
 }
 
@@ -546,13 +547,16 @@ next_main(int open_flag)	/* called by open_main() if on */
 int
 is_cmdline_assign(char *s)
 {
+    static CELL empty_cell;
+
     register char *p;
+
     int c;
     SYMTAB *stp;
     CELL *cp = 0;
     size_t len;
-    CELL cell;			/* used if command line assign to pseudo field */
-    CELL *fp = (CELL *) 0;	/* ditto */
+    CELL cell = empty_cell;	/* used if command line assign to pseudo field */
+    CELL *fp = NULL;		/* ditto */
     size_t length;
 
     if (scan_code[*(unsigned char *) s] != SC_IDCHAR)

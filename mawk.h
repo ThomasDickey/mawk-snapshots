@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2021,2023 Thomas E. Dickey
+copyright 2008-2023,2024 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.67 2023/11/27 01:03:52 tom Exp $
+ * $MawkId: mawk.h,v 1.71 2024/08/05 22:18:07 tom Exp $
  */
 
 /*  mawk.h  */
@@ -126,7 +126,8 @@ extern unsigned rt_nr, rt_fnr;	/* ditto */
 #define cell_destroy(cp) \
 	do { \
 	    if ( (cp)->type >= C_STRING && \
-	         (cp)->type <= C_MBSTRN ) { \
+	         (cp)->type <= C_MBSTRN && \
+		 string(cp) != NULL) { \
 	        unsigned final = string(cp)->ref_cnt; \
 		free_STRING(string(cp));  \
 		if (final <= 1) { \
@@ -162,7 +163,7 @@ extern void rt_overflow(const char *, unsigned);
 extern GCC_NORETURN void rt_error(const char *,...) GCC_PRINTFLIKE(1,2);
 extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);
-extern INST *da_this(INST *, INST *, FILE *);
+extern INST *da_this(INST *, const INST *, FILE *);
 extern char *rm_escape(char *, size_t *);
 extern char *re_pos_match(char *, size_t, PTR, size_t *, int);
 extern int binmode(void);
@@ -228,9 +229,11 @@ extern void TraceString2(const char *, size_t);
 #endif
 
 #if OPT_TRACE > 0
-extern void TraceFunc(const char *, CELL *);
-#define TRACE_FUNC(name,cp) TraceFunc(name,cp)
+extern void TraceFunc(const char *, CELL *, int);
+#define TRACE_FUNC2(name,cp,na) TraceFunc(name,cp,na)
+#define TRACE_FUNC(name,cp) TraceFunc(name,cp,cp->type)
 #else
+#define TRACE_FUNC2(name,cp,na)	/* nothing */
 #define TRACE_FUNC(name,cp)	/* nothing */
 #endif
 
@@ -241,8 +244,8 @@ extern void TraceInst(INST *, INST *);
 #define TRACE_INST(cp,base)	/* nothing */
 #endif
 
-extern const char *da_type_name(CELL *);
-extern const char *da_op_name(INST *);
+extern const char *da_type_name(const CELL *);
+extern const char *da_op_name(const INST *);
 
 #ifdef NO_LEAKS
 

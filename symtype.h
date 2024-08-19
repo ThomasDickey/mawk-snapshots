@@ -1,6 +1,6 @@
 /********************************************
 symtype.h
-copyright 2009-2020,2023, Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.25 2023/08/10 18:12:55 tom Exp $
+ * $MawkId: symtype.h,v 1.27 2024/07/26 00:38:15 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -145,7 +145,7 @@ extern FCALL_REC *resolve_list;
 extern void resolve_fcalls(void);
 extern void check_fcall(FBLOCK * callee, int call_scope, int move_level,
 			FBLOCK * call, CA_REC * arg_list);
-extern void relocate_resolve_list(int, int, FBLOCK *, int, unsigned, int);
+extern void relocate_resolve_list(int, int, const FBLOCK *, int, unsigned, int);
 
 /* hash.c */
 extern unsigned hash(const char *);

@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.54 2023/11/27 00:48:08 tom Exp $
+ * $MawkId: execute.c,v 1.55 2024/08/03 00:21:37 tom Exp $
  */
 
 #include <mawk.h>
@@ -149,7 +149,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	TRACE(("execute %s sp(%ld:%s)\n",
 	       da_op_name(cdp),
 	       (long) (sp - stack_base),
-	       da_type_name(sp)));
+	       (sp == (eval_stack - 1)) ? "?" : da_type_name(sp)));
 
 	switch ((cdp++)->op) {
 

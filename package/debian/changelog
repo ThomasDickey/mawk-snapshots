@@ -1,4 +1,10 @@
-mawk-cur (1.3.4-20240716) unstable; urgency=low
+mawk-cur (1.3.4-20240819) unstable; urgency=low
+
+  * maintenance updates
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Mon, 19 Aug 2024 03:37:54 -0400
+
+mawk-cur (1.3.4-20240724) unstable; urgency=low
 
   * maintenance updates
 

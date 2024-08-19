@@ -1,6 +1,6 @@
 /********************************************
 split.c
-copyright 2008-2014,2020 Thomas E. Dickey
+copyright 2008-2020,2024 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.32 2020/09/13 14:41:05 tom Exp $
+ * $MawkId: split.c,v 1.33 2024/08/06 23:18:56 tom Exp $
  */
 
 /* split.c */
@@ -27,10 +27,12 @@ the GNU General Public License, version 2, 1991.
 #include "repl.h"
 #include "field.h"
 
+#ifndef SP_SIZE
 #ifdef NO_LEAKS
 #define SP_SIZE    4		/* exercises split_block_list code */
 #else
 #define SP_SIZE  2048
+#endif
 #endif
 
 typedef struct split_block {

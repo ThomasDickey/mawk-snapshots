@@ -1,6 +1,6 @@
 /********************************************
 print.c
-copyright 2008-2021,2023.  Thomas E. Dickey
+copyright 2008-2023,2024.  Thomas E. Dickey
 copyright 1991-1996,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.48 2023/11/27 00:33:56 tom Exp $
+ * $MawkId: print.c,v 1.51 2024/08/14 23:30:34 tom Exp $
  */
 
 #include "mawk.h"
@@ -194,7 +194,7 @@ typedef enum {
  */
 static int
 make_sfmt(const char *format,
-	  int *fill_in,
+	  const int *fill_in,
 	  int *width,
 	  int *prec,
 	  int *flags)
@@ -713,7 +713,10 @@ bi_printf(CELL *sp)
     register CELL *p;
     FILE *fp;
 
-    TRACE_FUNC("bi_printf", sp);
+    TRACE_FUNC2("bi_printf", sp,
+		((sp->type < 0)
+		 ? (sp - 1)->type
+		 : sp->type));
 
     k = sp->type;
     if (k < 0) {
@@ -1064,7 +1067,7 @@ bi_sprintf(CELL *sp)
     int argcnt = sp->type;
     STRING *sval;
 
-    TRACE_FUNC("bi_sprintf", sp);
+    TRACE_FUNC2("bi_sprintf", sp, argcnt - 1);
 
     sp -= argcnt;		/* sp points at the format string */
     argcnt--;

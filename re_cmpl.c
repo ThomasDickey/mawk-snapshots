@@ -1,6 +1,6 @@
 /********************************************
 re_cmpl.c
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1994,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.35 2023/11/26 22:15:12 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.36 2024/08/18 09:55:20 tom Exp $
  */
 
 /*  re_cmpl.c  */
@@ -21,12 +21,6 @@ the GNU General Public License, version 2, 1991.
 #include "scan.h"
 #include "regexp.h"
 #include "repl.h"
-
-typedef struct re_node {
-    RE_DATA re;			/* keep this first, for re_destroy() */
-    STRING *sval;
-    struct re_node *link;
-} RE_NODE;
 
 /* a list of compiled regular expressions */
 static RE_NODE *re_list;

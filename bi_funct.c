@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.127 2024/01/23 21:22:25 tom Exp $
+ * $MawkId: bi_funct.c,v 1.129 2024/08/15 00:39:17 tom Exp $
  */
 
 #include <mawk.h>
@@ -120,7 +120,7 @@ bi_length(CELL *sp)
 {
     size_t len;
 
-    TRACE_FUNC("bi_length", sp);
+    TRACE_FUNC2("bi_length", sp, 1);
 
     if (sp->type < C_STRING)
 	cast1_to_s(sp);
@@ -137,7 +137,7 @@ bi_length(CELL *sp)
 CELL *
 bi_alength(CELL *sp)
 {
-    TRACE_FUNC("bi_alength", sp);
+    TRACE_FUNC2("bi_alength", sp, 1);
 
     sp->type = C_DOUBLE;
     sp->dval = (double) ((ARRAY) sp->ptr)->size;
@@ -195,7 +195,7 @@ bi_index(CELL *sp)
     size_t idx;
     size_t len;
 
-    TRACE_FUNC("bi_index", sp);
+    TRACE_FUNC2("bi_index", sp, 2);
 
     sp--;
     if (TEST2(sp) != TWO_STRINGS)
@@ -309,7 +309,7 @@ bi_match(CELL *sp)
     char *p;
     size_t length;
 
-    TRACE_FUNC("bi_match", sp);
+    TRACE_FUNC2("bi_match", sp + 1, 2);
 
     if (sp->type != C_RE)
 	cast_to_RE(sp);
@@ -351,7 +351,7 @@ bi_to##case(CELL *sp) \
     size_t len; \
     register char *p, *q; \
 \
-    TRACE_FUNC("bi_to" #case, sp); \
+    TRACE_FUNC2("bi_to" #case, sp, 1); \
 \
     if (sp->type != C_STRING) \
         cast1_to_s(sp); \
@@ -381,7 +381,7 @@ bi_systime(CELL *sp)
     time_t result;
     time(&result);
 
-    TRACE_FUNC("bi_systime", sp);
+    TRACE_FUNC2("bi_systime", sp, 0);
 
     sp++;
     sp->type = C_DOUBLE;
@@ -402,7 +402,7 @@ bi_mktime(CELL *sp)
     struct tm my_tm;
     STRING *sval = string(sp);
 
-    TRACE_FUNC("bi_mktime", sp);
+    TRACE_FUNC2("bi_mktime", sp, 1);
 
     if (!sval)
 	goto error;
@@ -545,7 +545,7 @@ fplib_err(
 CELL *
 bi_sin(CELL *sp)
 {
-    TRACE_FUNC("bi_sin", sp);
+    TRACE_FUNC2("bi_sin", sp, 1);
 
 #if ! STDC_MATHERR
     if (sp->type != C_DOUBLE)
@@ -570,7 +570,7 @@ bi_sin(CELL *sp)
 CELL *
 bi_cos(CELL *sp)
 {
-    TRACE_FUNC("bi_cos", sp);
+    TRACE_FUNC2("bi_cos", sp, 1);
 
 #if ! STDC_MATHERR
     if (sp->type != C_DOUBLE)
@@ -595,7 +595,7 @@ bi_cos(CELL *sp)
 CELL *
 bi_atan2(CELL *sp)
 {
-    TRACE_FUNC("bi_atan2", sp);
+    TRACE_FUNC2("bi_atan2", sp, 2);
 
 #if  !	STDC_MATHERR
     sp--;
@@ -619,7 +619,7 @@ bi_atan2(CELL *sp)
 CELL *
 bi_log(CELL *sp)
 {
-    TRACE_FUNC("bi_log", sp);
+    TRACE_FUNC2("bi_log", sp, 1);
 
 #if ! STDC_MATHERR
     if (sp->type != C_DOUBLE)
@@ -644,7 +644,7 @@ bi_log(CELL *sp)
 CELL *
 bi_exp(CELL *sp)
 {
-    TRACE_FUNC("bi_exp", sp);
+    TRACE_FUNC2("bi_exp", sp, 1);
 
 #if  ! STDC_MATHERR
     if (sp->type != C_DOUBLE)
@@ -670,7 +670,7 @@ bi_exp(CELL *sp)
 CELL *
 bi_int(CELL *sp)
 {
-    TRACE_FUNC("bi_int", sp);
+    TRACE_FUNC2("bi_int", sp, 1);
 
     if (sp->type != C_DOUBLE)
 	cast1_to_d(sp);
@@ -681,7 +681,7 @@ bi_int(CELL *sp)
 CELL *
 bi_sqrt(CELL *sp)
 {
-    TRACE_FUNC("bi_sqrt", sp);
+    TRACE_FUNC2("bi_sqrt", sp, 1);
 
 #if  ! STDC_MATHERR
     if (sp->type != C_DOUBLE)
@@ -776,7 +776,7 @@ bi_srand(CELL *sp)
 
     CELL c;
 
-    TRACE_FUNC("bi_srand", sp);
+    TRACE_FUNC2("bi_srand", sp, (sp->type != C_NOINIT));
 
     if (sp->type == C_NOINIT)	/* seed off clock */
     {
@@ -824,7 +824,7 @@ bi_srand(CELL *sp)
 CELL *
 bi_rand(CELL *sp)
 {
-    TRACE_FUNC("bi_rand", sp);
+    TRACE_FUNC2("bi_rand", sp, 0);
 
 #ifdef USE_SYSTEM_SRAND
     {
@@ -861,7 +861,7 @@ bi_close(CELL *sp)
 {
     int x;
 
-    TRACE_FUNC("bi_close", sp);
+    TRACE_FUNC2("bi_close", sp, 1);
 
     if (sp->type < C_STRING)
 	cast1_to_s(sp);
@@ -878,9 +878,9 @@ bi_fflush(CELL *sp)
 {
     int ret = 0;
 
-    TRACE_FUNC("bi_fflush", sp);
+    TRACE_FUNC2("bi_fflush", sp, (sp->type != C_NOINIT));
 
-    if (sp->type == 0)
+    if (sp->type == C_NOINIT)
 	fflush(stdout);
     else {
 	sp--;
@@ -901,7 +901,7 @@ bi_system(CELL *sp GCC_UNUSED)
 {
     int ret_val;
 
-    TRACE_FUNC("bi_system", sp);
+    TRACE_FUNC2("bi_system", sp + 1, 1);
 
     if (sp->type < C_STRING)
 	cast1_to_s(sp);
@@ -945,7 +945,7 @@ bi_getline(CELL *sp)
     TRACE_FUNC("bi_getline", sp);
 
     switch (sp->type) {
-    case 0:
+    case C_NOINIT:
 	sp--;
 	if (!main_fin)
 	    open_main();

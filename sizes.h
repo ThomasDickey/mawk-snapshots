@@ -1,6 +1,6 @@
 /********************************************
 sizes.h
-copyright 2009-2017,2020  Thomas E. Dickey
+copyright 2009-2020,2024  Thomas E. Dickey
 copyright 1991-1995,2014.  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.22 2020/10/03 10:49:28 tom Exp $
+ * $MawkId: sizes.h,v 1.24 2024/08/14 20:35:32 tom Exp $
  */
 
 /*  sizes.h  */
@@ -128,16 +128,20 @@ typedef unsigned long   ULong;
  * FBANK_SZ, the number of fields at startup, must be a power of 2.
  *
  */
-#define  FBANK_SZ	1024
+#ifndef FB_SHIFT
 #define  FB_SHIFT	  10	/* lg(FBANK_SZ) */
+#endif
+#define  FBANK_SZ	(1 << FB_SHIFT)
 
 /*
  * hardwired limit on sprintf size, can be overridden with -Ws=xxx
  * TBD to remove hard wired limit
  */
+#ifndef SPRINTF_LIMIT
 #define  SPRINTF_LIMIT	8192
+#endif
 
-#define  BUFFSZ         4096
+#define  BUFFSZ         (SPRINTF_LIMIT / 2)
   /* starting buffer size for input files, grows if
      necessary */
 

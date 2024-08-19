@@ -1,6 +1,6 @@
 /********************************************
 trace.c
-copyright 2012-2019,2023 Thomas E. Dickey
+copyright 2012-2023,2024 Thomas E. Dickey
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.19 2023/08/15 23:24:31 tom Exp $
+ * $MawkId: trace.c,v 1.22 2024/08/14 23:27:13 tom Exp $
  */
 #include <mawk.h>
 #include <repl.h>
@@ -92,12 +92,11 @@ TraceCell(CELL *cp)
 }
 
 void
-TraceFunc(const char *name, CELL *sp)
+TraceFunc(const char *name, CELL *sp, int nargs)
 {
-    int nargs = sp->type;
     int n;
 
-    TRACE(("** %s <-%p\n", name, (void *) sp));
+    TRACE(("** %s <-%p (%ld)\n", name, (void *) sp, (long) nargs));
     for (n = 0; n < nargs; ++n) {
 	TRACE(("...arg%d: ", n));
 	TraceCell(sp + n - nargs);

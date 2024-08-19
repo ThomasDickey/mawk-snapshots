@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.57 2024/06/22 19:16:39 tom Exp $
+ * $MawkId: scan.c,v 1.58 2024/07/26 00:19:17 tom Exp $
  */
 
 #include <mawk.h>
@@ -36,7 +36,7 @@ the GNU General Public License, version 2, 1991.
 #define STR_LBRACE "{"
 #define STR_RBRACE "}"
 
-#define  ct_ret(x)  return scan_scope(current_token = (x))
+#define  ct_ret(x)  do { current_token = (x); return scan_scope(current_token); } while (0)
 
 #define  next() (*buffp ? *buffp++ : slow_next())
 #define  un_next()  buffp--
@@ -583,7 +583,7 @@ yylex(void)
 		yylval.ival = F_TRUNC;
 		string_buff[1] = 0;
 	    }
-	    return scan_scope(current_token = IO_OUT);
+	    ct_ret(IO_OUT);
 	}
 
 	test1_ret('=', GTE, GT);
@@ -703,7 +703,7 @@ yylex(void)
 	}
 
     case SC_DQUOTE:
-	return scan_scope(current_token = collect_string());
+	ct_ret(collect_string());
 
     case SC_IDCHAR:		/* collect an identifier */
 	{

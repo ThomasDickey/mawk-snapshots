@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20240716
+MANIFEST for mawk, version t20240819
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -138,6 +138,8 @@ package/freebsd/Makefile        FreeBSD build-script
 package/freebsd/distinfo        FreeBSD build-script
 package/freebsd/pkg-descr       FreeBSD build-script
 test                            subdirectory
+test/cclass.awk                 test-script for character-classes
+test/cclass.out                 reference for cclass.awk
 test/decl-awk.out               reference for test using decl.awk
 test/fpe_test                   scripts to test if fpe handling compiled OK
 test/fpe_test.bat               scripts to test if fpe handling compiled OK
@@ -145,8 +147,12 @@ test/fpetest1.awk               test exception for divide-by-zero
 test/fpetest2.awk               test exception for floating point overflow
 test/fpetest3.awk               test exception for domain error
 test/full-awk.dat               test-data for /dev/full
+test/hashbang-S.sh              test-case for "-S" option of env
 test/interval0.awk              test-case for empty interval-expressions
 test/interval0.out              reference for empty interval-expressions
+test/longline.out               test-reference for longline.sh
+test/longline.sh                testcase for long lines, to check if -Wsprintf and -Winteractive options work.
+test/mawkerrs                   test-script for error messages from mawk
 test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK

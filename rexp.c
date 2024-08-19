@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.39 2023/12/10 15:09:09 Paul.Eggert Exp $
+ * $MawkId: rexp.c,v 1.45 2024/08/05 20:59:33 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -64,6 +64,8 @@ static  short  table[10][10]  =  {
 /* *INDENT-ON* */
 
 #define	 STACKSZ   64
+
+static const char *REs_type(STATE * p);
 
 static jmp_buf err_buf;		/*  used to trap on error */
 
@@ -173,13 +175,22 @@ REcompile(char *re, size_t len)
 	     *   convert m{3,} to mmm* (with a limit of MAX_INT)
 	     *   convert m{3,10} to mmm* with a limit of 10
 	     */
+	    TRACE(("interval {%ld,%ld}\n", (long) intrvalmin, (long) intrvalmax));
 	    if (intrvalmin == 0) {	/* zero or more */
 		switch (intrvalmax) {
 		case 0:
 		    /* user stupidity: m{0} or m{0,0} 
 		     * don't add this re token
 		     */
-		    if (op_ptr != op_stack) {
+		    if (m_ptr < m_stack) {
+			t = RE_lex(++m_ptr);
+			if (t != T_NONE) {
+			    continue;
+			} else {
+			    m_stack[0] = RE_any();	/* FIXME: RE_none? */
+			    m_ptr = m_stack;
+			}
+		    } else if (op_ptr != op_stack) {
 			/* no previous re */
 			RE_free(m_ptr->start);
 			m_ptr--;
@@ -190,8 +201,6 @@ REcompile(char *re, size_t len)
 				if (op_ptr->token == T_LP) {
 				    if (op_ptr == op_stack) {
 					op_ptr->token = T_NONE;
-				    } else {
-					--op_ptr;
 				    }
 				    break;
 				}
@@ -253,7 +262,7 @@ REcompile(char *re, size_t len)
 	    break;
 #endif /* ! NO_INTERVAL_EXPR */
 
-	case 0:		/*  end of reg expr   */
+	case T_NONE:		/*  end of reg expr   */
 	    if (op_ptr->token == 0) {
 		/*  done   */
 		if (m_ptr == m_stack) {
@@ -346,6 +355,7 @@ REcompile(char *re, size_t len)
     }
 }
 
+#ifdef NO_LEAKS
 void
 REdestroy(STATE * ptr)
 {
@@ -373,6 +383,7 @@ REdestroy(STATE * ptr)
     }
     RE_free(ptr);
 }
+#endif /* NO_LEAKS */
 
 /* getting here means a logic flaw or unforeseen case */
 void

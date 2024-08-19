@@ -1,6 +1,6 @@
 /********************************************
 rexp3.c
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,17 +12,19 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.51 2023/07/29 23:44:55 tom Exp $
+ * $MawkId: rexp3.c,v 1.61 2024/07/28 23:04:24 tom Exp $
  */
 
 /*  match a string against a machine   */
 
 #include "rexp.h"
 
-#define	 push(mx,sx,px,ssx,ux) do { \
+#define push(mx,sx,px,ssx,ux) do { \
 	if (++stackp == RE_run_stack_limit) \
 		stackp = RE_new_run_stack() ;\
-	TRACE2(("@%d, pushing %d:%03d\n", __LINE__, (int)(stackp - RE_run_stack_base), (int)(m - machine))); \
+	TRACE2(("[%s@%d] pushing %d:%03d\n", __FILE__, __LINE__, \
+	(int)(stackp - RE_run_stack_base), \
+	(int)(m - machine))); \
 	stackp->m = (mx); \
 	stackp->s = (sx); \
 	stackp->sp = (int) ((px) - RE_pos_stack_base); \
@@ -43,30 +45,32 @@ the GNU General Public License, version 2, 1991.
 
 #define	CASE_UANY(x) case (x)+U_OFF:  /* FALLTHRU */ case (x)+U_ON
 
-#define TR_STR(s) TRACE((" str:%i len:%lu\n", ((s) ? (int) ((s) - str) : -99), (unsigned long) *lenp))
+#define TR_AT(what) \
+	TRACE2(("[%s@%d] %d.%03d %s\n", __FILE__, __LINE__, \
+	   (int) (stackp - RE_run_stack_base), \
+	   (int) (m - machine), \
+	   what))
+
+#define TR_BEST() \
+	TRACE2(("[%s@%d] new best [%d..%d]'%.*s'\n", __FILE__, __LINE__, \
+		(int) (cb_ss - str), \
+		(int) (cb_e - str), \
+		(int) (cb_e - cb_ss), \
+		cb_ss))
+
+#define TR_STR(s) \
+	TRACE(("[%s@%d] str:%i len:%lu\n", __FILE__, __LINE__, \
+		((s) ? (int) ((s) - str) : -99), \
+		(unsigned long) *lenp))
+
 #define RE_TURN() \
 	if (cb_ss) { \
 	    *lenp = (size_t) (cb_e - cb_ss); \
 	} \
 	TR_STR(s); \
-	TRACE2(("returning @%d: %d\n", __LINE__, cb_ss ? (int)(cb_ss - str) : -1)); \
+	TRACE2(("[%s@%d] returning %d\n", __FILE__, __LINE__, \
+		cb_ss ? (int)(cb_ss - str) : -1)); \
 	return cb_ss
-
-#if OPT_TRACE
-static const char *
-RE_u_end(int flag)
-{
-    static const char *utable[] =
-    {
-	"U_OFF + END_OFF",
-	"U_ON  + END_OFF",
-	"U_OFF + END_ON",
-	"U_ON  + END_ON",
-    };
-    flag /= U_ON;
-    return utable[flag % 4];
-}
-#endif
 
 /* returns start of first longest match and the length by
    reference.  If no match returns NULL and length zero */
@@ -79,17 +83,18 @@ REmatch(char *str,		/* string to test */
 	int no_bol)		/* disallow match at beginning of line */
 {
     register STATE *m = machine;
-    char *s = str;
+    char *s;
     char *ss;
     register RT_STATE *stackp;
-    int u_flag, t;
-    char *str_end = s + str_len;
+    int u_flag;
+    char *str_end;
     RT_POS_ENTRY *sp;
     char *ts;
 
     /* state of current best match stored here */
+#define current_best(n) (cb_ss < (n) || (cb_e == str_end && cb_ss == (n)))
     char *cb_ss;		/* the start */
-    char *cb_e = 0;		/* the end , pts at first char not matched */
+    char *cb_e;			/* the end , pts at first char not matched */
 
     *lenp = 0;
 
@@ -97,23 +102,24 @@ REmatch(char *str,		/* string to test */
 
     /* check for the easy case */
     if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {
-	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
-	if ((ts = str_str(s, str_len, m->s_data.str, (size_t) m->s_len))) {
+	if ((ts = str_str(str, str_len, m->s_data.str, (size_t) m->s_len))) {
 	    *lenp = m->s_len;
 	}
 	TR_STR(ts);
 	return ts;
     }
 
+    str_end = str + str_len;
+    s = str;
     u_flag = U_ON;
-    cb_ss = ss = (char *) 0;
+    cb_e = cb_ss = ss = (char *) 0;
     stackp = RE_run_stack_empty;
     sp = RE_pos_stack_empty;
     RE_init_it_cnt(m);
     RE_CASE();
 
   refill:
-    TRACE2(("@%d, refill machine %03d\n", __LINE__, (int) (m - machine)));
+    TR_AT(("refill..."));
     if (stackp == RE_run_stack_empty) {
 	RE_TURN();
     }
@@ -121,16 +127,16 @@ REmatch(char *str,		/* string to test */
     s = (stackp--)->s;
     if (cb_ss) {		/* does new state start too late ? */
 	if (ss) {
-	    if (cb_ss < ss || (cb_ss == ss && cb_e == str_end)) {
+	    if (current_best(ss)) {
 		RE_FILL();
 	    }
-	} else if (cb_ss < s || (cb_ss == s && cb_e == str_end)) {
+	} else if (current_best(s)) {
 	    RE_FILL();
 	}
     }
 
     m = (stackp + 1)->m;
-    TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
+    TR_AT("now");
     sp = RE_pos_stack_base + (stackp + 1)->sp;
     sp->prev_offset = (stackp + 1)->tp;
     u_flag = (stackp + 1)->u;
@@ -144,14 +150,17 @@ REmatch(char *str,		/* string to test */
 	   cb_ss ? cb_ss : s));
     switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
-	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
-	if (strncmp(s, m->s_data.str, (size_t) m->s_len)) {
-	    TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
+	TR_AT("now");
+	if (s >= str_end || (str_end - s) < (ptrdiff_t) m->s_len) {
+	    TR_AT("now");
+	    RE_FILL();
+	} else if (memcmp(s, m->s_data.str, m->s_len) != 0) {
+	    TR_AT("now");
 	    RE_FILL();
 	}
 	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
-		TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
+	    if (cb_ss && current_best(s)) {
+		TR_AT("now");
 		RE_FILL();
 	    } else {
 		ss = s;
@@ -159,79 +168,199 @@ REmatch(char *str,		/* string to test */
 	}
 	s += m->s_len;
 	m++;
-	TRACE2(("@%d, next %03d\n", __LINE__, (int) (m - machine)));
+	TR_AT("next");
 	RE_CASE();
 
     case M_STR + U_OFF + END_ON:
-	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
-	if (strcmp(s, m->s_data.str)) {
+	TR_AT("now");
+	if ((str_end - s) != (ptrdiff_t) m->s_len) {
+	    RE_FILL();
+	} else if (memcmp(s, m->s_data.str, (size_t) m->s_len) != 0) {
 	    RE_FILL();
 	}
 	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
+	    if (cb_ss && current_best(s)) {
 		RE_FILL();
 	    } else {
 		ss = s;
 	    }
 	}
-	s += m->s_len;
+	s = str_end;
 	m++;
-	TRACE2(("@%d, next %03d\n", __LINE__, (int) (m - machine)));
+	TR_AT("next");
 	RE_CASE();
 
     case M_STR + U_ON + END_OFF:
-	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
+	TR_AT("now");
 	if (s >= str_end) {
 	    RE_FILL();
+	} else if (s < str) {
+	    s = str;
 	}
 	if (!(s = str_str(s, (size_t) (str_end - s), m->s_data.str, (size_t) m->s_len))) {
 	    RE_FILL();
 	}
+	push(m, s + 1, sp, ss, U_ON);
+	if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s += m->s_len;
+	m++;
+	u_flag = U_OFF;
+	TR_AT("next");
+	RE_CASE();
+
+#ifndef LCOV_UNUSED
+    case M_STR + U_ON + END_ON:
+	/* NOTREACHED */
+	TR_AT("now");
+	if (s >= str_end) {
+	    RE_FILL();
+	} else if (s < str) {
+	    s = str;
+	}
+	{
+	    ptrdiff_t ti = (str_end - s) - (ptrdiff_t) m->s_len;
+	    if (ti < 0 || memcmp(s = s + ti, m->s_data.str, m->s_len) != 0) {
+		RE_FILL();
+	    }
+	}
+	if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s = str_end;
+	m++;
+	u_flag = U_OFF;
+	TR_AT("next");
+	RE_CASE();
+#endif
+
+    case M_CLASS + U_OFF + END_OFF:
+	if (s >= str_end) {
+	    RE_FILL();
+	} else if (!ison(*m->s_data.bvp, s[0])) {
+	    RE_FILL();
+	} else if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s++;
+	m++;
+	RE_CASE();
+
+#ifndef LCOV_UNUSED
+    case M_CLASS + U_OFF + END_ON:
+	/* NOTREACHED */
+	if (s >= str_end || !ison(*m->s_data.bvp, s[0])) {
+	    RE_FILL();
+	} else if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s = str_end;
+	m++;
+	RE_CASE();
+#endif
+
+    case M_CLASS + U_ON + END_OFF:
+	if (s < str)
+	    s = str;
+	while (1) {
+	    if (s >= str_end) {
+		RE_FILL();
+	    }
+	    if (ison(*m->s_data.bvp, s[0]))
+		break;
+	    s++;
+	}
+	push(m, s + 1, sp, ss, U_ON);
+	if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s++;
+	m++;
+	u_flag = U_OFF;
+	RE_CASE();
+
+#ifndef LCOV_UNUSED
+    case M_CLASS + U_ON + END_ON:
+	/* NOTREACHED */
+	if (s < str)
+	    s = str;
+	if (s >= str_end || !ison(*m->s_data.bvp, str_end[-1])) {
+	    RE_FILL();
+	} else if (!ss) {
+	    char *xs = str_end - 1;
+	    if (cb_ss && current_best(xs)) {
+		RE_FILL();
+	    } else {
+		ss = xs;
+	    }
+	}
+	s = str_end;
+	m++;
+	u_flag = U_OFF;
+	RE_CASE();
+#endif
+
+    case M_ANY + U_OFF + END_OFF:
+	if (s >= str_end) {
+	    RE_FILL();
+	} else if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s++;
+	m++;
+	RE_CASE();
+
+#ifndef LCOV_UNUSED
+    case M_ANY + U_OFF + END_ON:
+	/* NOTREACHED */
+	if (s >= str_end) {
+	    RE_FILL();
+	} else if (!ss) {
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    } else {
+		ss = s;
+	    }
+	}
+	s = str_end;
+	m++;
+	RE_CASE();
+#endif
+
+    case M_ANY + U_ON + END_OFF:
+	if (s < str)
+	    s = str;
 	if (s >= str_end) {
 	    RE_FILL();
 	}
 	push(m, s + 1, sp, ss, U_ON);
 	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s;
-	    }
-	}
-	s += m->s_len;
-	m++;
-	u_flag = U_OFF;
-	TRACE2(("@%d, next %03d\n", __LINE__, (int) (m - machine)));
-	RE_CASE();
-
-    case M_STR + U_ON + END_ON:
-	TRACE2(("@%d, now %03d\n", __LINE__, (int) (m - machine)));
-	t = (int) ((size_t) (str_end - s) - m->s_len);
-	if (t < 0 || memcmp(ts = s + t, m->s_data.str, (size_t) m->s_len)) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && ts > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = ts;
-	    }
-	}
-	s = str_end;
-	m++;
-	u_flag = U_OFF;
-	TRACE2(("@%d, next %03d\n", __LINE__, (int) (m - machine)));
-	RE_CASE();
-
-    case M_CLASS + U_OFF + END_OFF:
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	if (!ison(*m->s_data.bvp, s[0])) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
+	    if (cb_ss && current_best(s)) {
 		RE_FILL();
 	    } else {
 		ss = s;
@@ -239,182 +368,86 @@ REmatch(char *str,		/* string to test */
 	}
 	s++;
 	m++;
-	RE_CASE();
-
-    case M_CLASS + U_OFF + END_ON:
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	if (s[1] || !ison(*m->s_data.bvp, s[0])) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s;
-	    }
-	}
-	s++;
-	m++;
-	RE_CASE();
-
-    case M_CLASS + U_ON + END_OFF:
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	while (!ison(*m->s_data.bvp, s[0])) {
-	    if (s >= str_end) {
-		RE_FILL();
-	    } else {
-		s++;
-	    }
-	}
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	s++;
-	push(m, s, sp, ss, U_ON);
-	if (!ss) {
-	    if (cb_ss && s - 1 > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s - 1;
-	    }
-	}
-	m++;
 	u_flag = U_OFF;
 	RE_CASE();
 
-    case M_CLASS + U_ON + END_ON:
-	if ((s >= str_end) || !ison(*m->s_data.bvp, str_end[-1])) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && str_end - 1 > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = str_end - 1;
-	    }
-	}
-	s = str_end;
-	m++;
-	u_flag = U_OFF;
-	RE_CASE();
-
-    case M_ANY + U_OFF + END_OFF:
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s;
-	    }
-	}
-	s++;
-	m++;
-	RE_CASE();
-
-    case M_ANY + U_OFF + END_ON:
-	if ((s >= str_end) || ((s + 1) < str_end)) {
-	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s;
-	    }
-	}
-	s++;
-	m++;
-	RE_CASE();
-
-    case M_ANY + U_ON + END_OFF:
-	if (s >= str_end) {
-	    RE_FILL();
-	}
-	s++;
-	push(m, s, sp, ss, U_ON);
-	if (!ss) {
-	    if (cb_ss && s - 1 > cb_ss) {
-		RE_FILL();
-	    } else {
-		ss = s - 1;
-	    }
-	}
-	m++;
-	u_flag = U_OFF;
-	RE_CASE();
-
+#ifndef LCOV_UNUSED
     case M_ANY + U_ON + END_ON:
+	/* NOTREACHED */
+	if (s < str)
+	    s = str;
 	if (s >= str_end) {
 	    RE_FILL();
 	}
+	s = str_end - 1;
 	if (!ss) {
-	    if (cb_ss && str_end - 1 > cb_ss) {
+	    if (cb_ss && current_best(s)) {
 		RE_FILL();
 	    } else {
-		ss = str_end - 1;
+		ss = s;
 	    }
 	}
 	s = str_end;
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
+#endif
 
-    case M_START + U_OFF + END_OFF:
-    case M_START + U_ON + END_OFF:
+      CASE_UANY(M_START + END_OFF):
 	if (s != str || no_bol) {
 	    RE_FILL();
 	}
-	ss = s;
+	ss = s = str;
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
 
-    case M_START + U_OFF + END_ON:
-    case M_START + U_ON + END_ON:
+#ifndef LCOV_UNUSED
+      CASE_UANY(M_START + END_ON):
+	/* NOTREACHED */
 	if (s != str || no_bol || (s < str_end)) {
 	    RE_FILL();
 	}
-	ss = s;
+	ss = str;
+	s = str + 1;
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
+#endif
 
     case M_END + U_OFF:
-	if (s < str_end) {
+	if (s != str_end) {
 	    RE_FILL();
-	}
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
+	} else if (!ss) {
+	    if (cb_ss) {
 		RE_FILL();
 	    } else {
-		ss = s;
+		ss = str_end;
 	    }
 	}
+	s = str_end;
 	m++;
 	RE_CASE();
 
     case M_END + U_ON:
-	s = str_end;
-	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
+	if (s >= str_end) {
+	    RE_FILL();
+	} else if (!ss) {
+	    if (cb_ss) {
 		RE_FILL();
-	    } else {
-		ss = s;
-	    }
+	    } else
+		ss = str_end;
 	}
+	s = str_end;
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
 
       CASE_UANY(M_U):
+	if (s < str)
+	    s = str;
 	if (!ss) {
-	    if (cb_ss && s > cb_ss) {
+	    if (cb_ss && current_best(s)) {
 		RE_FILL();
 	    } else {
 		ss = s;
@@ -439,8 +472,12 @@ REmatch(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
-    case (M_2JC) + U_OFF:	/* take the jump branch if position changed */
-    case (M_2JC) + U_ON:
+      CASE_UANY(M_2JB):	/* take the non jump branch */
+	push(m + m->s_data.jump, s, sp, ss, u_flag);
+	m++;
+	RE_CASE();
+
+      CASE_UANY(M_2JC):	/* take the jump branch if position changed */
 	/* see REtest */
 #ifndef NO_INTERVAL_EXPR
 #ifdef NO_RI_LOOP_UNROLL
@@ -453,14 +490,14 @@ REmatch(char *str,		/* string to test */
 	    RE_pos_pop(&sp, stackp);
 	    push(m + 1, s, sp, ss, u_flag);
 	    m += m->s_data.jump;
-	    TRACE2(("TEST @%d: %03d\n", __LINE__, (int) (m - machine)));
+	    TR_AT("now");
 	} else if ((m->it_cnt >= m->it_min)
 		   && (m->it_max == MAX__INT
 		       || (m->it_max < MAX__INT && m->it_cnt >= m->it_max))) {
 	    /* quit looping once maximum is met */
 	    RE_pos_pop(&sp, stackp);
 	    m++;
-	    TRACE2(("TEST @%d: %03d\n", __LINE__, (int) (m - machine)));
+	    TR_AT("now");
 	} else
 #else /* !NO_RI_LOOP_UNROLL */
 	if (m->it_max < MAX__INT && ++(m->it_cnt) >= m->it_max) {
@@ -471,12 +508,12 @@ REmatch(char *str,		/* string to test */
 	if (RE_pos_pop(&sp, stackp) == s) {
 	    /* fall out of loop, to next instruction */
 	    m++;
-	    TRACE2(("TEST @%d: %03d\n", __LINE__, (int) (m - machine)));
+	    TR_AT("now");
 	} else {
 	    /* continue looping as long as matching */
 	    push(m + 1, s, sp, ss, u_flag);
 	    m += m->s_data.jump;
-	    TRACE2(("TEST @%d: %03d\n", __LINE__, (int) (m - machine)));
+	    TR_AT("now");
 	}
 	RE_CASE();
 #else
@@ -486,14 +523,11 @@ REmatch(char *str,		/* string to test */
 	}
 	/* FALLTHRU */
 #endif /* ! NO_INTERVAL_EXPR */
-    case (M_2JB) + U_OFF:	/* take the jump branch */
-	/* FALLTHRU */
-    case (M_2JB) + U_ON:
-	push(m + 1, s, sp, ss, u_flag);
-	m += m->s_data.jump;
-	RE_CASE();
 
     case M_ACCEPT + U_OFF:
+	if (s >= str_end) {
+	    s = str_end;
+	}
 	if (!ss)
 	    ss = s;
 	if (!cb_ss || ss < cb_ss || (ss == cb_ss && s > cb_e)) {
@@ -501,40 +535,34 @@ REmatch(char *str,		/* string to test */
 	    restart_count(cb_ss, ss);
 	    cb_ss = ss;
 	    cb_e = s;
-	    TRACE2(("@%d, new best [%d..%d]'%.*s'\n", __LINE__,
-		    (int) (cb_ss - str),
-		    (int) (cb_e - str),
-		    (int) (cb_e - cb_ss),
-		    cb_ss));
+	    TR_BEST();
 	} else if (ss == cb_ss && s == cb_e) {
-	    RE_TURN();
+	    RE_TURN();		/* fix infinite loop for noloop1 */
 	}
 	RE_FILL();
 
     case M_ACCEPT + U_ON:
+	if (s >= str_end) {
+	    s = str_end;
+	} else if (s < str) {
+	    s = str;
+	}
 	if (!ss) {
 	    ss = s;
 	} else {
 	    s = str_end;
 	}
-
 	if (!cb_ss || ss < cb_ss || (ss == cb_ss && s > cb_e)) {
 	    /* we have a new current best */
 	    restart_count(cb_ss, ss);
 	    cb_ss = ss;
 	    cb_e = s;
-	    TRACE2(("@%d, new best [%d..%d]'%.*s'\n", __LINE__,
-		    (int) (cb_ss - str),
-		    (int) (cb_e - str),
-		    (int) (cb_e - cb_ss),
-		    cb_ss));
-	} else if (ss == cb_ss && s == cb_e) {
-	    RE_TURN();
+	    TR_BEST();
 	}
 	RE_FILL();
 
     default:
-	RE_panic("unexpected case in REmatch");
+	RE_bad_state("REmatch", m, u_flag);
     }
 }
 #undef push

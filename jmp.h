@@ -1,6 +1,6 @@
 /********************************************
 jmp.h
-copyright 2009-2010,2023 Thomas E. Dickey
+copyright 2009-2023,2024 Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.h,v 1.6 2023/07/22 22:28:22 tom Exp $
+ * $MawkId: jmp.h,v 1.7 2024/07/26 00:34:42 tom Exp $
  */
 
 #ifndef   MAWK_JMP_H
@@ -21,12 +21,12 @@ the GNU General Public License, version 2, 1991.
 #include "symtype.h"
 
 void BC_new(void);
-void BC_insert(int, INST *);
+void BC_insert(int, const INST *);
 void BC_clear(INST *, INST *);
 void code_push(INST *, unsigned, int, FBLOCK *);
 unsigned code_pop(INST *);
-void code_jmp(int, INST *);
-void patch_jmp(INST *);
+void code_jmp(int, const INST *);
+void patch_jmp(const INST *);
 
 extern int code_move_level;
    /* used to as one part of unique identification of context when

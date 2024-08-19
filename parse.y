@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.34 2023/08/11 21:02:56 tom Exp $
+ * $MawkId: parse.y,v 1.37 2024/07/26 20:14:00 tom Exp $
  */
 
 %{
@@ -158,13 +158,13 @@ PA_block  :  block
              }
 
           |  BEGIN
-                { be_setup(scope = SCOPE_BEGIN) ; }
+                { scope = SCOPE_BEGIN ; be_setup(scope) ; }
 
              block
                 { switch_code_to_main() ; }
 
           |  END
-                { be_setup(scope = SCOPE_END) ; }
+                { scope = SCOPE_END ; be_setup(scope) ; }
 
              block
                 { switch_code_to_main() ; }
@@ -1040,6 +1040,11 @@ funct_start   :  funct_head  LPAREN  f_arglist  RPAREN
 funct_head    :  FUNCTION  ID
                  { FBLOCK  *fbp ;
 
+                   if ( $2 == NULL )
+                   {
+                         compile_error("function definition") ;
+                         mawk_exit(3);
+                   }
                    if ( $2->type == ST_NONE )
                    {
                          $2->type = ST_FUNCT ;
@@ -1312,7 +1317,7 @@ field_A2I(void)
 static void
 check_var(SYMTAB * p)
 {
-    switch (p->type) {
+    switch (p ? p->type : -1) {
     case ST_NONE:		/* new id */
 	p->type = ST_VAR;
 	p->stval.cp = ZMALLOC(CELL);
@@ -1339,7 +1344,7 @@ check_var(SYMTAB * p)
 static void
 check_array(SYMTAB * p)
 {
-    switch (p->type) {
+    switch (p ? p->type : -1) {
     case ST_NONE:		/* a new array */
 	p->type = ST_ARRAY;
 	p->stval.array = new_ARRAY();

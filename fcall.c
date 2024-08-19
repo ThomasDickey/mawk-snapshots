@@ -1,6 +1,6 @@
 /********************************************
 fcall.c
-copyright 2009-2020,2023 Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.18 2023/08/17 22:44:27 tom Exp $
+ * $MawkId: fcall.c,v 1.20 2024/07/26 00:38:02 tom Exp $
  */
 
 #include <mawk.h>
@@ -471,7 +471,7 @@ void
 relocate_resolve_list(
 			 int scope,
 			 int move_level,
-			 FBLOCK * fbp,
+			 const FBLOCK * fbp,
 			 int orig_offset,
 			 unsigned len,
 			 int delta)

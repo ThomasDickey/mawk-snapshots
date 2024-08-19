@@ -1,6 +1,6 @@
 /********************************************
 jmp.c
-copyright 2009-2010,2021, Thomas E. Dickey
+copyright 2009-2021,2024, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.c,v 1.7 2021/05/29 00:17:15 tom Exp $
+ * $MawkId: jmp.c,v 1.8 2024/07/26 00:34:51 tom Exp $
  */
 
 /* this module deals with back patching jumps, breaks and continues,
@@ -41,7 +41,7 @@ typedef struct jmp {
 static JMP *jmp_top;
 
 void
-code_jmp(int jtype, INST * target)
+code_jmp(int jtype, const INST * target)
 {
     if (error_state)
 	return;
@@ -64,7 +64,7 @@ code_jmp(int jtype, INST * target)
 
 /* patch a jump on the jmp_stack */
 void
-patch_jmp(INST * target)
+patch_jmp(const INST * target)
 {
     if (!error_state) {
 	register JMP *p;
@@ -101,7 +101,7 @@ BC_new(void)			/* mark the start of a loop */
 }
 
 void
-BC_insert(int type, INST * address)
+BC_insert(int type, const INST * address)
 {
     register BC *p;
 

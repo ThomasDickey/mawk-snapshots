@@ -1,6 +1,6 @@
 /********************************************
 rexp1.c
-copyright 2009-2020,2023, Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.25 2023/07/28 00:21:02 tom Exp $
+ * $MawkId: rexp1.c,v 1.26 2024/07/19 07:38:30 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -337,8 +337,9 @@ RE_realloc(PTR p, size_t sz)
 {
     PTR q;
 
+    TRACE(("RE_realloc(%p, %lu) ", p, (unsigned long) sz));
     q = realloc(p, sz);
-    TRACE(("RE_realloc(%p, %lu) ->%p\n", p, (unsigned long) sz, q));
+    TRACE(("->%p\n", q));
     if (q == 0)
 	RE_error_trap(MEMORY_FAILURE);
     return q;

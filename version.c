@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: version.c,v 1.36 2024/01/22 00:54:45 tom Exp $
+ * $MawkId: version.c,v 1.37 2024/08/13 08:07:30 tom Exp $
  */
 
 #include "mawk.h"
@@ -50,7 +50,7 @@ print_version(FILE *fp)
     fprintf(fp, "\ncompiled limits:\n");
     fprintf(fp, FMT_N, "sprintf buffer", (double) SPRINTF_LIMIT);
     fprintf(fp, FMT_N, "maximum-integer", (double) MAX__INT);
-#if 0
+#if defined(VERBOSE_VERSION)
     /* we could show these, but for less benefit: */
     fprintf(fp, FMT_N, "maximum-unsigned", (double) MAX__UINT);
     fprintf(fp, FMT_N, "maximum-long", (double) MAX__LONG);

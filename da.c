@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.46 2023/08/16 23:33:50 tom Exp $
+ * $MawkId: da.c,v 1.49 2024/08/18 23:26:39 tom Exp $
  */
 
 /*  da.c  */
@@ -194,7 +194,7 @@ da_string(FILE *fp, const STRING * sparm, int delim)
 #define ADJUST_FORM  "# patching %s\n    .\t"
 
 INST *
-da_this(INST * p, INST * start, FILE *fp)
+da_this(INST * p, const INST * start, FILE *fp)
 {
     CELL *cp;
     const char *op_name = da_op_name(p);
@@ -531,6 +531,7 @@ dump_regex(void)
 {
 }
 #endif /* LOCAL_REGEXP */
+#if OPT_TRACE
 /* *INDENT-OFF* */
 static const OP_NAME type_names[] =
 {
@@ -548,7 +549,7 @@ static const OP_NAME type_names[] =
 /* *INDENT-ON* */
 
 const char *
-da_type_name(CELL *cdp)
+da_type_name(const CELL *cdp)
 {
     int n;
     const char *result = "?";
@@ -561,6 +562,7 @@ da_type_name(CELL *cdp)
     }
     return result;
 }
+#endif /* OPT_TRACE */
 /* *INDENT-OFF* */
 static const OP_NAME other_codes[] = {
     { AE_PUSHA,   "ae_pusha" },
@@ -599,7 +601,7 @@ static const OP_NAME other_codes[] = {
 /* *INDENT-ON* */
 
 const char *
-da_op_name(INST * cdp)
+da_op_name(const INST * cdp)
 {
     int n;
     const char *result = 0;

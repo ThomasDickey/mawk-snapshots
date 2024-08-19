@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2021,2023 Thomas E. Dickey
+copyright 2008-2023,2024 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.41 2023/07/23 11:33:56 tom Exp $
+ * $MawkId: field.c,v 1.43 2024/07/26 00:38:47 tom Exp $
  */
 
 /* field.c */
@@ -634,7 +634,7 @@ slow_cell_assign(CELL *target, CELL *source)
 }
 
 int
-field_addr_to_index(CELL *cp)
+field_addr_to_index(const CELL *cp)
 {
     CELL **p = fbankv;
 

@@ -1,6 +1,6 @@
 /********************************************
 repl.h
-copyright 2009-2020,2023, Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: repl.h,v 1.11 2023/07/20 00:32:26 tom Exp $
+ * $MawkId: repl.h,v 1.12 2024/08/18 09:55:30 tom Exp $
  */
 
 /* repl.h */
@@ -26,6 +26,12 @@ typedef struct re_data {
     int anchored;		/* use to limit recursion in gsub */
     int is_empty;		/* check if pattern is empty */
 } RE_DATA;
+
+typedef struct re_node {
+    RE_DATA re;			/* keep this first, for re_destroy() */
+    STRING *sval;
+    struct re_node *link;
+} RE_NODE;
 
 /*
  * re_compile returns a RE_DATA*, but mawk handles it as a PTR thereafter.

@@ -1,6 +1,6 @@
 /*
 regexp_system.c
-copyright 2009-2014,2020, Thomas E. Dickey
+copyright 2009-2020,2024, Thomas E. Dickey
 copyright 2005, Aleksey Cheusov
 
 This is a source file for mawk, an implementation of
@@ -10,7 +10,7 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
  */
 
-/* $MawkId: regexp.c,v 1.10 2020/10/16 22:27:03 tom Exp $ */
+/* $MawkId: regexp.c,v 1.14 2024/08/17 00:00:30 tom Exp $ */
 
 #include <config.h>
 
@@ -20,15 +20,14 @@ the GNU General Public License, version 2, 1991.
 #define RE_FILL() { goto refill; }
 #define RE_CASE() { goto reswitch; }
 #		include "rexp.c"
+#		include "rexpdb.c"
 #		include "rexp0.c"
 #		include "rexp1.c"
 #		include "rexp2.c"
 #		include "rexp3.c"
-#		include "rexp4.c"
-#		include "rexpdb.c"
 #else
-#		include "rexp4.c"
 #		include "regexp_system.c"
+#		include "rexp4.c"
 #endif
 
 #ifdef NO_LEAKS

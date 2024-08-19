@@ -1,6 +1,6 @@
 /********************************************
 rexp0.c
-copyright 2008-2016,2020, Thomas E. Dickey
+copyright 2008-2020,2024, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1994,1996, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.46 2020/10/16 22:19:44 tom Exp $
+ * $MawkId: rexp0.c,v 1.47 2024/07/26 21:51:38 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -369,7 +369,7 @@ RE_lex(MACHINE * mp)
 	    return prev = T_END;
 
 	default:
-	    RE_panic("bad switch in RE_lex");
+	    RE_panic("bad switch in RE_lex: %d", c);
 	}			/* T_CAT switch */
 	break;
 

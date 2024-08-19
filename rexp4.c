@@ -1,7 +1,6 @@
 /*
-regexp_system.c
-copyright 2009-2014,2023 Thomas E. Dickey
-copyright 2005, Aleksey Cheusov
+rexp4.c
+copyright 2024 Thomas E. Dickey
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -11,20 +10,49 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: rexp4.c,v 1.9 2023/07/23 11:32:20 tom Exp $
+ * $MawkId: rexp4.c,v 1.10 2024/08/18 09:51:04 tom Exp $
  */
-#include "mawk.h"
-#include "rexp.h"
 #include "field.h"
+#include "repl.h"
 
 char *
-is_string_split(PTR q, size_t * lenp)
+is_string_split(PTR q, size_t *lenp)
 {
-    STATE *p = (STATE *) q;
+    if (q != NULL) {
+	STRING *s = ((RE_NODE *) q)->sval;
+	char *result = s->str;
 
-    if (p != 0 && (p[0].s_type == M_STR && p[1].s_type == M_ACCEPT)) {
-	*lenp = p->s_len;
-	return p->s_data.str;
-    } else
-	return (char *) 0;
+	/* if we have only one character, it cannot be a regex */
+	if (s->len == 1) {
+	    *lenp = s->len;
+	    return result;
+	} else {
+	    size_t n;
+	    for (n = 0; n < s->len; ++n) {
+		/* if we have a meta character, it probably is a regex */
+		switch (result[n]) {
+		case '\\':
+		case '$':
+		case '(':
+		case ')':
+		case '*':
+		case '+':
+		case '.':
+		case '?':
+		case '[':
+		case ']':
+		case '^':
+		case '|':
+#ifndef NO_INTERVAL_EXPR
+		case L_CURL:
+		case R_CURL:
+#endif
+		    return NULL;
+		}
+	    }
+	    *lenp = s->len;
+	    return result;
+	}
+    }
+    return NULL;
 }

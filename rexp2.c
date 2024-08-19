@@ -1,6 +1,6 @@
 /********************************************
 rexp2.c
-copyright 2009-2017,2020, Thomas E. Dickey
+copyright 2009-2020,2024, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.32 2020/10/16 23:07:37 tom Exp $
+ * $MawkId: rexp2.c,v 1.44 2024/08/16 23:44:04 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -157,6 +157,29 @@ slow_push(
 
 #define	CASE_UANY(x) case (x)+U_OFF:  /* FALLTHRU */ case (x)+U_ON
 
+static const char *
+RE_u_end(int flag)
+{
+    static const char *utable[] =
+    {
+	"U_OFF + END_OFF",
+	"U_ON  + END_OFF",
+	"U_OFF + END_ON",
+	"U_ON  + END_ON",
+    };
+    flag /= U_ON;
+    return utable[flag % 4];
+}
+
+static GCC_NORETURN void
+RE_bad_state(const char *where, STATE * m, int u_flag)
+{
+    RE_panic("unexpected case (%s + %s) in %s",
+	     REs_type(m),
+	     RE_u_end(m->s_type + u_flag),
+	     where);
+}
+
 /*
  * test if str ~ /machine/
  */
@@ -171,7 +194,7 @@ REtest(char *str,		/* string to test */
     int u_flag;
     char *str_end = str + len;
     RT_POS_ENTRY *sp;
-    int t;			/*convenient temps */
+    int ti;			/*convenient temps */
     STATE *tm;
 
     TRACE(("REtest: \"%s\" ~ /pattern/\n", str));
@@ -198,10 +221,18 @@ REtest(char *str,		/* string to test */
     u_flag = (stackp--)->u;
 
   reswitch:
+    TRACE2(("[%s@%d] %d:%03d %-8s %-15s: %s\n", __FILE__, __LINE__,
+	    (int) (stackp - RE_run_stack_base),
+	    (int) (m - machine),
+	    REs_type(m),
+	    RE_u_end(u_flag),
+	    s));
 
     switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
-	if (strncmp(s, m->s_data.str, (size_t) m->s_len)) {
+	if (s > str_end
+	    || (size_t) (str_end - s) < m->s_len
+	    || memcmp(s, m->s_data.str, m->s_len)) {
 	    RE_FILL();
 	}
 	s += m->s_len;
@@ -209,7 +240,8 @@ REtest(char *str,		/* string to test */
 	RE_CASE();
 
     case M_STR + U_OFF + END_ON:
-	if (strcmp(s, m->s_data.str)) {
+	if ((size_t) (str_end - s) != m->s_len
+	    || memcmp(s, m->s_data.str, m->s_len) != 0) {
 	    RE_FILL();
 	}
 	s += m->s_len;
@@ -227,8 +259,8 @@ REtest(char *str,		/* string to test */
 	RE_CASE();
 
     case M_STR + U_ON + END_ON:
-	t = (int) (str_end - s) - (int) m->s_len;
-	if (t < 0 || memcmp(s + t, m->s_data.str, (size_t) m->s_len)) {
+	ti = (int) (str_end - s) - (int) m->s_len;
+	if (ti < 0 || memcmp(s + ti, m->s_data.str, m->s_len)) {
 	    RE_FILL();
 	}
 	s = str_end;
@@ -270,7 +302,9 @@ REtest(char *str,		/* string to test */
 	u_flag = U_OFF;
 	RE_CASE();
 
+#ifndef LCOV_UNUSED
     case M_CLASS + U_ON + END_ON:
+	/* NOTREACHED */
 	if (s >= str_end || !ison(*m->s_data.bvp, str_end[-1])) {
 	    RE_FILL();
 	}
@@ -278,6 +312,7 @@ REtest(char *str,		/* string to test */
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
+#endif
 
     case M_ANY + U_OFF + END_OFF:
 	if (s >= str_end) {
@@ -287,13 +322,16 @@ REtest(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
+#ifndef LCOV_UNUSED
     case M_ANY + U_OFF + END_ON:
+	/* NOTREACHED */
 	if (s >= str_end || (s + 1) < str_end) {
 	    RE_FILL();
 	}
 	s++;
 	m++;
 	RE_CASE();
+#endif
 
     case M_ANY + U_ON + END_OFF:
 	if (s >= str_end) {
@@ -305,7 +343,9 @@ REtest(char *str,		/* string to test */
 	u_flag = U_OFF;
 	RE_CASE();
 
+#ifndef LCOV_UNUSED
     case M_ANY + U_ON + END_ON:
+	/* NOTREACHED */
 	if (s >= str_end) {
 	    RE_FILL();
 	}
@@ -313,6 +353,7 @@ REtest(char *str,		/* string to test */
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
+#endif
 
     case M_START + U_OFF + END_OFF:
     case M_START + U_ON + END_OFF:
@@ -340,7 +381,7 @@ REtest(char *str,		/* string to test */
 	RE_CASE();
 
     case M_END + U_ON:
-	s += strlen(s);
+	s = str_end;
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
@@ -381,11 +422,15 @@ REtest(char *str,		/* string to test */
 	    m++;
 	    RE_CASE();
 	}
-	/* FALLTHRU */
+	/* don't stack an ACCEPT */
+	if ((tm = m + 1)->s_type == M_ACCEPT) {
+	    return 1;
+	}
+	push(tm, s, sp, u_flag);
+	m += m->s_data.jump;
+	RE_CASE();
 
-    case (M_2JB) + U_OFF:	/* take the jump branch */
-	/* FALLTHRU */
-    case (M_2JB) + U_ON:
+      CASE_UANY(M_2JB):
 	/* don't stack an ACCEPT */
 	if ((tm = m + 1)->s_type == M_ACCEPT) {
 	    return 1;
@@ -398,8 +443,23 @@ REtest(char *str,		/* string to test */
 	return 1;
 
     default:
-	RE_panic("unexpected case in REtest");
+	RE_bad_state("REtest", m, u_flag);
     }
 }
 
 #undef push
+
+#include "field.h"
+#include "repl.h"
+
+char *
+is_string_split(PTR q, size_t * lenp)
+{
+    STATE *p = cast_to_re(q);
+
+    if (p != 0 && (p[0].s_type == M_STR && p[1].s_type == M_ACCEPT)) {
+	*lenp = p->s_len;
+	return p->s_data.str;
+    } else
+	return (char *) 0;
+}

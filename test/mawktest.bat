@@ -1,9 +1,9 @@
 @echo off
-rem $MawkId: mawktest.bat,v 1.15 2020/07/19 16:10:51 tom Exp $
+rem $MawkId: mawktest.bat,v 1.18 2024/08/12 23:57:28 tom Exp $
 rem vile:rs=lf
 rem
 rem  ##########################################################################
-rem  copyright 2010-2014,2020 Thomas E. Dickey
+rem  copyright 2010-2020,2024 Thomas E. Dickey
 rem  copyright 1996, Michael D. Brennan
 rem 
 rem  This is a source file for mawk, an implementation of
@@ -13,12 +13,10 @@ rem  Mawk is distributed without warranty under the terms of
 rem  the GNU General Public License, version 2, 1991.
 rem  ##########################################################################
 rem
-rem  This is a simple test that a new-made mawk seems to
-rem  be working OK.
-rem  It's certainly not exhaustive, but the last two tests in 
-rem  particular use most features.
+rem  This is a simple test check if a newly built mawk is working properly.
+rem  It's certainly not exhaustive!
 rem 
-rem  It needs to be run from mawk/test.
+rem  It must be run from mawk/test.
 rem  You also need a binary-compare utility, e.g., "cmp".
 setlocal
 
@@ -106,6 +104,14 @@ rem ################################
 	call :begin testing function calls and general stress test
 	%PROG% -f ../examples/decl.awk %dat% > %STDOUT%
 	call :compare "general" %STDOUT% decl-awk.out
+
+rem ######################################
+
+	call :begin testing character classes
+	%PROG% -f cclass.awk mawktest.dat > %STDOUT%
+	call :compare "character-classes" %STDOUT% cclass.out
+
+rem ######################################
 
 	echo.
 	echo if %CMP% always encountered "no differences", then the tested mawk seems OK

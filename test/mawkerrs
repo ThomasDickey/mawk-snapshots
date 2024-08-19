@@ -1,0 +1,247 @@
+#!/bin/sh
+# $MawkId: mawkerrs,v 1.12 2024/08/19 20:49:13 tom Exp $
+###############################################################################
+# copyright 2024, Thomas E. Dickey
+#
+# This is a source file for mawk, an implementation of
+# the AWK programming language.
+#
+# Mawk is distributed without warranty under the terms of
+# the GNU General Public License, version 2, 1991.
+###############################################################################
+
+: "${FGREP:=grep -F}"
+
+MYTEMP=`mktemp -d 2>/dev/null`
+if [ -z "$MYTEMP" ]
+then
+	MYTEMP=${TMPDIR-/tmp}/mawktest$$
+	mkdir -p "$MYTEMP" || exit
+fi
+STDOUT=$MYTEMP/mawk-out
+STDERR=$MYTEMP/mawk-err
+
+trap 'echo mawk_errs failed ; rm -rf "$MYTEMP"; exit 1'  0
+
+Fail() {
+	echo "?? fail $*"
+	FAIL=`expr "$FAIL" + 1`
+	ERRS=`expr "$ERRS" + 1`
+}
+
+Begin() {
+	echo
+	echo "$*"
+	FAIL=0
+}
+
+Finish() {
+	if test $FAIL = 1
+	then
+		echo "$* had one failure"
+	elif test $FAIL != 0
+	then
+		echo "$* had $FAIL failures"
+	else
+		echo "$* OK"
+	fi
+}
+
+Summary() {
+	if test $ERRS = 1
+	then
+		echo "$* had one failure"
+	elif test $ERRS != 0
+	then
+		echo "$* had $ERRS failures"
+	else
+		echo "$* OK"
+	fi
+}
+
+ERRS=0
+
+if [ -f ../mawk ]
+then
+	PROG="${AWK:-../mawk}"
+else
+	PROG="${AWK:-mawk}"
+fi
+
+####### init.c:
+
+$PROG -Wv >$MYTEMP/version
+$PROG -Wh >$MYTEMP/usage
+
+Begin "test for no parameters"
+$PROG 2>&1 | cmp -s - "$MYTEMP"/usage || Fail "no parameters"
+Finish "test for no parameters"
+
+Begin "test for only -"
+printf '' >$STDERR
+$PROG - 2>&1 | cmp -s - "$STDERR" || Fail "only -"
+Finish "test for only -"
+
+Begin "test for stray -"
+printf '' >$STDERR
+$PROG -f cclass.awk < $STDERR >$STDOUT
+cat $STDERR | $PROG -f cclass.awk - 2>&1 | cmp -s - "$STDOUT" || Fail "stray -"
+Finish "test for stray -"
+
+#?# errmsg(0, "ambiguous -W value: \"%.*s\" (%s vs %s)",
+#?$PROG -Wr 0 'BEGIN{}'
+
+# errmsg(0, "deprecated option, use -W posix");
+Begin "test for deprecated option"
+echo 'mawk: deprecated option, use -W posix' >$STDERR
+$PROG -Wposix_space 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "deprecated option"
+Finish "test for deprecated option"
+
+# errmsg(0, "ambiguous long option: \"--%.*s\" (--%s vs --%s)",
+Begin "test for ambiguous long option"
+echo 'mawk: ambiguous long option: "--r" (--random vs --re-interval)' >$STDERR
+$PROG --r 0 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "ambiguous long option"
+Finish "test for ambiguous long option"
+
+# errmsg(0, "invalid numeric option: \"%s\"", source);
+Begin "test for invalid numeric option"
+echo 'mawk: invalid numeric option: "oops"' >$STDERR
+$PROG -Wra oops 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "invalid numeric option"
+Finish "test for invalid numeric option"
+
+# errmsg(0, "-W exec is incompatible with -f");
+Begin "test for incompatible option"
+echo 'mawk: -W exec is incompatible with -f' >$STDERR
+date | $PROG -f cclass.awk -W exec=cclass.awk 2>&1 | cmp -s - "$STDERR" || Fail "incompatible option"
+Finish "test for incompatible option"
+
+Begin "test if -W exec works"
+echo 'mawk: -W exec is incompatible with -f' >$STDERR
+date | $PROG -W exec=cclass.awk >/dev/null 2>/dev/null || Fail "-W exec works"
+Finish "test if -W exec works"
+
+Begin "test if -W exec requires value"
+echo 'mawk: -W exec is incompatible with -f' >$STDERR
+date | $PROG -W exec >/dev/null 2>/dev/null || Fail "-W exec needs option value"
+Finish "test if -W exec requires value"
+
+# errmsg(0, "vacuous option: -W \"%s\"", option);
+Begin "test for vacuous option"
+echo 'mawk: vacuous option: -W "oops"' >$STDERR
+$PROG -Woops 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "vacuous option"
+Finish "test for vacuous option"
+
+# errmsg(0, "missing value for -W \"%.*s\"", length, option);
+Begin "test for missing value for -W option"
+echo 'mawk: missing value for -W "sprintf"' >$STDERR
+$PROG -Wsprintf 2>&1 | cmp -s - "$STDERR" || Fail "missing value for -W option"
+Finish "test for missing value for -W option"
+
+Begin "test for given value for -W sprintf option"
+printf '' > $STDERR
+$PROG -Wsprintf=10000 -Wsprintf=12000 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "given value for -W sprintf option"
+Finish "test for given value for -W sprintf option"
+
+# errmsg(0, "unexpected option value \"%s\"", option);
+Begin "test for unexpected option value"
+echo 'mawk: vacuous option: -W "lint=2"' >$STDERR
+echo 'mawk: unexpected option value "lint=2"' >>$STDERR
+$PROG -Wlint=2 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "unexpected option value"
+Finish "test for unexpected option value"
+
+# errmsg(0, "not an option: %s", s);
+Begin "test for not an option"
+echo 'mawk: not an option: -z' >$STDERR
+$PROG -z 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "not an option"
+Finish "test for not an option"
+
+# errmsg(0, "ignored option: %s", arg);
+Begin "test for warning about long option"
+echo 'mawk: ignored option: --version' >$STDERR
+echo 'mawk: not an option: --version' >>$STDERR
+MAWK_LONG_OPTIONS=warn $PROG --version 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "warning on long option"
+Finish "test for warning about long option"
+
+Begin "test for error on long option"
+echo 'mawk: not an option: --version' >$STDERR
+MAWK_LONG_OPTIONS=error $PROG --version 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "error on long option"
+Finish "test for error on long option"
+
+Begin "test for allowing long option"
+MAWK_LONG_OPTIONS=allow $PROG --version 'BEGIN{}' 2>&1 | cmp -s - "$MYTEMP"/version || Fail "allowing long option"
+Finish "test for allowing long option"
+
+# errmsg(0, "option %s lacks argument", curArg);
+Begin "test for option lacks argument"
+echo 'mawk: option -W lacks argument' >$STDERR
+$PROG -W 2>&1 | cmp -s - "$STDERR" || Fail "option lacks argument"
+Finish "test for option lacks argument"
+
+# errmsg(0, "improper assignment: -v %s", optArg);
+Begin "test for improper assignment"
+echo 'mawk: improper assignment: -v FOO' >$STDERR
+$PROG -vFOO 'BEGIN{}' 2>&1 | cmp -s - "$STDERR" || Fail "improper assignment"
+Finish "test for improper assignment"
+
+######## parse.y:
+Begin "test for syntax error"
+echo 'mawk: line 1: syntax error at or near if' >$STDERR
+$PROG -Wd 'BEGIN{ foo = length(if); print foo; }' 2>&1 | cmp -s - "$STDERR" || Fail "syntax error"
+Finish "test for syntax error"
+
+Begin "test for missing right-parenthesis"
+echo 'mawk: line 1: missing ) near ;' >$STDERR
+$PROG -Wd 'BEGIN{ foo = (1 + 0; print foo; }' 2>&1 | cmp -s - "$STDERR" || Fail "missing right parenthesis"
+Finish "test for missing right-parenthesis"
+
+Begin "test for missing right-parenthesis (file)"
+echo "mawk: $MYTEMP/script: line 1: missing ) near ;" >$STDERR
+echo 'BEGIN{ foo = (1 + 0; print foo; }' >$MYTEMP/script
+$PROG -Wd -f $MYTEMP/script 2>&1 | cmp -s - "$STDERR" || Fail "missing right parenthesis (file)"
+Finish "test for missing right-parenthesis (file)"
+
+Begin "test for missing right-brace"
+echo 'mawk: line 2: missing } near end of file' >$STDERR
+$PROG -Wd 'BEGIN{ printf "?\n"' 2>&1 | cmp -s - "$STDERR" || Fail "missing right brace"
+Finish "test for missing right-brace"
+
+######## print.c
+
+Begin "test sprintf buffer-overflow"
+echo 'mawk: program limit exceeded: sprintf buffer size=8192' >$STDERR
+echo '	FILENAME="" FNR=0 NR=0' >>$STDERR
+$PROG 'BEGIN{ foo = sprintf("%10000s\n", "x"); print length(foo); }' 2>&1 | cmp -s - "$STDERR" || Fail "missing right brace"
+Finish "test sprintf buffer-overflow"
+
+######## scan.c
+
+Begin "test for unexpected character"
+echo 'mawk: 1: unexpected character 0x7f' >$STDERR
+$PROG -Wd 'BEGIN{ printf "?" }' 2>&1 | cmp -s - "$STDERR" || Fail "unexpected character"
+Finish "test for unexpected character"
+
+Begin "test for runaway string constant"
+echo 'mawk: line 1: runaway string constant " } ...' >$STDERR
+$PROG -Wd 'BEGIN{ printf "?"?" }' 2>&1 | cmp -s - "$STDERR" || Fail "runaway string constant"
+Finish "test for runaway string constant"
+
+Begin "test for runaway regular expression"
+echo 'mawk: line 1: runaway regular expression /xxx{ print ...' >$STDERR
+$PROG -Wd '/xxx{ print }' 2>&1 | cmp -s - "$STDERR" || Fail "runaway regular expression"
+Finish "test for runaway regular expression"
+
+Begin "test for extra right-brace"
+echo "mawk: line 1: extra '}'" >$STDERR
+echo 'mawk: line 1: syntax error at or near end of line' >>$STDERR
+$PROG -Wd 'BEGIN{ printf "?\n" } }' 2>&1 | cmp -s - "$STDERR" || Fail "extra right brace"
+Finish "test for extra right-brace"
+
+echo
+echo "##################################################"
+Summary "tested $PROG"
+echo "##################################################"
+
+trap 0
+rm -rf "$MYTEMP"
+exit $ERRS
+# vile: ts=4 sw=4

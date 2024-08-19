@@ -1,0 +1,13 @@
+total: 2715
+alnum:    1443  53.1%
+alpha:    1427  52.6%
+blank:     777  28.6%
+cntrl:     107   3.9%
+digit:      16   0.6%
+graph:    1831  67.4%
+lower:    1241  45.7%
+print:    2608  96.1%
+punct:     388  14.3%
+space:     884  32.6%
+upper:     186   6.9%
+xdigit:    509  18.7%

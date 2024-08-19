@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.77 2023/11/01 07:54:27 tom Exp $
+ * $MawkId: init.c,v 1.79 2024/08/18 20:29:34 tom Exp $
  */
 
 /* init.c */
@@ -108,7 +108,7 @@ no_program(void)
     mawk_exit(0);
 }
 
-static void
+static GCC_NORETURN void
 usage(FILE *fp)
 {
     static const char msg[][80] =
@@ -134,7 +134,6 @@ usage(FILE *fp)
 #if USE_BINMODE
 	"    -W binmode",
 #endif
-	"    -W compat        pre-POSIX 2001.",
 	"    -W dump          show assembler-like listing of program and exit.",
 	"    -W help          show this message and exit.",
 	"    -W interactive   set unbuffered output, line-buffered input.",
@@ -142,6 +141,7 @@ usage(FILE *fp)
 	"    -W posix         stricter POSIX checking.",
 	"    -W random=number set initial random seed.",
 	"    -W sprintf=number adjust size of sprintf buffer.",
+	"    -W traditional   pre-POSIX 2001.",
 	"    -W usage         show this message and exit.",
     };
     size_t n;
@@ -349,7 +349,8 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     switch (code) {
     case W_VERSION:
 	print_version(stdout);
-	break;
+	/* NOTREACHED */
+
 #if USE_BINMODE
     case W_BINMODE:
 	wantArg = 1;
@@ -437,7 +438,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     case W_USAGE:
 	usage(stdout);
 	/* NOTREACHED */
-	break;
+
     case W_UNKNOWN:
 	errmsg(0, "vacuous option: -W \"%s\"", option);
 	break;
@@ -466,7 +467,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
     return result;
 }
 
-static void
+static GCC_NORETURN void
 bad_option(const char *s)
 {
     errmsg(0, "not an option: %s", s);
@@ -484,7 +485,7 @@ allow_long_options(char *arg, W_OPTIONS seen)
 	default:
 	case 'e':		/* error */
 	    bad_option(arg);
-	    break;
+	    /* NOTREACHED */
 	case 'w':		/* warn */
 	    errmsg(0, "ignored option: %s", arg);
 	    break;
@@ -576,6 +577,7 @@ process_cmdline(int argc, char **argv)
 		optNext = optValue;
 	    } else {
 		bad_option(curArg);
+		/* NOTREACHED */
 	    }
 	    continue;
 	}
@@ -587,6 +589,7 @@ process_cmdline(int argc, char **argv)
 		    mawk_exit(2);
 		}
 		bad_option(curArg);
+		/* NOTREACHED */
 	    }
 
 	    optArg = argv[i + 1];
@@ -648,6 +651,7 @@ process_cmdline(int argc, char **argv)
 	case '-':
 	    if (curArg[2] != 0) {
 		bad_option(curArg);
+		/* NOTREACHED */
 	    }
 	    curArg = argv[++i];
 	    goto no_more_opts;
@@ -665,6 +669,7 @@ process_cmdline(int argc, char **argv)
 
 	default:
 	    bad_option(curArg);
+	    /* NOTREACHED */
 	}
     }
 

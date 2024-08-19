@@ -1,6 +1,6 @@
 /*
 regexp_system.c
-copyright 2009-2014,2020 Thomas E. Dickey
+copyright 2009-2020,2024 Thomas E. Dickey
 copyright 2005, Aleksey Cheusov
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: regexp_system.c,v 1.37 2020/07/19 15:48:15 tom Exp $
+ * $MawkId: regexp_system.c,v 1.40 2024/08/18 17:20:29 tom Exp $
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -20,6 +20,8 @@ the GNU General Public License, version 2, 1991.
 #include <stdlib.h>
 #include <errno.h>
 
+#include "mawk.h"
+#include "rexp.h"
 #include "regexp.h"
 
 typedef struct {
@@ -163,7 +165,7 @@ prepare_regexp(char *regexp, const char *source, size_t limit)
 	    case '*':		/* FALLTHRU */
 	    case '.':		/* FALLTHRU */
 	    case '+':		/* FALLTHRU */
-	    case '{':		/* FALLTHRU */
+	    case L_CURL:	/* FALLTHRU */
 	    case '|':		/* FALLTHRU */
 		*tail++ = '\\';
 		*tail++ = ch;
@@ -259,7 +261,7 @@ prepare_regexp(char *regexp, const char *source, size_t limit)
 		}
 		*tail++ = ch;
 		break;
-	    case '{':
+	    case L_CURL:
 #ifndef NO_INTERVAL_EXPR
 		if (repetitions_flag) {
 		    *tail++ = ch;
@@ -275,7 +277,7 @@ prepare_regexp(char *regexp, const char *source, size_t limit)
 		    break;
 		}
 		/* FALLTHRU */
-	    case '}':
+	    case R_CURL:
 #ifndef NO_INTERVAL_EXPR
 		if (repetitions_flag) {
 		    *tail++ = ch;
@@ -341,11 +343,13 @@ REcompile(char *regexp, size_t len)
     return re;
 }
 
+#ifdef NO_LEAKS
 void
 REdestroy(PTR ptr)
 {
     (void) ptr;
 }
+#endif
 
 /*
  * Test the regular expression in 'q' against the string 'str'.
@@ -393,6 +397,7 @@ REmatch(char *str, size_t str_len GCC_UNUSED, PTR q, size_t *lenp, int no_bol)
     }
 }
 
+#if defined(DEBUG)
 void
 REmprint(void *m, FILE *f)
 {
@@ -401,6 +406,7 @@ REmprint(void *m, FILE *f)
     /* no debugging code available */
     abort();
 }
+#endif
 
 static char error_buffer[2048];
 
