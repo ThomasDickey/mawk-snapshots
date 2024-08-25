@@ -12,8 +12,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.58 2024/07/26 00:19:17 tom Exp $
+ * $MawkId: scan.c,v 1.59 2024/08/25 17:01:57 tom Exp $
  */
+
+#define Visible_ARRAY
+#define Visible_CELL
+#define Visible_CODEBLOCK
+#define Visible_FBLOCK
+#define Visible_PFILE
+#define Visible_RE_DATA
+#define Visible_SEPARATOR
+#define Visible_STRING
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <scan.h>

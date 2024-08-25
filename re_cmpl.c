@@ -11,16 +11,19 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.36 2024/08/18 09:55:20 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.37 2024/08/25 17:04:26 tom Exp $
  */
 
-/*  re_cmpl.c  */
+#define Visible_CELL
+#define Visible_RE_DATA
+#define Visible_RE_NODE
+#define Visible_STRING
 
-#include "mawk.h"
-#include "memory.h"
-#include "scan.h"
-#include "regexp.h"
-#include "repl.h"
+#include <mawk.h>
+#include <memory.h>
+#include <scan.h>
+#include <regexp.h>
+#include <repl.h>
 
 /* a list of compiled regular expressions */
 static RE_NODE *re_list;

@@ -11,13 +11,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.45 2024/08/05 20:59:33 tom Exp $
+ * $MawkId: rexp.c,v 1.48 2024/08/25 21:19:50 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
 
-#include "rexp.h"
-#include "regexp.h"
+#include <rexp.h>
+#include <regexp.h>
 
 /*  DATA   */
 int REerrno;
@@ -123,7 +123,8 @@ typedef struct {
 STATE *
 REcompile(char *re, size_t len)
 {
-    MACHINE m_stack[STACKSZ];
+#define m_stack(n) &m_array[(n) + 1]
+    MACHINE m_array[1 + STACKSZ];
     OPS op_stack[STACKSZ];
     register MACHINE *m_ptr;
     register OPS *op_ptr;
@@ -146,11 +147,11 @@ REcompile(char *re, size_t len)
        we force it out of a register which isn't worth the trouble */
 
     /* initialize the stacks  */
-    m_ptr = m_stack - 1;
+    m_ptr = m_array;
     op_ptr = op_stack;
     op_ptr->token = 0;
 
-    t = RE_lex(m_stack);
+    t = RE_lex(m_stack(0));
 
     while (1) {
 	TRACE(("RE_lex token %s\n", token_name(t)));
@@ -182,13 +183,13 @@ REcompile(char *re, size_t len)
 		    /* user stupidity: m{0} or m{0,0} 
 		     * don't add this re token
 		     */
-		    if (m_ptr < m_stack) {
+		    if (m_ptr == m_array) {
 			t = RE_lex(++m_ptr);
 			if (t != T_NONE) {
 			    continue;
 			} else {
-			    m_stack[0] = RE_any();	/* FIXME: RE_none? */
-			    m_ptr = m_stack;
+			    m_array[1] = RE_any();	/* FIXME: RE_none? */
+			    m_ptr = m_stack(0);
 			}
 		    } else if (op_ptr != op_stack) {
 			/* no previous re */
@@ -265,7 +266,7 @@ REcompile(char *re, size_t len)
 	case T_NONE:		/*  end of reg expr   */
 	    if (op_ptr->token == 0) {
 		/*  done   */
-		if (m_ptr == m_stack) {
+		if (m_ptr == m_stack(0)) {
 		    return m_ptr->start;
 		} else {
 		    /* machines still on the stack  */
@@ -285,7 +286,7 @@ REcompile(char *re, size_t len)
 		do {		/* op_pop   */
 
 		    if (op_ptr->token <= T_CAT) {	/*binary op */
-			if (m_ptr == m_stack
+			if (m_ptr == m_stack(0)
 			    && op_ptr->token == T_CAT) {
 			    TRACE(("...ignoring empty T_CAT\n"));
 			    op_ptr--;
@@ -295,7 +296,7 @@ REcompile(char *re, size_t len)
 		    }
 		    /* if not enough values on machine stack
 		       then we have a missing operand */
-		    if (m_ptr < m_stack)
+		    if (m_ptr == m_array)
 			RE_error_trap(-ERR_4);
 
 		    switch (op_ptr->token) {
@@ -346,7 +347,7 @@ REcompile(char *re, size_t len)
 	    op_ptr->token = t;
 	}			/* end of switch */
 
-	if (m_ptr == m_stack + (STACKSZ - 1)) {
+	if (m_ptr == m_stack(STACKSZ - 1)) {
 	    /*overflow */
 	    RE_error_trap(-ERR_5);
 	}
@@ -365,7 +366,7 @@ REdestroy(STATE * ptr)
 
     TRACE(("REdestroy %p\n", (void *) ptr));
     while (!done) {
-	TRACE(("...destroy[%d] %p type %s\n", n, q, REs_type(q)));
+	TRACE(("...destroy[%d] %p type %s\n", n, (void *) q, REs_type(q)));
 	switch (q->s_type) {
 	case M_ACCEPT:
 	    done = 1;

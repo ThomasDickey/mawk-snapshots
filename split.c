@@ -11,21 +11,24 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.33 2024/08/06 23:18:56 tom Exp $
+ * $MawkId: split.c,v 1.34 2024/08/25 17:04:18 tom Exp $
  */
 
-/* split.c */
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_RE_DATA
+#define Visible_STRING
 
-#include "mawk.h"
-#include "split.h"
-#include "symtype.h"
-#include "bi_vars.h"
-#include "bi_funct.h"
-#include "memory.h"
-#include "scan.h"
-#include "regexp.h"
-#include "repl.h"
-#include "field.h"
+#include <mawk.h>
+#include <split.h>
+#include <symtype.h>
+#include <bi_vars.h>
+#include <bi_funct.h>
+#include <memory.h>
+#include <scan.h>
+#include <regexp.h>
+#include <repl.h>
+#include <field.h>
 
 #ifndef SP_SIZE
 #ifdef NO_LEAKS

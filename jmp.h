@@ -11,14 +11,14 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.h,v 1.7 2024/07/26 00:34:42 tom Exp $
+ * $MawkId: jmp.h,v 1.8 2024/08/25 17:15:43 tom Exp $
  */
 
 #ifndef   MAWK_JMP_H
 #define   MAWK_JMP_H
 
-#include "types.h"
-#include "symtype.h"
+#include <types.h>
+#include <symtype.h>
 
 void BC_new(void);
 void BC_insert(int, const INST *);

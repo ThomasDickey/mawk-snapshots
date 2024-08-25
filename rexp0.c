@@ -12,13 +12,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.47 2024/07/26 21:51:38 tom Exp $
+ * $MawkId: rexp0.c,v 1.48 2024/08/25 17:16:24 tom Exp $
  */
 
 /*  lexical scanner  */
 
 #undef LOCAL_REGEXP		/* no need for push/pop */
-#include  "rexp.h"
+#include  <rexp.h>
 
 #include <ctype.h>
 

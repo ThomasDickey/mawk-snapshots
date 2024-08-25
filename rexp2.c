@@ -12,12 +12,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.44 2024/08/16 23:44:04 tom Exp $
+ * $MawkId: rexp2.c,v 1.45 2024/08/25 17:16:24 tom Exp $
  */
 
 /*  test a string against a machine   */
 
-#include "rexp.h"
+#include <rexp.h>
 
 #define	 STACKGROWTH	16
 
@@ -449,8 +449,8 @@ REtest(char *str,		/* string to test */
 
 #undef push
 
-#include "field.h"
-#include "repl.h"
+#include <field.h>
+#include <repl.h>
 
 char *
 is_string_split(PTR q, size_t * lenp)

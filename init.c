@@ -11,10 +11,16 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.79 2024/08/18 20:29:34 tom Exp $
+ * $MawkId: init.c,v 1.81 2024/08/25 18:27:39 tom Exp $
  */
 
-/* init.c */
+#define Visible_ARRAY
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_PFILE
+#define Visible_STRING
+#define Visible_SYMTAB
+
 #include <mawk.h>
 #include <code.h>
 #include <memory.h>

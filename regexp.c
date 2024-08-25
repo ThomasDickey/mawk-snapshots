@@ -10,24 +10,34 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
  */
 
-/* $MawkId: regexp.c,v 1.14 2024/08/17 00:00:30 tom Exp $ */
+/* $MawkId: regexp.c,v 1.16 2024/08/25 17:34:05 tom Exp $ */
 
 #include <config.h>
 
+#define Visible_CELL
+
 #ifdef LOCAL_REGEXP
 #define REGEXP_INTERNALS
-#		include "mawk.h"
+#define Visible_MACHINE
+#define Visible_RE_DATA
+#define Visible_RT_POS_ENTRY
+#define Visible_RT_STATE
+#define Visible_STATE
+#		include <mawk.h>
 #define RE_FILL() { goto refill; }
 #define RE_CASE() { goto reswitch; }
-#		include "rexp.c"
-#		include "rexpdb.c"
-#		include "rexp0.c"
-#		include "rexp1.c"
-#		include "rexp2.c"
-#		include "rexp3.c"
+#		include <rexp.c>
+#		include <rexpdb.c>
+#		include <rexp0.c>
+#		include <rexp1.c>
+#		include <rexp2.c>
+#		include <rexp3.c>
 #else
-#		include "regexp_system.c"
-#		include "rexp4.c"
+#define Visible_RE_DATA
+#define Visible_RE_NODE
+#define Visible_STRING
+#		include <regexp_system.c>
+#		include <rexp4.c>
 #endif
 
 #ifdef NO_LEAKS

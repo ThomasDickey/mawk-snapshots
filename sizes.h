@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.24 2024/08/14 20:35:32 tom Exp $
+ * $MawkId: sizes.h,v 1.25 2024/08/25 17:16:24 tom Exp $
  */
 
 /*  sizes.h  */
@@ -20,7 +20,7 @@ the GNU General Public License, version 2, 1991.
 #define  SIZES_H
 /* *INDENT-OFF* */
 
-#include "config.h"
+#include <config.h>
 
 #ifndef SIZEOF_LONG
 #define SIZEOF_LONG 4

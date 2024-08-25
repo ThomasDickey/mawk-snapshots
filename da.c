@@ -11,11 +11,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.49 2024/08/18 23:26:39 tom Exp $
+ * $MawkId: da.c,v 1.51 2024/08/25 19:37:17 tom Exp $
  */
 
-/*  da.c  */
-/*  disassemble code */
+/* disassemble code */
+
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_DEFER_LEN
+#define Visible_FBLOCK
+#define Visible_RE_DATA
+#define Visible_STRING
+#define Visible_SYMTAB
 
 #include  <mawk.h>
 
@@ -321,7 +328,7 @@ da_this(INST * p, const INST * start, FILE *fp)
 		break;
 	    case ST_ARRAY:
 		fprintf(fp, "a_pusha\t%s\t# defer_alen\n", stp->name);
-		p[1].ptr = (PTR) bi_alength;
+		p[1].fnc = bi_alength;
 		break;
 	    case ST_NONE:
 		fprintf(fp, "pushi\t%s\t# defer_alen\n", "@missing");
@@ -350,7 +357,7 @@ da_this(INST * p, const INST * start, FILE *fp)
 		break;
 	    case ST_LOCAL_ARRAY:
 		fprintf(fp, "la_pusha\t@%hd\t# defer_len\n", offset);
-		p[1].ptr = (PTR) bi_alength;
+		p[1].fnc = bi_alength;
 		break;
 	    case ST_LOCAL_NONE:
 		fprintf(fp, "pushi\t%s\t# defer_len\n", "@missing");
@@ -607,9 +614,9 @@ da_op_name(const INST * cdp)
     const char *result = 0;
 
     if (cdp->op == _BUILTIN) {
-	result = find_bi_name((PF_CP) cdp[1].ptr);
+	result = find_bi_name(cdp[1].fnc);
     } else if (cdp->op == _PRINT) {
-	result = ((PF_CP) cdp->ptr == bi_printf
+	result = (cdp->fnc == bi_printf
 		  ? "printf"
 		  : "print");
     } else if (cdp->op == _HALT) {

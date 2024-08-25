@@ -11,12 +11,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: version.c,v 1.37 2024/08/13 08:07:30 tom Exp $
+ * $MawkId: version.c,v 1.38 2024/08/25 16:37:11 tom Exp $
  */
 
-#include "mawk.h"
-#include "init.h"
-#include "patchlev.h"
+#include <mawk.h>
+#include <init.h>
+#include <patchlev.h>
 
 #define	 VERSION_STRING	 \
   "mawk %d.%d%s %s\n\

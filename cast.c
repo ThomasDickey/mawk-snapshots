@@ -1,6 +1,6 @@
 /********************************************
 cast.c
-copyright 2009-2020,2021, Thomas E. Dickey
+copyright 2009-2021,2024, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,16 +11,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.29 2021/05/28 23:45:04 tom Exp $
+ * $MawkId: cast.c,v 1.30 2024/08/25 17:09:56 tom Exp $
  */
 
-/*  cast.c  */
+#define Visible_CELL
+#define Visible_RE_DATA
+#define Visible_STRING
 
-#include "mawk.h"
-#include "field.h"
-#include "memory.h"
-#include "scan.h"
-#include "repl.h"
+#include <mawk.h>
+#include <field.h>
+#include <memory.h>
+#include <scan.h>
+#include <repl.h>
 
 const int mpow2[NUM_CELL_TYPES] =
 {1, 2, 4, 8, 16, 32, 64, 128, 256, 512};

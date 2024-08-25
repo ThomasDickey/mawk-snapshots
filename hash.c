@@ -1,6 +1,6 @@
 /********************************************
 hash.c
-copyright 2008-2012,2021, Thomas E. Dickey
+copyright 2008-2021,2024, Thomas E. Dickey
 copyright 1991-1993,1994, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,17 +11,20 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: hash.c,v 1.20 2021/05/28 23:59:20 tom Exp $
+ * $MawkId: hash.c,v 1.22 2024/08/25 17:46:18 tom Exp $
  */
 
-/* hash.c */
+#define Visible_CELL
+#define Visible_FBLOCK
+#define Visible_STRING
+#define Visible_SYMTAB
 
-#include "mawk.h"
-#include "memory.h"
-#include "symtype.h"
+#include <mawk.h>
+#include <memory.h>
+#include <symtype.h>
 
 #ifdef NO_LEAKS
-#include "bi_vars.h"
+#include <bi_vars.h>
 #endif
 
 /*

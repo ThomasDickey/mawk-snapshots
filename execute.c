@@ -11,8 +11,17 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.55 2024/08/03 00:21:37 tom Exp $
+ * $MawkId: execute.c,v 1.60 2024/08/25 19:43:50 tom Exp $
  */
+
+#define Visible_ARRAY
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_DEFER_LEN
+#define Visible_FBLOCK
+#define Visible_RE_DATA
+#define Visible_STRING
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <files.h>
@@ -37,7 +46,7 @@ static char dz_msg[] = "division by zero";
 #endif
 
 #define	 inc_sp()   if ( ++sp == stack_danger) eval_overflow()
-#define  dec_sp()   if ( sp-- == (stack_base - 1)) eval_underflow()
+#define  dec_sp()   if ( sp-- == stack_under)  eval_underflow()
 
 #define	 SAFETY	   16
 #define	 DANGER	   (EVAL_STACK_SIZE-SAFETY)
@@ -47,6 +56,7 @@ static char dz_msg[] = "division by zero";
 CELL eval_stack[EVAL_STACK_SIZE];
 /* these can move for deep recursion */
 static CELL *stack_base = eval_stack;
+static CELL *stack_under = eval_stack;
 static CELL *stack_danger = eval_stack + DANGER;
 
 static void
@@ -124,7 +134,15 @@ execute(INST * cdp,		/* code ptr, start execution here */
     CELL *old_sp = 0;
 
 #ifdef	DEBUG
-    CELL *entry_sp = sp;
+    CELL *entry_sp;
+#endif
+
+    if (sp == NULL) {
+	stack_under = stack_base;
+	sp = --stack_under;
+    }
+#ifdef	DEBUG
+    entry_sp = sp;
 #endif
 
     if (fp) {
@@ -149,7 +167,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	TRACE(("execute %s sp(%ld:%s)\n",
 	       da_op_name(cdp),
 	       (long) (sp - stack_base),
-	       (sp == (eval_stack - 1)) ? "?" : da_type_name(sp)));
+	       (sp == stack_under) ? "?" : da_type_name(sp)));
 
 	switch ((cdp++)->op) {
 
@@ -371,7 +389,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		    cdp[0].op = A_PUSHA;
 		    cdp[1].ptr = stp->stval.array;
 		    assert(cdp[2].op == _BUILTIN);
-		    cdp[3].ptr = (PTR) bi_alength;
+		    cdp[3].fnc = bi_alength;
 		    break;
 		case ST_NONE:
 		    cdp[0].op = _PUSHI;
@@ -405,7 +423,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		    cdp[0].op = LA_PUSHA;
 		    cdp[1].op = offset;
 		    assert(cdp[2].op == _BUILTIN);
-		    cdp[3].ptr = (PTR) bi_alength;
+		    cdp[3].fnc = bi_alength;
 		    break;
 		case ST_LOCAL_NONE:
 		    cdp[0].op = _PUSHI;
@@ -884,7 +902,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	case _BUILTIN:
 	case _PRINT:
-	    sp = (*(PF_CP) (cdp++)->ptr) (sp);
+	    sp = (*(cdp++)->fnc) (sp);
 	    break;
 
 	case _POST_INC:
@@ -1153,7 +1171,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		main_start = 0;
 		main_size = 0;
 	    }
-	    sp = eval_stack - 1;	/* might be in user function */
+	    sp = stack_under;	/* might be in user function */
 	    CLEAR_ALOOP_STACK();	/* ditto */
 	    break;
 

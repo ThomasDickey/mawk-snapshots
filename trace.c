@@ -10,8 +10,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.22 2024/08/14 23:27:13 tom Exp $
+ * $MawkId: trace.c,v 1.23 2024/08/25 17:41:21 tom Exp $
  */
+
+#define Visible_CELL
+#define Visible_STRING
+
 #include <mawk.h>
 #include <repl.h>
 #include <code.h>

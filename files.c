@@ -1,6 +1,6 @@
 /********************************************
 files.c
-copyright 2008-2019,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,16 +11,16 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.35 2023/08/04 00:01:24 tom Exp $
+ * $MawkId: files.c,v 1.36 2024/08/25 17:11:06 tom Exp $
  */
 
-/* files.c */
+#define Visible_STRING
 
-#include "mawk.h"
-#include "files.h"
-#include "memory.h"
-#include "fin.h"
-#include "init.h"
+#include <mawk.h>
+#include <files.h>
+#include <memory.h>
+#include <fin.h>
+#include <init.h>
 
 #include <sys/types.h>
 

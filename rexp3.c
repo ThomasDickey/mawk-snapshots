@@ -12,12 +12,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.61 2024/07/28 23:04:24 tom Exp $
+ * $MawkId: rexp3.c,v 1.63 2024/08/25 17:16:24 tom Exp $
  */
 
 /*  match a string against a machine   */
 
-#include "rexp.h"
+#include <rexp.h>
 
 #define push(mx,sx,px,ssx,ux) do { \
 	if (++stackp == RE_run_stack_limit) \
@@ -431,7 +431,9 @@ REmatch(char *str,		/* string to test */
 
     case M_END + U_ON:
 	if (s >= str_end) {
-	    RE_FILL();
+	    if (cb_ss && current_best(s)) {
+		RE_FILL();
+	    }
 	} else if (!ss) {
 	    if (cb_ss) {
 		RE_FILL();

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: regexp_system.c,v 1.40 2024/08/18 17:20:29 tom Exp $
+ * $MawkId: regexp_system.c,v 1.41 2024/08/25 17:15:43 tom Exp $
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -20,9 +20,9 @@ the GNU General Public License, version 2, 1991.
 #include <stdlib.h>
 #include <errno.h>
 
-#include "mawk.h"
-#include "rexp.h"
-#include "regexp.h"
+#include <mawk.h>
+#include <rexp.h>
+#include <regexp.h>
 
 typedef struct {
     regex_t re;

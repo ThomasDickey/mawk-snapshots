@@ -11,12 +11,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.26 2024/07/19 07:38:30 tom Exp $
+ * $MawkId: rexp1.c,v 1.27 2024/08/25 17:16:24 tom Exp $
  */
 
 /*  re machine	operations  */
 
-#include  "rexp.h"
+#include  <rexp.h>
 
 /* initialize a two state machine */
 static void

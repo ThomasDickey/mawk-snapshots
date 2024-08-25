@@ -1,6 +1,6 @@
 /********************************************
 memory.h
-copyright 2009-2010,2023 Thomas E. Dickey
+copyright 2009-2023,2024 Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: memory.h,v 1.10 2023/07/22 22:28:48 tom Exp $
+ * $MawkId: memory.h,v 1.11 2024/08/25 17:17:31 tom Exp $
  */
 
 /*  memory.h  */
@@ -19,8 +19,8 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MAWK_MEMORY_H
 #define  MAWK_MEMORY_H
 
-#include "types.h"
-#include "zmalloc.h"
+#include <types.h>
+#include <zmalloc.h>
 
 STRING *new_STRING(const char *);
 STRING *new_STRING0(size_t);

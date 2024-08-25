@@ -1,6 +1,6 @@
 /********************************************
 makescan.c
-copyright 2009-2010,2016, Thomas E. Dickey
+copyright 2009-2016,2024, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: makescan.c,v 1.11 2016/09/30 23:58:49 tom Exp $
+ * $MawkId: makescan.c,v 1.12 2024/08/25 17:17:31 tom Exp $
  */
 
 /* source for makescan.exe which builds the scancode[]
@@ -21,8 +21,8 @@ the GNU General Public License, version 2, 1991.
 #include <stdio.h>
 #include <time.h>
 
-#include "nstd.h"
-#include "scancode.h"
+#include <nstd.h>
+#include <scancode.h>
 
 char scan_code[256];
 

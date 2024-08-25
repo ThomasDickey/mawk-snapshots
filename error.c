@@ -1,6 +1,6 @@
 /********************************************
 error.c
-copyright 2008-2020,2023 Thomas E. Dickey
+copyright 2008-2023,2024 Thomas E. Dickey
 copyright 1991-1994,1995 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,8 +11,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.26 2023/08/01 21:50:59 tom Exp $
+ * $MawkId: error.c,v 1.27 2024/08/25 17:21:36 tom Exp $
  */
+
+#define Visible_CELL
+#define Visible_STRING
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <scan.h>
@@ -21,7 +25,7 @@ the GNU General Public License, version 2, 1991.
 #ifdef DEBUG
 #define FLUSH() fflush(stdout)
 #else
-#define FLUSH() /* nothing */
+#define FLUSH()			/* nothing */
 #endif
 
 /* for run time error messages only */

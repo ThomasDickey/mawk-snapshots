@@ -1,8 +1,8 @@
 /* array.h */
 /*
-$MawkId: array.h,v 1.21 2020/08/01 08:42:14 tom Exp $
+$MawkId: array.h,v 1.23 2024/08/25 18:31:19 tom Exp $
 
-copyright 2009-2019,2020 Thomas E. Dickey
+copyright 2009-2020,2024 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -23,16 +23,20 @@ available from CTAN(ftp.shsu.edu).
 #ifndef ARRAY_H
 #define ARRAY_H 1
 
-#include "nstd.h"
-#include "types.h"
+#include <nstd.h>
+#include <types.h>
 
-typedef struct array {
+typedef struct _array
+#ifdef Visible_ARRAY
+{
     PTR ptr;			/* What this points to depends on the type */
     size_t size;		/* number of elts in the table */
     size_t limit;		/* Meaning depends on type */
     unsigned hmask;		/* bitwise and with hash value to get table index */
     short type;			/* values in AY_NULL .. AY_SPLIT */
-} *ARRAY;
+}
+#endif
+ *ARRAY;
 
 #define AY_NULL         0
 #define AY_INT          1
@@ -41,7 +45,7 @@ typedef struct array {
 
 #define NO_CREATE  0
 #define CREATE     1
-#define new_ARRAY()  ((ARRAY)memset(ZMALLOC(struct array),0,sizeof(struct array)))
+#define new_ARRAY()  ((ARRAY)memset(ZMALLOC(struct _array),0,sizeof(struct _array)))
 CELL *array_find(ARRAY, CELL *, int);
 void array_delete(ARRAY, CELL *);
 void array_load(ARRAY, size_t);

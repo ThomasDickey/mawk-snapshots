@@ -10,10 +10,10 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: rexp4.c,v 1.10 2024/08/18 09:51:04 tom Exp $
+ * $MawkId: rexp4.c,v 1.11 2024/08/25 17:16:24 tom Exp $
  */
-#include "field.h"
-#include "repl.h"
+#include <field.h>
+#include <repl.h>
 
 char *
 is_string_split(PTR q, size_t *lenp)

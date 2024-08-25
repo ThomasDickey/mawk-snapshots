@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: repl.h,v 1.12 2024/08/18 09:55:30 tom Exp $
+ * $MawkId: repl.h,v 1.13 2024/08/25 17:15:43 tom Exp $
  */
 
 /* repl.h */
@@ -19,19 +19,27 @@ the GNU General Public License, version 2, 1991.
 #ifndef  REPL_H
 #define  REPL_H
 
-#include "types.h"
+#include <types.h>
 
-typedef struct re_data {
+typedef struct _re_data
+#ifdef Visible_RE_DATA
+{
     PTR compiled;		/* must be first... */
     int anchored;		/* use to limit recursion in gsub */
     int is_empty;		/* check if pattern is empty */
-} RE_DATA;
+}
+#endif
+RE_DATA;
 
-typedef struct re_node {
+typedef struct _re_node
+#ifdef Visible_RE_NODE
+{
     RE_DATA re;			/* keep this first, for re_destroy() */
     STRING *sval;
-    struct re_node *link;
-} RE_NODE;
+    struct _re_node *link;
+}
+#endif
+RE_NODE;
 
 /*
  * re_compile returns a RE_DATA*, but mawk handles it as a PTR thereafter.

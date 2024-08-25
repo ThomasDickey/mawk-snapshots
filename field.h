@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.h,v 1.17 2024/07/26 00:38:53 tom Exp $
+ * $MawkId: field.h,v 1.18 2024/08/25 17:06:41 tom Exp $
  */
 
 /* field.h */
@@ -19,8 +19,8 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MAWK_FIELD_H
 #define  MAWK_FIELD_H   1
 
-#include "nstd.h"
-#include "types.h"
+#include <nstd.h>
+#include <types.h>
 
 extern void set_field0(const char *, size_t);
 extern void split_field0(void);
@@ -75,22 +75,17 @@ extern int nf;			/* shadows NF */
 #define  SEP_RE         3
 #define  SEP_MLR	4
 
-typedef struct {
+typedef struct _separator
+#ifdef Visible_SEPARATOR
+{
     char type;
     char c;
     PTR ptr;			/* STRING* or RE machine* */
-} SEPARATOR;
+}
+#endif
+SEPARATOR;
 
 extern SEPARATOR rs_shadow;
 extern CELL fs_shadow;
-
-/*  types for splitting overflow */
-
-typedef struct spov {
-    struct spov *link;
-    STRING *sval;
-} SPLIT_OV;
-
-extern SPLIT_OV *split_ov_list;
 
 #endif /* MAWK_FIELD_H  */

@@ -11,8 +11,15 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.129 2024/08/15 00:39:17 tom Exp $
+ * $MawkId: bi_funct.c,v 1.131 2024/08/25 18:27:52 tom Exp $
  */
+
+#define Visible_ARRAY
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_RE_DATA
+#define Visible_STRING
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <bi_funct.h>

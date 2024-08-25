@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: jmp.c,v 1.8 2024/07/26 00:34:51 tom Exp $
+ * $MawkId: jmp.c,v 1.9 2024/08/25 17:03:50 tom Exp $
  */
 
 /* this module deals with back patching jumps, breaks and continues,
@@ -21,13 +21,16 @@ the GNU General Public License, version 2, 1991.
    on the stacks
 */
 
-#include "mawk.h"
-#include "symtype.h"
-#include "jmp.h"
-#include "code.h"
-#include "sizes.h"
-#include "init.h"
-#include "memory.h"
+#define Visible_CELL
+#define Visible_CODEBLOCK
+
+#include <mawk.h>
+#include <symtype.h>
+#include <jmp.h>
+#include <code.h>
+#include <sizes.h>
+#include <init.h>
+#include <memory.h>
 
 #define error_state  (compile_error_count>0)
 

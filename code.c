@@ -1,6 +1,6 @@
 /********************************************
 code.c
-copyright 2009-2019,2023, Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,8 +11,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.44 2023/08/15 23:24:13 tom Exp $
+ * $MawkId: code.c,v 1.47 2024/08/25 19:47:39 tom Exp $
  */
+
+#define Visible_CELL
+#define Visible_CODEBLOCK
+#define Visible_FBLOCK
+#define Visible_STRING
 
 #include <mawk.h>
 #include <code.h>
@@ -89,6 +94,22 @@ xcode2(int op, PTR ptr)
 
     p[-2].op = op;
     p[-1].ptr = ptr;
+    code_ptr = p;
+}
+
+/* code an op and a function-pointer in the active_code */
+void
+xfunc2(int op, PF_CP fnc)
+{
+    register INST *p = code_ptr + 2;
+
+    if (p >= code_warn) {
+	code_grow();
+	p = code_ptr + 2;
+    }
+
+    p[-2].op = op;
+    p[-1].fnc = fnc;
     code_ptr = p;
 }
 

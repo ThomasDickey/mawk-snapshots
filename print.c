@@ -11,17 +11,21 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.51 2024/08/14 23:30:34 tom Exp $
+ * $MawkId: print.c,v 1.52 2024/08/25 17:03:28 tom Exp $
  */
 
-#include "mawk.h"
-#include "bi_vars.h"
-#include "bi_funct.h"
-#include "memory.h"
-#include "field.h"
-#include "scan.h"
-#include "files.h"
-#include "init.h"
+#define Visible_BI_REC
+#define Visible_CELL
+#define Visible_STRING
+
+#include <mawk.h>
+#include <bi_vars.h>
+#include <bi_funct.h>
+#include <memory.h>
+#include <field.h>
+#include <scan.h>
+#include <files.h>
+#include <init.h>
 
 #ifdef USE_LL_FORMAT
 #define ELL_LIMIT 2

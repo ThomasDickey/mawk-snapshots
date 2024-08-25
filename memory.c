@@ -1,6 +1,6 @@
 /********************************************
 memory.c
-copyright 2009-2010,2023  Thomas E. Dickey
+copyright 2009-2023,2024  Thomas E. Dickey
 copyright 1991-1992,1993  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,13 +11,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: memory.c,v 1.9 2023/07/22 22:28:36 tom Exp $
+ * $MawkId: memory.c,v 1.10 2024/08/25 17:15:43 tom Exp $
  */
 
-/* memory.c */
+#define Visible_STRING
 
-#include "mawk.h"
-#include "memory.h"
+#include <mawk.h>
+#include <memory.h>
 
 STRING null_str =
 {0, 1, ""};

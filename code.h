@@ -1,6 +1,6 @@
 /********************************************
 code.h
-copyright 2009-2019,2023, Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.h,v 1.14 2023/08/16 23:34:11 tom Exp $
+ * $MawkId: code.h,v 1.16 2024/08/25 19:46:17 tom Exp $
  */
 
 /*  code.h  */
@@ -31,9 +31,13 @@ the GNU General Public License, version 2, 1991.
 #define   SCOPE_END     2
 #define   SCOPE_FUNCT   3
 
-typedef struct {
+typedef struct _codeblock
+#ifdef Visible_CODEBLOCK
+{
     INST *base, *limit, *warn, *ptr;
-} CODEBLOCK;
+}
+#endif
+CODEBLOCK;
 
 extern CODEBLOCK active_code;
 extern CODEBLOCK *main_code_p, *begin_code_p, *end_code_p;
@@ -60,8 +64,10 @@ extern int exit_code;
 #define  code1(x)  code_ptr++ -> op = (x)
 /* shutup picky compilers */
 #define  code2(x,p)  xcode2(x,(PTR)(p))
+#define  func2(x,p)  xfunc2(x,(p))
 
 void xcode2(int, PTR);
+void xfunc2(int, PF_CP);
 void code2op(int, int);
 INST *code_shrink(CODEBLOCK *, size_t *);
 void code_grow(void);

@@ -1,4 +1,12 @@
--- $MawkId: CHANGES,v 1.382 2024/08/19 08:12:22 tom Exp $
+-- $MawkId: CHANGES,v 1.386 2024/08/25 22:51:21 tom Exp $
+
+20240825
+	+ modify struct declarations to simplify further changes to reduce use
+	  of typeless pointers.
+	+ reduce memory requirements for test/longlines.sh (discussion with
+	  Boyuan Yang).
+	+ fix compiler warning about out-of-bounds reference to eval_stack[]
+	+ fix regression in ".*$" regex (Debian #1079389).
 
 20240819
 	+ several changes to improve results with lcov, increasing coverage

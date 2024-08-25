@@ -11,20 +11,24 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.43 2024/07/26 00:38:47 tom Exp $
+ * $MawkId: field.c,v 1.44 2024/08/25 17:04:08 tom Exp $
  */
 
-/* field.c */
+#define Visible_CELL
+#define Visible_RE_DATA
+#define Visible_SEPARATOR
+#define Visible_STRING
+#define Visible_SYMTAB
 
-#include "mawk.h"
-#include "split.h"
-#include "field.h"
-#include "init.h"
-#include "memory.h"
-#include "scan.h"
-#include "bi_vars.h"
-#include "repl.h"
-#include "regexp.h"
+#include <mawk.h>
+#include <split.h>
+#include <field.h>
+#include <init.h>
+#include <memory.h>
+#include <scan.h>
+#include <bi_vars.h>
+#include <repl.h>
+#include <regexp.h>
 
 /* initial fields and pseudo fields,
     most programs only need these */

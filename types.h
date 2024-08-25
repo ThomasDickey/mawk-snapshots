@@ -1,6 +1,6 @@
 /********************************************
 types.h
-copyright 2009-2016,2023 Thomas E. Dickey
+copyright 2009-2023,2024 Thomas E. Dickey
 copyright 1991-1993,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: types.h,v 1.14 2023/07/23 11:32:20 tom Exp $
+ * $MawkId: types.h,v 1.16 2024/08/25 19:36:05 tom Exp $
  */
 
 /*  types.h  */
@@ -19,8 +19,8 @@ the GNU General Public License, version 2, 1991.
 #ifndef  MAWK_TYPES_H
 #define  MAWK_TYPES_H
 
-#include  "nstd.h"
-#include  "sizes.h"
+#include  <nstd.h>
+#include  <sizes.h>
 
 /*  CELL  types  */
 
@@ -59,11 +59,15 @@ typedef enum {
 
 typedef unsigned char UChar;
 
-typedef struct {
+typedef struct _string
+#ifdef Visible_STRING
+{
     size_t len;
     unsigned ref_cnt;
     char str[2];
-} STRING;
+}
+#endif
+STRING;
 
 /* number of bytes more than the characters to store a
    string */
@@ -71,12 +75,16 @@ typedef struct {
 
 typedef unsigned short VCount;
 
-typedef struct cell {
+typedef struct _cell
+#ifdef Visible_CELL
+{
     short type;
     VCount vcnt;		/* only used if type == C_REPLV   */
     PTR ptr;
     double dval;
-} CELL;
+}
+#endif
+CELL;
 
 /* all builtins are passed the evaluation stack pointer and
    return its new value, here is the type */
@@ -86,6 +94,7 @@ typedef CELL *(*PF_CP) (CELL *);
 typedef union {
     int op;
     PTR ptr;
+    PF_CP fnc;
 } INST;
 
 /* regex types */

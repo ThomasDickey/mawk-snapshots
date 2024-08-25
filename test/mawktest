@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawktest,v 1.51 2024/08/19 23:23:12 tom Exp $
+# $MawkId: mawktest,v 1.53 2024/08/25 21:44:56 tom Exp $
 ###############################################################################
 # copyright 2008-2023,2024, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
@@ -264,15 +264,8 @@ Finish "character-classes demo"
 #################################
 
 #################################
-# Just test this with Linux -
-# BSDs and Solaris run out of memory, perhaps due to pipe implementation.
 Begin "long-lines test"
-if [ -f /proc/meminfo ]
-then
-	AWK=$PROG longline.sh | cmp -s - longline.out || Fail "longline.awk"
-else
-	echo "SKIPPED because of memory requirements"
-fi
+AWK=$PROG ./longline.sh | cmp -s - longline.out || Fail "longline.awk"
 Finish "long-lines test"
 
 #################################

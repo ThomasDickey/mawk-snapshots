@@ -1,6 +1,6 @@
 /********************************************
 bi_vars.c
-copyright 2009-2010,2023 Thomas E. Dickey
+copyright 2009-2013,2024, Thomas E. Dickey
 copyright 1991-1992,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,17 +11,19 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_vars.c,v 1.11 2023/07/22 22:28:00 tom Exp $
+ * $MawkId: bi_vars.c,v 1.13 2024/08/25 17:47:59 tom Exp $
  */
 
-/* bi_vars.c */
+#define Visible_CELL
+#define Visible_STRING
+#define Visible_SYMTAB
 
-#include "mawk.h"
-#include "symtype.h"
-#include "bi_vars.h"
-#include "field.h"
-#include "init.h"
-#include "memory.h"
+#include <mawk.h>
+#include <symtype.h>
+#include <bi_vars.h>
+#include <field.h>
+#include <init.h>
+#include <memory.h>
 
 /* the builtin variables */
 CELL bi_vars[NUM_BI_VAR];

@@ -1,6 +1,6 @@
 /********************************************
 zmalloc.c
-copyright 2008-2019,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,12 +11,12 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.34 2023/08/08 21:22:04 tom Exp $
+ * $MawkId: zmalloc.c,v 1.35 2024/08/25 17:18:07 tom Exp $
  */
 
 /*  zmalloc.c  */
-#include  "mawk.h"
-#include  "zmalloc.h"
+#include  <mawk.h>
+#include  <zmalloc.h>
 
 #if defined(NO_LEAKS) && defined(HAVE_TSEARCH)
 #define USE_TSEARCH 1

@@ -12,14 +12,15 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.42 2024/07/26 00:31:50 tom Exp $
+ * $MawkId: rexp.h,v 1.43 2024/08/25 17:15:43 tom Exp $
  */
 
 #ifndef  REXP_H
 #define  REXP_H
 
-#include "nstd.h"
-#include "types.h"
+#include <nstd.h>
+#include <types.h>
+
 #include <stdio.h>
 #include <setjmp.h>
 
@@ -59,7 +60,9 @@ typedef enum {
 
 typedef UChar BV[32];		/* bit vector */
 
-typedef struct {
+typedef struct _state
+#ifdef Visible_STATE
+{
     SType s_type;
     size_t s_len;		/* used for M_STR  */
     union {
@@ -72,13 +75,19 @@ typedef struct {
     Int it_max;			/* used for s_type == M_2JC */
     Int it_cnt;
 #endif
-} STATE;
+}
+#endif
+STATE;
 
 #define  STATESZ  (sizeof(STATE))
 
-typedef struct {
+typedef struct _machine
+#ifdef Visible_MACHINE
+{
     STATE *start, *stop;
-} MACHINE;
+}
+#endif
+MACHINE;
 
 /*  tokens   */
 typedef enum {
@@ -124,17 +133,23 @@ typedef enum {
 #define  ison(b,x)  ((b)[((UChar)(x)) >> 3] & (1 << ((x) & 7)))
 
 /* struct for the run time stack */
-typedef struct {
+typedef struct _rt_state
+#ifdef Visible_RT_STATE
+{
     STATE *m;			/* save the machine ptr */
     int u;			/* save the u_flag */
     char *s;			/* save the active string ptr */
     int sp;			/* size of position stack */
     int tp;			/* offset to top entry of position stack */
     char *ss;			/* save the match start -- only used by REmatch */
-} RT_STATE;			/* run time state */
+}
+#endif
+RT_STATE;			/* run time state */
 
 /* entry for the position stack */
-typedef struct {
+typedef struct _rt_pos_entry
+#ifdef Visible_RT_POS_ENTRY
+{
     /* if we have not advanced beyond this character,
      * do not bother trying another round.
      */
@@ -144,7 +159,9 @@ typedef struct {
     int owner;
     /* previous node is this - this->prev_offset.  See RE_pos_pop() */
     int prev_offset;
-} RT_POS_ENTRY;
+}
+#endif
+RT_POS_ENTRY;
 
 /*  error  trap   */
 extern int REerrno;

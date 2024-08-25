@@ -11,8 +11,16 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.20 2024/07/26 00:38:02 tom Exp $
+ * $MawkId: fcall.c,v 1.23 2024/08/25 19:33:50 tom Exp $
  */
+
+#define Visible_ARRAY
+#define Visible_CA_REC
+#define Visible_CELL
+#define Visible_CODEBLOCK
+#define Visible_FCALL_REC
+#define Visible_FBLOCK
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <symtype.h>
@@ -282,7 +290,9 @@ call_arg_check(FBLOCK * callee,
 	    ZFREE(q);
 	    check_progress = 1;
 	}
-	TRACE(("%s: code %p size %ld.%ld:%d\n", callee->name, callee->code,
+	TRACE(("%s: code %p size %ld.%ld:%d\n",
+	       callee->name,
+	       (void *) callee->code,
 	       callee->size / sizeof(INST),
 	       callee->size % sizeof(INST),
 	       inst_len(callee->code)));

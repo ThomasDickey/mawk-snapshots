@@ -1,6 +1,6 @@
 /********************************************
 fin.h
-copyright 2009-2014,2023 Thomas E. Dickey
+copyright 2009-2023,2024, Thomas E. Dickey
 copyright 1991-1992,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.h,v 1.15 2023/08/08 21:40:03 tom Exp $
+ * $MawkId: fin.h,v 1.16 2024/08/25 17:11:16 tom Exp $
  */
 
 /* fin.h */
@@ -23,7 +23,9 @@ the GNU General Public License, version 2, 1991.
 
 /* structure to control input files */
 
-typedef struct {
+typedef struct _fin
+#ifdef Visible_FIN
+{
     int fd;			/* file-descriptor */
     FILE *fp;			/* NULL unless interactive */
     char *buff;			/* base of data read from file */
@@ -31,7 +33,9 @@ typedef struct {
     char *limit;		/* points past the data in *buff */
     size_t buff_size;		/* allocated size of buff[] */
     int flags;
-} FIN;
+}
+#endif
+FIN;
 
 #define  MAIN_FLAG    1		/* part of main input stream if on */
 #define  EOF_FLAG     2

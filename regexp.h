@@ -12,18 +12,18 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: regexp.h,v 1.16 2024/07/26 20:53:02 tom Exp $
+ * $MawkId: regexp.h,v 1.17 2024/08/25 17:15:43 tom Exp $
  */
 #ifndef  MAWK_REPL_H
 #define  MAWK_REPL_H
 
 #include <stdio.h>
-#include "nstd.h"
+#include <nstd.h>
 
 const char *REerror(void);
 
 #ifdef LOCAL_REGEXP
-#include "rexp.h"
+#include <rexp.h>
 STATE *REcompile(char *, size_t);
 void REdestroy(STATE *);
 int REtest(char *, size_t, STATE *);

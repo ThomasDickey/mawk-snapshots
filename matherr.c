@@ -1,6 +1,6 @@
 /********************************************
 matherr.c
-copyright 2009-2013,2020 Thomas E. Dickey
+copyright 2009-2020,2024 Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,11 +11,11 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: matherr.c,v 1.28 2020/09/11 23:48:53 tom Exp $
+ * $MawkId: matherr.c,v 1.29 2024/08/25 17:12:21 tom Exp $
  */
 
-#include  "mawk.h"
-#include  "init.h"
+#include  <mawk.h>
+#include  <init.h>
 
 #include  <math.h>
 

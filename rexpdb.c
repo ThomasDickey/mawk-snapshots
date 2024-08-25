@@ -11,10 +11,11 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.29 2024/08/01 20:46:30 tom Exp $
+ * $MawkId: rexpdb.c,v 1.30 2024/08/25 17:16:24 tom Exp $
  */
 
-#include "rexp.h"
+#include <rexp.h>
+
 #include <ctype.h>
 
 /*  print a machine for debugging  */

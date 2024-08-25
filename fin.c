@@ -11,18 +11,22 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.55 2024/08/14 07:57:53 tom Exp $
+ * $MawkId: fin.c,v 1.56 2024/08/25 17:04:35 tom Exp $
  */
 
-/* fin.c */
+#define Visible_CELL
+#define Visible_FIN
+#define Visible_SEPARATOR
+#define Visible_STRING
+#define Visible_SYMTAB
 
-#include "mawk.h"
-#include "fin.h"
-#include "memory.h"
-#include "bi_vars.h"
-#include "field.h"
-#include "symtype.h"
-#include "scan.h"
+#include <mawk.h>
+#include <fin.h>
+#include <memory.h>
+#include <bi_vars.h>
+#include <field.h>
+#include <symtype.h>
+#include <scan.h>
 
 #ifdef	  HAVE_FCNTL_H
 #include <fcntl.h>

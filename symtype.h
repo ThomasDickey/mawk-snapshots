@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.27 2024/07/26 00:38:15 tom Exp $
+ * $MawkId: symtype.h,v 1.28 2024/08/25 17:21:52 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -25,12 +25,16 @@ typedef unsigned char NUM_ARGS;
 typedef unsigned char SYM_TYPE;
 
 /* struct to hold info about builtins */
-typedef struct {
+typedef struct _bi_rec
+#ifdef Visible_BI_REC
+{
     const char *name;
     PF_CP fp;			/* ptr to function that does the builtin */
     NUM_ARGS min_args, max_args;
 /* info for parser to check correct number of arguments */
-} BI_REC;
+}
+#endif
+BI_REC;
 
 /*---------------------------
    structures and types for arrays
@@ -41,22 +45,30 @@ typedef struct {
 extern ARRAY Argv;
 
 /* for parsing  (i,j) in A  */
-typedef struct {
+typedef struct arg2_rec
+#ifdef Visible_ARG2_REC
+{
     int start;			/* offset to code_base */
     int cnt;
-} ARG2_REC;
+}
+#endif
+ARG2_REC;
 
 /*------------------------
   user defined functions
   ------------------------*/
 
-typedef struct fblock {
+typedef struct _fblock
+#ifdef Visible_FBLOCK
+{
     const char *name;
     INST *code;
     size_t size;
     NUM_ARGS nargs;
     SYM_TYPE *typev;		/* array of size nargs holding types */
-} FBLOCK;			/* function block */
+}
+#endif
+FBLOCK;				/* function block */
 
 extern void add_to_fdump_list(FBLOCK *);
 extern void dump_funcs(void);
@@ -84,7 +96,9 @@ typedef enum {
 #define  is_array(stp)   (((stp)->type & ST_ARRAY) != 0)
 #define  is_local(stp)   (((stp)->type & ST_LOCAL_NONE) != 0)
 
-typedef struct {
+typedef struct _symtab
+#ifdef Visible_SYMTAB
+{
     const char *name;
     SYM_TYPE type;
     unsigned char offset;	/* offset in stack frame for local vars */
@@ -99,14 +113,18 @@ typedef struct {
 	ARRAY array;
 	FBLOCK *fbp;
     } stval;
-} SYMTAB;
+}
+#endif
+SYMTAB;
 
 /*****************************
  structures for type checking function calls
  ******************************/
 
-typedef struct ca_rec {
-    struct ca_rec *link;
+typedef struct _ca_rec
+#ifdef Visible_CA_REC
+{
+    struct _ca_rec *link;
     SYM_TYPE type;
     NUM_ARGS arg_num;		/* position in callee's stack */
 /*---------  this data only set if we'll  need to patch -------*/
@@ -117,14 +135,18 @@ typedef struct ca_rec {
 /* where the type is stored */
     SYMTAB *sym_p;		/* if type is ST_NONE  */
     SYM_TYPE *type_p;		/* if type  is ST_LOCAL_NONE */
-} CA_REC;			/* call argument record */
+}
+#endif
+CA_REC;				/* call argument record */
 
 /* type field of CA_REC matches with ST_ types */
 #define   CA_EXPR       ST_LOCAL_VAR
 #define   CA_ARRAY      ST_LOCAL_ARRAY
 
-typedef struct fcall {
-    struct fcall *link;
+typedef struct _fcall
+#ifdef Visible_FCALL_REC
+{
+    struct _fcall *link;
     FBLOCK *callee;
     short call_scope;
     short move_level;
@@ -132,13 +154,19 @@ typedef struct fcall {
     INST *call_start;		/* computed later as code may be moved */
     CA_REC *arg_list;
     NUM_ARGS arg_cnt_checked;
-} FCALL_REC;
+}
+#endif
+FCALL_REC;
 
 /* defer analysis from length() parameter for forward-references */
-typedef struct {
+typedef struct _defer_len
+#ifdef Visible_DEFER_LEN
+{
     short offset;
     FBLOCK *fbp;
-} DEFER_LEN;
+}
+#endif
+DEFER_LEN;
 
 extern FCALL_REC *resolve_list;
 

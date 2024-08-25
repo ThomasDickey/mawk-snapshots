@@ -1,6 +1,6 @@
 /********************************************
 parse.y
-copyright 2008-2020,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,10 +11,21 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.37 2024/07/26 20:14:00 tom Exp $
+ * $MawkId: parse.y,v 1.39 2024/08/25 19:49:34 tom Exp $
  */
 
 %{
+
+#define Visible_ARG2_REC
+#define Visible_ARRAY
+#define Visible_BI_REC
+#define Visible_CA_REC
+#define Visible_CELL
+#define Visible_CODEBLOCK
+#define Visible_DEFER_LEN
+#define Visible_FCALL_REC
+#define Visible_FBLOCK
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <symtype.h>
@@ -218,7 +229,7 @@ block_or_separator  :  block
                   |  separator     /* default print action */
                      { $$ = code_offset ;
                        code1(_PUSHINT) ; code1(0) ;
-                       code2(_PRINT, bi_print) ;
+                       func2(_PRINT, bi_print) ;
                      }
         ;
 
@@ -426,7 +437,7 @@ builtin :
             p->name ) ;
           if ( p->min_args != p->max_args ) /* variable args */
               { code1(_PUSHINT) ;  code1($4) ; }
-          code2(_BUILTIN , p->fp) ;
+          func2(_BUILTIN , p->fp) ;
         }
         ;
 
@@ -437,7 +448,7 @@ mark : /* empty */
 
 /* print_statement */
 statement :  print mark pr_args pr_direction separator
-            { code2(_PRINT, $1) ;
+            { func2(_PRINT, $1) ;
               if ( $1 == bi_printf && $3 == 0 )
                     compile_error("no arguments in call to printf") ;
               print_flag = 0 ;
@@ -775,7 +786,7 @@ expr    :  field   ASSIGN   expr { code1(F_ASSIGN) ; }
    it takes an array and optionally a regular expression as args */
 
 p_expr  :   split_front  split_back
-            { code2(_BUILTIN, bi_split) ; }
+            { func2(_BUILTIN, bi_split) ; }
         ;
 
 split_front : SPLIT LPAREN expr COMMA ID
@@ -813,11 +824,11 @@ split_back  :   RPAREN
 p_expr :  LENGTH LPAREN  RPAREN
           { $$ = code_offset ;
             code2(_PUSHI,field) ;
-            code2(_BUILTIN,bi_length) ;
+            func2(_BUILTIN,bi_length) ;
           }
        |  LENGTH LPAREN expr RPAREN
           { $$ = $3 ;
-            code2(_BUILTIN,bi_length) ;
+            func2(_BUILTIN,bi_length) ;
           }
        |  LENGTH LPAREN ID RPAREN
           {
@@ -826,28 +837,28 @@ p_expr :  LENGTH LPAREN  RPAREN
               switch (stp->type) {
               case ST_VAR:
                   code2(_PUSHI, stp->stval.cp);
-                  code2(_BUILTIN, bi_length);
+                  func2(_BUILTIN, bi_length);
                   break;
 
               case ST_ARRAY:
                   code2(A_PUSHA, stp->stval.array);
-                  code2(_BUILTIN, bi_alength);
+                  func2(_BUILTIN, bi_alength);
                   break;
 
               case ST_LOCAL_VAR:
                   code2op(L_PUSHI, stp->offset);
-                  code2(_BUILTIN, bi_length);
+                  func2(_BUILTIN, bi_length);
                   break;
 
               case ST_LOCAL_ARRAY:
                   code2op(LA_PUSHA, stp->offset);
-                  code2(_BUILTIN, bi_alength);
+                  func2(_BUILTIN, bi_alength);
                   break;
 
               case ST_NONE:
                   /* defer_alen */
                   code2(A_LENGTH, stp);
-                  code2(_BUILTIN, bi_length);
+                  func2(_BUILTIN, bi_length);
                   break;
 
               case ST_LOCAL_NONE:
@@ -857,7 +868,7 @@ p_expr :  LENGTH LPAREN  RPAREN
                       pi->fbp = active_funct;
                       pi->offset = stp->offset;
                       code2(_LENGTH, pi);
-                      code2(_BUILTIN, bi_length);
+                      func2(_BUILTIN, bi_length);
                   }
                   break;
 
@@ -870,7 +881,7 @@ p_expr :  LENGTH LPAREN  RPAREN
 p_expr :  LENGTH %prec CAT	/* fixes s/r conflict length vs length() */
           { $$ = code_offset ;
             code2(_PUSHI,field) ;
-            code2(_BUILTIN,bi_length) ;
+            func2(_BUILTIN,bi_length) ;
           }
        ;
 
@@ -878,7 +889,7 @@ p_expr :  LENGTH %prec CAT	/* fixes s/r conflict length vs length() */
 
 p_expr : MATCH_FUNC LPAREN expr COMMA re_arg RPAREN
         { $$ = $3 ;
-          code2(_BUILTIN, bi_match) ;
+          func2(_BUILTIN, bi_match) ;
         }
      ;
 
@@ -927,29 +938,29 @@ p_expr :  getline      %prec  GETLINE
           { $$ = code_offset ;
             code2(F_PUSHA, &field[0]) ;
             code1(_PUSHINT) ; code1(0) ;
-            code2(_BUILTIN, bi_getline) ;
+            func2(_BUILTIN, bi_getline) ;
             getline_flag = 0 ;
           }
        |  getline  fvalue     %prec  GETLINE
           { $$ = $2 ;
             code1(_PUSHINT) ; code1(0) ;
-            code2(_BUILTIN, bi_getline) ;
+            func2(_BUILTIN, bi_getline) ;
             getline_flag = 0 ;
           }
        |  getline_file  p_expr    %prec IO_IN
           { code1(_PUSHINT) ; code1(F_IN) ;
-            code2(_BUILTIN, bi_getline) ;
+            func2(_BUILTIN, bi_getline) ;
             /* getline_flag already off in yylex() */
           }
        |  p_expr PIPE GETLINE
           { code2(F_PUSHA, &field[0]) ;
             code1(_PUSHINT) ; code1(PIPE_IN) ;
-            code2(_BUILTIN, bi_getline) ;
+            func2(_BUILTIN, bi_getline) ;
           }
        |  p_expr PIPE GETLINE   fvalue
           {
             code1(_PUSHINT) ; code1(PIPE_IN) ;
-            code2(_BUILTIN, bi_getline) ;
+            func2(_BUILTIN, bi_getline) ;
           }
        ;
 
@@ -984,7 +995,7 @@ p_expr  :  sub_or_gsub LPAREN re_arg COMMA  expr  sub_back
                p5[1].ptr = (PTR) cp ;
                no_leaks_cell(cp);
              }
-             code2(_BUILTIN, $1) ;
+             func2(_BUILTIN, $1) ;
              $$ = $3 ;
            }
         ;

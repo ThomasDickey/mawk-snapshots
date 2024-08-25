@@ -1,6 +1,6 @@
 /********************************************
 kw.c
-copyright 2008-2021,2023, Thomas E. Dickey
+copyright 2008-2023,2024, Thomas E. Dickey
 copyright 1991-1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,16 +11,15 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: kw.c,v 1.10 2023/07/24 08:10:12 tom Exp $
+ * $MawkId: kw.c,v 1.11 2024/08/25 17:21:36 tom Exp $
  */
 
-/* kw.c */
+#define Visible_SYMTAB
 
 #include <mawk.h>
 #include <symtype.h>
 #include <parse.h>
 #include <init.h>
-
 /* *INDENT-OFF* */
 static const struct kw
 {

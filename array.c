@@ -1,8 +1,8 @@
 /* array.c */
 /*
-$MawkId: array.c,v 1.27 2023/07/11 23:01:31 tom Exp $
+$MawkId: array.c,v 1.29 2024/08/25 18:28:02 tom Exp $
 
-copyright 2009-2021,2023 Thomas E. Dickey
+copyright 2009-2023,2024 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -20,12 +20,16 @@ Notangle is part of Norman Ramsey's noweb literate programming package
 available from CTAN(ftp.shsu.edu).
 */
 
-#include "mawk.h"
-#include "symtype.h"
-#include "memory.h"
-#include "split.h"
-#include "field.h"
-#include "bi_vars.h"
+#define Visible_ARRAY
+#define Visible_CELL
+#define Visible_STRING
+
+#include <mawk.h>
+#include <symtype.h>
+#include <memory.h>
+#include <split.h>
+#include <field.h>
+#include <bi_vars.h>
 
 struct anode;
 typedef struct {
