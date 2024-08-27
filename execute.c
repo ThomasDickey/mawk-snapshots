@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.60 2024/08/25 19:43:50 tom Exp $
+ * $MawkId: execute.c,v 1.61 2024/08/26 23:38:53 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -45,11 +45,8 @@ static char dz_msg[] = "division by zero";
 #define	 CHECK_DIVZERO(x) do { if ((x) == 0.0 ) rt_error(dz_msg); } while (0)
 #endif
 
-#define	 inc_sp()   if ( ++sp == stack_danger) eval_overflow()
-#define  dec_sp()   if ( sp-- == stack_under)  eval_underflow()
-
 #define	 SAFETY	   16
-#define	 DANGER	   (EVAL_STACK_SIZE-SAFETY)
+#define	 DANGER	   (EVAL_STACK_SIZE - SAFETY - MAX_ARGS)
 
 /*  The stack machine that executes the code */
 
@@ -59,6 +56,7 @@ static CELL *stack_base = eval_stack;
 static CELL *stack_under = eval_stack;
 static CELL *stack_danger = eval_stack + DANGER;
 
+#ifdef DEBUG
 static void
 eval_overflow(void)
 {
@@ -70,6 +68,16 @@ eval_underflow(void)
 {
     bozo("eval stack underflow");
 }
+
+#define	 inc_sp()   if ( ++sp == stack_danger) eval_overflow()
+#define  dec_sp()   if ( sp-- == stack_under)  eval_underflow()
+
+#else
+
+#define	 inc_sp()   ++sp
+#define  dec_sp()   sp--
+
+#endif
 
 /* holds info for array loops (on a stack) */
 typedef struct aloop_state {

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.39 2024/08/25 19:49:34 tom Exp $
+ * $MawkId: parse.y,v 1.41 2024/08/26 21:04:00 tom Exp $
  */
 
 %{
@@ -431,10 +431,14 @@ builtin :
         BUILTIN mark  LPAREN  arglist RPAREN
         { const BI_REC *p = $1 ;
           $$ = $2 ;
-          if ( (int)p->min_args > $4 || (int)p->max_args < $4 )
-            compile_error(
-            "wrong number of arguments in call to %s" ,
-            p->name ) ;
+          if ( (int)p->min_args > $4 )
+              compile_error(
+                  "not enough arguments in call to %s: %d (need %d)" ,
+                  p->name, $4, (int)p->min_args ) ;
+          if ( (int)p->max_args < $4 )
+              compile_error(
+                  "too many arguments in call to %s: %d (maximum %d)" ,
+                  p->name, $4, (int)p->max_args ) ;
           if ( p->min_args != p->max_args ) /* variable args */
               { code1(_PUSHINT) ;  code1($4) ; }
           func2(_BUILTIN , p->fp) ;
@@ -449,8 +453,12 @@ mark : /* empty */
 /* print_statement */
 statement :  print mark pr_args pr_direction separator
             { func2(_PRINT, $1) ;
+              if ( $3 > MAX_ARGS )
+                  compile_error("too many arguments in call to %s: %d (maximum %d)",
+                      ( $1 == bi_printf ) ? "printf" : "print",
+                      $3, MAX_ARGS) ;
               if ( $1 == bi_printf && $3 == 0 )
-                    compile_error("no arguments in call to printf") ;
+                  compile_error("no arguments in call to printf") ;
               print_flag = 0 ;
               $$ = $2 ;
             }
@@ -878,7 +886,7 @@ p_expr :  LENGTH LPAREN  RPAREN
               }
           }
        ;
-p_expr :  LENGTH %prec CAT	/* fixes s/r conflict length vs length() */
+p_expr :  LENGTH %prec CAT /* fixes s/r conflict length vs length() */
           { $$ = code_offset ;
             code2(_PUSHI,field) ;
             func2(_BUILTIN,bi_length) ;

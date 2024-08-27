@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawkerrs,v 1.12 2024/08/19 20:49:13 tom Exp $
+# $MawkId: mawkerrs,v 1.18 2024/08/27 07:50:27 tom Exp $
 ###############################################################################
 # copyright 2024, Thomas E. Dickey
 #
@@ -205,12 +205,57 @@ echo 'mawk: line 2: missing } near end of file' >$STDERR
 $PROG -Wd 'BEGIN{ printf "?\n"' 2>&1 | cmp -s - "$STDERR" || Fail "missing right brace"
 Finish "test for missing right-brace"
 
+Begin "test for enough arguments of index()"
+echo 'mawk: line 1: not enough arguments in call to index: 1 (need 2)' >$STDERR
+$PROG -Wd 'BEGIN{ foo = index("?"); }' 2>&1 | cmp -s - "$STDERR" || Fail "enough arguments for index()"
+Finish "test for enough arguments of index()"
+
+Begin "test for too many arguments of index()"
+echo 'mawk: line 1: too many arguments in call to index: 4 (maximum 2)' >$STDERR
+$PROG -Wd 'BEGIN{ foo = index("?",1,2,3); }' 2>&1 | cmp -s - "$STDERR" || Fail "too many arguments for index()"
+Finish "test for too many arguments of index()"
+
+Begin "test for too many arguments of print()"
+echo 'mawk: line 1: too many arguments in call to print: 256 (maximum 255)' >$STDERR
+$PROG -Wd 'BEGIN{ print 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 ; }' 2>&1 | cmp -s - "$STDERR" || Fail "too many arguments for print()"
+Finish "test for too many arguments of print()"
+
+Begin "test for return outside function"
+echo 'mawk: line 1: return outside function body' >$STDERR
+$PROG -Wd 'BEGIN{ return ; }' 2>&1 | cmp -s - "$STDERR" || Fail "return outside function"
+Finish "test for return outside function"
+
+Begin "test for improper use of next"
+echo 'mawk: line 1: improper use of next' >$STDERR
+$PROG -Wd 'function foo() { next; }BEGIN{ }' 2>&1 | cmp -s - "$STDERR" || Fail "improper use of next"
+Finish "test for improper use of next"
+
+Begin "test for improper use of nextfile"
+echo 'mawk: line 1: improper use of nextfile' >$STDERR
+$PROG -Wd 'function foo() { nextfile; }BEGIN{ }' 2>&1 | cmp -s - "$STDERR" || Fail "improper use of nextfile"
+Finish "test for improper use of nextfile"
+
+Begin "test for redefinition of function"
+echo 'mawk: line 1: redefinition of foo' >$STDERR
+$PROG -Wd 'function foo() { print; }function foo(){ printf "?"; }BEGIN{ }' 2>&1 | cmp -s - "$STDERR" || Fail "redefinition of function"
+Finish "test for redefinition of function"
+
+Begin "test for illegal reference to variable"
+echo 'mawk: line 1: illegal reference to variable bar' >$STDERR
+$PROG -Wd 'function foo() { bar = 1; }function bar(){ }BEGIN{ print(); }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to variable"
+Finish "test for illegal reference to variable"
+
+Begin "test for illegal reference to array"
+echo 'mawk: line 1: illegal reference to array A' >$STDERR
+$PROG -Wd 'function foo() { A[1] = 1; }function A(){ }BEGIN{ print(); }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to array"
+Finish "test for illegal reference to array"
+
 ######## print.c
 
 Begin "test sprintf buffer-overflow"
 echo 'mawk: program limit exceeded: sprintf buffer size=8192' >$STDERR
 echo '	FILENAME="" FNR=0 NR=0' >>$STDERR
-$PROG 'BEGIN{ foo = sprintf("%10000s\n", "x"); print length(foo); }' 2>&1 | cmp -s - "$STDERR" || Fail "missing right brace"
+$PROG 'BEGIN{ foo = sprintf("%10000s\n", "x"); print length(foo); }' 2>&1 | cmp -s - "$STDERR" || Fail "sprintf buffer-overflow"
 Finish "test sprintf buffer-overflow"
 
 ######## scan.c

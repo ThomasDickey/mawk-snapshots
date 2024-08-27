@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.28 2024/08/25 17:21:52 tom Exp $
+ * $MawkId: symtype.h,v 1.29 2024/08/26 08:08:39 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -21,6 +21,7 @@ the GNU General Public License, version 2, 1991.
 
 #include <types.h>
 
+#define MAX_ARGS 255
 typedef unsigned char NUM_ARGS;
 typedef unsigned char SYM_TYPE;
 

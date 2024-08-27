@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.131 2024/08/25 18:27:52 tom Exp $
+ * $MawkId: bi_funct.c,v 1.132 2024/08/26 08:11:02 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -63,7 +63,7 @@ const BI_REC bi_funct[] =
 
    { "index",    bi_index,    2, 2 },
    { "substr",   bi_substr,   2, 3 },
-   { "sprintf",  bi_sprintf,  1, 255 },
+   { "sprintf",  bi_sprintf,  1, MAX_ARGS },
    { "sin",      bi_sin,      1, 1 },
    { "cos",      bi_cos,      1, 1 },
    { "atan2",    bi_atan2,    2, 2 },

@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.63 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: rexp3.c,v 1.65 2024/08/27 20:48:02 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -259,10 +259,8 @@ REmatch(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_CLASS + U_OFF + END_ON:
-	/* NOTREACHED */
-	if (s >= str_end || !ison(*m->s_data.bvp, s[0])) {
+	if (s >= str_end || s[1] || !ison(*m->s_data.bvp, s[0])) {
 	    RE_FILL();
 	} else if (!ss) {
 	    if (cb_ss && current_best(s)) {
@@ -274,7 +272,6 @@ REmatch(char *str,		/* string to test */
 	s = str_end;
 	m++;
 	RE_CASE();
-#endif
 
     case M_CLASS + U_ON + END_OFF:
 	if (s < str)
