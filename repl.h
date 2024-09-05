@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: repl.h,v 1.13 2024/08/25 17:15:43 tom Exp $
+ * $MawkId: repl.h,v 1.14 2024/09/05 17:24:56 tom Exp $
  */
 
 /* repl.h */
@@ -47,9 +47,8 @@ RE_NODE;
 #define isAnchored(ptr) (((RE_DATA *)(ptr))->anchored)
 #define isEmpty_RE(ptr) (((RE_DATA *)(ptr))->is_empty)
 #define cast_to_re(ptr) (((RE_DATA *)(ptr))->compiled)
-#define refRE_DATA(re)  ((PTR) &(re))
 
-PTR re_compile(STRING *);
+RE_NODE *re_compile(STRING *);
 STRING *re_uncompile(PTR);
 
 CELL *repl_compile(STRING *);

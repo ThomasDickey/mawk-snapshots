@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.51 2024/08/25 19:37:17 tom Exp $
+ * $MawkId: da.c,v 1.53 2024/09/05 17:44:48 tom Exp $
  */
 
 /* disassemble code */
@@ -28,7 +28,6 @@ the GNU General Public License, version 2, 1991.
 
 #include  <code.h>
 #include  <bi_funct.h>
-#include  <repl.h>
 #include  <field.h>
 
 typedef struct fdump {
@@ -469,7 +468,7 @@ find_bi_name(PF_CP p)
     const BI_REC *q;
     int i;
 
-    for (q = bi_funct; q->name; q++) {
+    for (q = bi_funct; q->name[0]; q++) {
 	if (q->fp == p) {
 	    /* found */
 	    return q->name;

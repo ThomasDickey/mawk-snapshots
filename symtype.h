@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: symtype.h,v 1.29 2024/08/26 08:08:39 tom Exp $
+ * $MawkId: symtype.h,v 1.30 2024/09/05 11:40:11 tom Exp $
  */
 
 /* types related to symbols are defined here */
@@ -29,7 +29,7 @@ typedef unsigned char SYM_TYPE;
 typedef struct _bi_rec
 #ifdef Visible_BI_REC
 {
-    const char *name;
+    const char name[12];
     PF_CP fp;			/* ptr to function that does the builtin */
     NUM_ARGS min_args, max_args;
 /* info for parser to check correct number of arguments */

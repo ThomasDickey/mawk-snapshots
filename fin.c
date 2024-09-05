@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.56 2024/08/25 17:04:35 tom Exp $
+ * $MawkId: fin.c,v 1.57 2024/09/05 17:38:30 tom Exp $
  */
 
 #define Visible_CELL
@@ -285,13 +285,13 @@ FINgets(FIN * fin, size_t *len_p)
     case SEP_STR:
 	q = str_str(p,
 		    (size_t) (fin->limit - p),
-		    ((STRING *) rs_shadow.ptr)->str,
-		    match_len = ((STRING *) rs_shadow.ptr)->len);
+		    rs_shadow.u.s_ptr->str,
+		    match_len = (rs_shadow.u.s_ptr)->len);
 	break;
 
     case SEP_MLR:
     case SEP_RE:
-	q = re_pos_match(p, (size_t) (fin->limit - p), rs_shadow.ptr,
+	q = re_pos_match(p, (size_t) (fin->limit - p), rs_shadow.u.r_ptr,
 			 &match_len,
 			 (p != fin->buff) ||
 			 (fin->flags & FIN_FLAG));

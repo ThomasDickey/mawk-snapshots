@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.59 2024/08/25 17:01:57 tom Exp $
+ * $MawkId: scan.c,v 1.66 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -31,7 +31,6 @@ the GNU General Public License, version 2, 1991.
 #include <field.h>
 #include <init.h>
 #include <fin.h>
-#include <repl.h>
 #include <code.h>
 
 #ifdef HAVE_FCNTL_H
@@ -48,8 +47,13 @@ the GNU General Public License, version 2, 1991.
 
 #define  ct_ret(x)  do { current_token = (x); return scan_scope(current_token); } while (0)
 
+#if OPT_TRACE > 1
+static int next(void);
+static void un_next(void);
+#else
 #define  next() (*buffp ? *buffp++ : slow_next())
 #define  un_next()  buffp--
+#endif
 
 #define  test1_ret(c,x,d)  if ( next() == (c) ) ct_ret(x) ;\
                            else { un_next() ; ct_ret(d) ; }
@@ -111,7 +115,8 @@ static struct {
 } repair_syms[MAX_REPAIR];
 
 /* use unsigned chars for index into scan_code[] */
-#define NextUChar(c) (UChar)(c = (char) next())
+#define NextUChar(c) (UChar)(c = next())	/* use if c is not a char */
+#define NextChar(c)  (UChar)(c = (char) next())		/* use if c is a char */
 
 /* overused tmp buffer */
 char string_buff[SPRINTF_LIMIT];
@@ -232,7 +237,6 @@ scan_fillbuff(void)
 static int
 slow_next(void)
 {
-
     while (*buffp == 0) {
 	if (!eof_flag) {
 	    buffp = buffer;
@@ -254,8 +258,31 @@ slow_next(void)
 	}
     }
 
-    return *buffp++;		/* note can un_next() , eof which is zero */
+    return 0xff & *buffp++;	/* note can un_next(), eof which is zero */
 }
+
+#if OPT_TRACE > 1
+#define SHOW(tag,c) \
+	TRACE((((c) >= ' ' && (c) <= '~') ? "%s %c\n" : "%s 0x%x\n", tag, c))
+static int
+next(void)
+{
+    int ch;
+    if (*buffp != '\0') {
+	ch = *buffp++;
+    } else {
+	ch = slow_next();
+    }
+    SHOW("* GET", ch);
+    return ch;
+}
+static void
+un_next(void)
+{
+    buffp--;
+    SHOW("UNGET", *buffp);
+}
+#endif
 
 static void
 eat_comment(void)
@@ -324,8 +351,6 @@ eat_nl(void)			/* eat all space including newlines */
 		    /* can't un_next() twice so deal with it */
 		    yylval.ival = '\\';
 		    unexpected_char();
-		    if (++compile_error_count == MAX_COMPILE_ERRORS)
-			mawk_exit(2);
 		    return;
 		}
 	    }
@@ -724,7 +749,7 @@ yylex(void)
 
 	    while (1) {
 		CheckStringSize(p);
-		c = scan_code[NextUChar(*p++)];
+		c = scan_code[NextChar(*p++)];
 		if (c != SC_IDCHAR && c != SC_DIGIT)
 		    break;
 	    }
@@ -827,7 +852,7 @@ collect_decimal(int c, int *flag)
     if (c == '.') {
 	last_decimal = p - 1;
 	CheckStringSize(p);
-	if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+	if (scan_code[NextChar(*p++)] != SC_DIGIT) {
 	    *flag = UNEXPECTED;
 	    yylval.ival = '.';
 	    return 0.0;
@@ -835,7 +860,7 @@ collect_decimal(int c, int *flag)
     } else {
 	while (1) {
 	    CheckStringSize(p);
-	    if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+	    if (scan_code[NextChar(*p++)] != SC_DIGIT) {
 		break;
 	    }
 	};
@@ -849,7 +874,7 @@ collect_decimal(int c, int *flag)
     /* get rest of digits after decimal point */
     while (1) {
 	CheckStringSize(p);
-	if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+	if (scan_code[NextChar(*p++)] != SC_DIGIT) {
 	    break;
 	}
     }
@@ -859,7 +884,7 @@ collect_decimal(int c, int *flag)
 	un_next();
 	*--p = 0;
     } else {			/* get the exponent */
-	if (scan_code[NextUChar(*p)] != SC_DIGIT &&
+	if (scan_code[NextChar(*p)] != SC_DIGIT &&
 	    *p != '-' && *p != '+') {
 	    /* if we can, undo and try again */
 	    if (buffp - buffer >= 2) {
@@ -875,7 +900,7 @@ collect_decimal(int c, int *flag)
 	    p++;
 	    while (1) {
 		CheckStringSize(p);
-		if (scan_code[NextUChar(*p++)] != SC_DIGIT) {
+		if (scan_code[NextChar(*p++)] != SC_DIGIT) {
 		    break;
 		}
 	    }
@@ -1069,6 +1094,23 @@ rm_escape(char *s, size_t *lenp)
     return s;
 }
 
+char *
+safe_string(char *value)
+{
+    char *result = strdup(value);
+    if (result == NULL) {
+	result = value;
+    } else {
+	char *s;
+	/* replace nonprintable characters with '@', which is illegal too */
+	for (s = result; *s != '\0'; ++s) {
+	    if (scan_code[(UChar) * s] == SC_UNEXPECTED)
+		*s = '@';
+	}
+    }
+    return result;
+}
+
 static int
 collect_string(void)
 {
@@ -1079,7 +1121,7 @@ collect_string(void)
 
     while (1) {
 	CheckStringSize(p);
-	switch (scan_code[NextUChar(*p++)]) {
+	switch (scan_code[NextChar(*p++)]) {
 	case SC_DQUOTE:	/* done */
 	    *--p = 0;
 	    goto out;
@@ -1091,7 +1133,7 @@ collect_string(void)
 	case 0:		/* unterminated string */
 	    compile_error(
 			     "runaway string constant \"%.10s ...",
-			     string_buff);
+			     safe_string(string_buff));
 	    mawk_exit(2);
 
 	case SC_ESCAPE:
@@ -1141,7 +1183,7 @@ collect_RE(void)
 	    mawk_exit(2);
 	}
 	CheckStringSize(p);
-	switch (scan_code[NextUChar(c = *p++)]) {
+	switch (scan_code[NextChar(c = *p++)]) {
 	case SC_POW:
 	    /* Handle [^]] and [^^] correctly. */
 	    if ((p - 1) == first && first != 0 && first[-1] == '[') {
@@ -1198,7 +1240,7 @@ collect_RE(void)
 	case 0:		/* unterminated re */
 	    compile_error(
 			     "runaway regular expression /%.10s ...",
-			     string_buff);
+			     safe_string(string_buff));
 	    mawk_exit(2);
 
 	case SC_ESCAPE:

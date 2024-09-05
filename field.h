@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.h,v 1.18 2024/08/25 17:06:41 tom Exp $
+ * $MawkId: field.h,v 1.20 2024/09/05 17:44:48 tom Exp $
  */
 
 /* field.h */
@@ -80,7 +80,10 @@ typedef struct _separator
 {
     char type;
     char c;
-    PTR ptr;			/* STRING* or RE machine* */
+    union {
+	STRING *s_ptr;
+	RE_NODE *r_ptr;
+    } u;
 }
 #endif
 SEPARATOR;

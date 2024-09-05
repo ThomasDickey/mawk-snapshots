@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.37 2024/08/25 17:04:26 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.41 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_CELL
@@ -23,7 +23,6 @@ the GNU General Public License, version 2, 1991.
 #include <memory.h>
 #include <scan.h>
 #include <regexp.h>
-#include <repl.h>
 
 /* a list of compiled regular expressions */
 static RE_NODE *re_list;
@@ -33,7 +32,7 @@ static const char efmt[] = "regular expression compile failed (%s)\n%s";
 /* compile a STRING to a regular expression machine.
    Search a list of pre-compiled strings first
 */
-PTR
+RE_NODE *
 re_compile(STRING * sval)
 {
     register RE_NODE *p;
@@ -71,10 +70,12 @@ re_compile(STRING * sval)
     if (!(p->re.compiled = REcompile(s, sval->len))) {
 	ZFREE(p);
 	sval->ref_cnt--;
-	if (mawk_state == EXECUTION)
-	    rt_error(efmt, REerror(), s);
-	else {			/* compiling */
-	    compile_error(efmt, REerror(), s);
+	if (mawk_state == EXECUTION) {
+	    rt_error(efmt, REerror(), safe_string(s));
+	} else {		/* compiling */
+	    char *safe = safe_string(s);
+	    compile_error(efmt, REerror(), safe);
+	    free(safe);
 	    return (PTR) 0;
 	}
     }
@@ -90,7 +91,7 @@ re_compile(STRING * sval)
     if (dump_RE)
 	REmprint(p->re.compiled, stderr);
 #endif
-    return refRE_DATA(p->re);
+    return p;
 }
 
 /* this is only used by da() */

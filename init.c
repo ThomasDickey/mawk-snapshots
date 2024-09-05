@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.81 2024/08/25 18:27:39 tom Exp $
+ * $MawkId: init.c,v 1.82 2024/09/04 22:21:58 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -170,7 +170,7 @@ ok_abbrev(const char *fullName, const char *partName, int partLen)
 	UChar ch = (UChar) partName[n];
 	if (isalpha(ch))
 	    ch = (UChar) toupper(ch);
-	if (ch != (UChar) toupper(fullName[n])) {
+	if (ch != (UChar) toupper((UChar) fullName[n])) {
 	    result = 0;
 	    break;
 	}

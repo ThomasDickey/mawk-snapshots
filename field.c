@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.44 2024/08/25 17:04:08 tom Exp $
+ * $MawkId: field.c,v 1.46 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_CELL
@@ -27,7 +27,6 @@ the GNU General Public License, version 2, 1991.
 #include <memory.h>
 #include <scan.h>
 #include <bi_vars.h>
-#include <repl.h>
 #include <regexp.h>
 
 /* initial fields and pseudo fields,
@@ -92,7 +91,8 @@ static void build_field0(void);
    If RS is changed, so is rs_shadow */
 SEPARATOR rs_shadow =
 {
-    SEP_CHAR, '\n', NULL
+    SEP_CHAR, '\n',
+    {NULL}
 };
 /* a splitting CELL version of FS */
 CELL fs_shadow =
@@ -116,7 +116,7 @@ set_rs_shadow(void)
 	scan_code['\n'] = SC_UNEXPECTED;
 
     if (rs_shadow.type == SEP_STR) {
-	free_STRING((STRING *) rs_shadow.ptr);
+	free_STRING(rs_shadow.u.s_ptr);
     }
 
     cast_for_split(cellcpy(&c, RS));
@@ -128,11 +128,11 @@ set_rs_shadow(void)
 		rs_shadow.c = s[0];
 	    } else {
 		rs_shadow.type = SEP_STR;
-		rs_shadow.ptr = (PTR) new_STRING(s);
+		rs_shadow.u.s_ptr = new_STRING(s);
 	    }
 	} else {
 	    rs_shadow.type = SEP_RE;
-	    rs_shadow.ptr = c.ptr;
+	    rs_shadow.u.r_ptr = (RE_NODE *) c.ptr;
 	}
 	break;
 
@@ -146,7 +146,7 @@ set_rs_shadow(void)
 	    scan_code['\n'] = SC_SPACE;
 	rs_shadow.type = SEP_MLR;
 	sval = new_STRING("\n\n+");
-	rs_shadow.ptr = re_compile(sval);
+	rs_shadow.u.r_ptr = re_compile(sval);
 	free_STRING(sval);
 	break;
 
@@ -779,10 +779,10 @@ field_leaks(void)
 
     switch (rs_shadow.type) {
     case SEP_STR:
-	free_STRING(((STRING *) (&rs_shadow.ptr)));
+	free_STRING(rs_shadow.u.s_ptr);
 	break;
     case SEP_RE:
-	re_destroy(rs_shadow.ptr);
+	re_destroy(rs_shadow.u.r_ptr);
 	break;
     }
 }

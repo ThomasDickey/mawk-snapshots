@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.132 2024/08/26 08:11:02 tom Exp $
+ * $MawkId: bi_funct.c,v 1.134 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -30,7 +30,6 @@ the GNU General Public License, version 2, 1991.
 #include <fin.h>
 #include <field.h>
 #include <regexp.h>
-#include <repl.h>
 
 #include <ctype.h>
 #include <math.h>
@@ -88,7 +87,7 @@ const BI_REC bi_funct[] =
    { "strftime", bi_strftime, 0, 3 },
 #endif
 
-   { (char *)    0, (PF_CP) 0, 0, 0 }
+   { "",         (PF_CP) 0, 0, 0 }
 };
 /* *INDENT-ON* */
 
@@ -99,7 +98,7 @@ bi_funct_init(void)
     register const BI_REC *p;
     register SYMTAB *stp;
 
-    for (p = bi_funct; p->name; p++) {
+    for (p = bi_funct; p->name[0]; p++) {
 	stp = insert(p->name);
 	stp->type = ST_BUILTIN;
 	stp->stval.bip = p;

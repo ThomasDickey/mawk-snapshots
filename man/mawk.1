@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.64 2024/01/23 22:05:53 tom Exp $
+.\" $MawkId: mawk.1,v 1.67 2024/09/05 22:23:55 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2023,2024, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 2024-01-23 "Version 1.3.4" "User commands"
+.TH MAWK 1 2024-09-05 "Version 1.3.4" "User commands"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -1788,12 +1788,19 @@ across implementations.
 .PP
 Some features were not part of the POSIX standard until long after
 their introduction in \fB\*n\fP and other implementations.
-These have been approved, though still (as of July 2020),
-are not part of a published standard:
+These were published in IEEE 1003.1-2024
+(The Open Group Base Specifications Issue 8):
 .bP
 The built-in
 .B fflush
 first appeared in a 1993 AT&T awk released to netlib.
+It was approved for the POSIX standard in 2012.
+.bP
+The built-in
+.B nextfile
+first appeared in gawk in 1988,
+was adopted by BWK in 1996,
+and by mawk in 2012.
 It was approved for the POSIX standard in 2012.
 .bP
 Aggregate deletion with
@@ -1818,11 +1825,6 @@ can call \fBsrand\fP at startup with no parameter
 this feature may be suppressed using conditional compilation.
 .
 .SS "Extensions added for compatibility for GAWK and BWK"
-.B Nextfile
-is a \fBgawk\fP extension (also implemented by BWK awk).
-It was approved for the POSIX standard in September 2012,
-and is expected to be part of the next revision of the standard.
-.PP
 .BR Mktime ,
 .BR strftime \ and
 .B systime
@@ -2019,3 +2021,11 @@ It also discusses POSIX requirements for AWK.
 \fBmawk-arrays\fP(7) discusses \fB\*n\fP's implementation of arrays.
 .PP
 \fBmawk-code\fP(7) gives more information on the \fB\-W\ dump\fP option.
+.PP
+\fIawk \(en pattern scanning and processing language\fP
+.br
+The Open Group Base Specifications Issue 8
+.br
+IEEE Std 1003.1-2024
+.br
+https://pubs.opengroup.org/onlinepubs/9799919799/utilities/awk.html

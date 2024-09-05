@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.30 2024/08/25 17:09:56 tom Exp $
+ * $MawkId: cast.c,v 1.31 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_CELL
@@ -22,7 +22,6 @@ the GNU General Public License, version 2, 1991.
 #include <field.h>
 #include <memory.h>
 #include <scan.h>
-#include <repl.h>
 
 const int mpow2[NUM_CELL_TYPES] =
 {1, 2, 4, 8, 16, 32, 64, 128, 256, 512};

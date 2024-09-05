@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.47 2024/08/25 19:47:39 tom Exp $
+ * $MawkId: code.c,v 1.48 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_CELL
@@ -26,7 +26,6 @@ the GNU General Public License, version 2, 1991.
 #include <field.h>
 
 #ifdef NO_LEAKS
-#include <repl.h>
 #include <scan.h>
 #endif
 

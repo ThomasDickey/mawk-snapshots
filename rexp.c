@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.48 2024/08/25 21:19:50 tom Exp $
+ * $MawkId: rexp.c,v 1.51 2024/09/04 23:02:39 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -23,14 +23,14 @@ the GNU General Public License, version 2, 1991.
 int REerrno;
 const char *const REerrlist[] =
 {(char *) 0,
- /* 1  */ "missing '('",
- /* 2  */ "missing ')'",
- /* 3  */ "bad class -- [], [^] or [",
- /* 4  */ "missing operand",
- /* 5  */ "resource exhaustion -- regular expression too large",
- /* 6  */ "syntax error ^* or ^+",
- /* 7  */ "bad interval expression",
- /* 8  */ ""
+ /* ERR_1  */ "missing '('",
+ /* ERR_2  */ "missing ')'",
+ /* ERR_3  */ "bad class -- [], [^] or [",
+ /* ERR_4  */ "missing operand",
+ /* ERR_5  */ "resource exhaustion -- regular expression too large",
+ /* ERR_6  */ "syntax error ^* or ^+",
+ /* ERR_7  */ "bad interval expression",
+ /* ERR_8  */ ""
 };
 /* ERR_5 is very unlikely to occur */
 
@@ -108,6 +108,7 @@ token_name(int token)
 void
 RE_error_trap(int x)
 {
+    TRACE(("RE_error_trap(%d)\n", x));
     REerrno = x;
     longjmp(err_buf, 1);
 }
@@ -130,6 +131,7 @@ REcompile(char *re, size_t len)
     register OPS *op_ptr;
     register int t;
 
+    TRACE(("REcompile %.*s\n", (int) len, re));
     /* do this first because it also checks if we have a
        run time stack */
     RE_lex_init(re, len);
@@ -152,6 +154,7 @@ REcompile(char *re, size_t len)
     op_ptr->token = 0;
 
     t = RE_lex(m_stack(0));
+    memset(m_ptr, 0, sizeof(*m_ptr));
 
     while (1) {
 	TRACE(("RE_lex token %s\n", token_name(t)));
@@ -177,6 +180,8 @@ REcompile(char *re, size_t len)
 	     *   convert m{3,10} to mmm* with a limit of 10
 	     */
 	    TRACE(("interval {%ld,%ld}\n", (long) intrvalmin, (long) intrvalmax));
+	    if ((m_ptr - m_array) < STACKSZ)
+		memset(m_ptr + 1, 0, sizeof(*m_ptr));
 	    if (intrvalmin == 0) {	/* zero or more */
 		switch (intrvalmax) {
 		case 0:
@@ -244,14 +249,20 @@ REcompile(char *re, size_t len)
 		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
 		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
 #endif
-	    } else {		/* n or more */
+	    } else if (m_ptr->start != 0) {	/* n or more */
 		register Int i;
 		/* copy 2 copies of m_ptr, use 2nd copy to replace
 		   the first copy that gets swallowed by concat */
 		MACHINE *result_mp = m_ptr;
 		MACHINE *concat_mp = (m_ptr + 1);
 		MACHINE *new_mp = (m_ptr + 2);
+		TRACE(("calling duplicate_m result_mp %ld -> concat_mp %ld\n",
+		       result_mp - m_array,
+		       concat_mp - m_array));
 		duplicate_m(concat_mp, result_mp);
+		TRACE(("calling duplicate_m result_mp %ld -> new_mp %ld\n",
+		       result_mp - m_array,
+		       new_mp - m_array));
 		duplicate_m(new_mp, result_mp);
 		for (i = 2; i <= intrvalmin; i++) {
 		    RE_cat(result_mp, concat_mp);
@@ -427,6 +438,9 @@ void
 duplicate_m(MACHINE * newmp, MACHINE * oldmp)
 {
     register STATE *p;
+    TRACE(("duplicate_m %p -> %p\n", oldmp, newmp));
+    TRACE(("...start %p\n", oldmp->start));
+    TRACE(("...stop  %p\n", oldmp->stop));
     p = (STATE *) RE_malloc(2 * STATESZ);
     RE_copy_states(p, oldmp->start, 2);
     newmp->start = (STATE *) p;

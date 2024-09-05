@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.34 2024/08/25 17:04:18 tom Exp $
+ * $MawkId: split.c,v 1.36 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_BI_REC
@@ -27,7 +27,6 @@ the GNU General Public License, version 2, 1991.
 #include <memory.h>
 #include <scan.h>
 #include <regexp.h>
-#include <repl.h>
 #include <field.h>
 
 #ifndef SP_SIZE
@@ -161,7 +160,7 @@ re_split(char *s, size_t slen, PTR re)
  * length of match is returned in *lenp
  */
 char *
-re_pos_match(char *str, size_t str_len, PTR re, size_t *lenp, int no_bol)
+re_pos_match(char *str, size_t str_len, RE_NODE * re, size_t *lenp, int no_bol)
 {
     const char *end = str + str_len;
 

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.61 2024/08/26 23:38:53 tom Exp $
+ * $MawkId: execute.c,v 1.62 2024/09/05 17:44:48 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -32,7 +32,6 @@ the GNU General Public License, version 2, 1991.
 #include <bi_funct.h>
 #include <bi_vars.h>
 #include <regexp.h>
-#include <repl.h>
 #include <fin.h>
 
 #include <math.h>

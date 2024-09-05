@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.45 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: rexp2.c,v 1.46 2024/09/05 17:44:48 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -450,7 +450,6 @@ REtest(char *str,		/* string to test */
 #undef push
 
 #include <field.h>
-#include <repl.h>
 
 char *
 is_string_split(PTR q, size_t * lenp)

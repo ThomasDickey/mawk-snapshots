@@ -1,7 +1,7 @@
 #!/bin/sh
-# $MawkId: makedeps.sh,v 1.3 2023/10/31 23:04:46 tom Exp $
+# $MawkId: makedeps.sh,v 1.4 2024/09/05 22:45:32 tom Exp $
 ###############################################################################
-# copyright 2009-2010,2023 Thomas E. Dickey
+# copyright 2009-2023,2024 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -42,6 +42,11 @@ grep -E 'include.*\.c"' regexp.c |
 	sed	-e 's/^#[^"]*"/\/^/' \
 		-e 's/\.c/\\.o/' \
 		-e 's/"/\/	{ AddDeps(); next; }/' \
+	>>makedeps.awk
+grep -E 'include.*\.c>' regexp.c |
+	sed	-e 's/^#[^<]*</\/^/' \
+		-e 's/\.c/\\.o/' \
+		-e 's/>/\/	{ AddDeps(); next; }/' \
 	>>makedeps.awk
 
 cat >>makedeps.awk <<'EOF'

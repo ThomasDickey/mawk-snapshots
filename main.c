@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: main.c,v 1.33 2024/08/25 17:02:09 tom Exp $
+ * $MawkId: main.c,v 1.34 2024/09/04 20:28:21 tom Exp $
  */
 
 #define Visible_CELL
@@ -76,6 +76,7 @@ main(int argc, char **argv)
 void
 mawk_exit(int x)
 {
+    TRACE(("mawk_exit(%d)\n", x));
 #ifdef  HAVE_REAL_PIPES
     close_out_pipes();		/* actually closes all output */
 #else

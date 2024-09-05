@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.27 2024/08/25 17:21:36 tom Exp $
+ * $MawkId: error.c,v 1.28 2024/08/29 00:19:40 tom Exp $
  */
 
 #define Visible_CELL
@@ -110,6 +110,9 @@ missing(int c, const char *n, unsigned ln)
 	s0 = s1 = "";
 
     errmsg(0, "%s%sline %u: missing %c near %s", s0, s1, ln, c, n);
+
+    if (++compile_error_count >= MAX_COMPILE_ERRORS)
+	mawk_exit(2);
 }
 
 void
@@ -134,7 +137,7 @@ yyerror(const char *s GCC_UNUSED)
 		if (*ip == current_token) {
 		    missing(')', ss, token_lineno);
 		    paren_cnt = 0;
-		    goto done;
+		    return;
 		}
 
 	if (brace_cnt)
@@ -142,16 +145,16 @@ yyerror(const char *s GCC_UNUSED)
 		if (*ip == current_token) {
 		    missing('}', ss, token_lineno);
 		    brace_cnt = 0;
-		    goto done;
+		    return;
 		}
 
 	compile_error("syntax error at or near %s", ss);
 
-    } else			/* special cases */
+    } else {			/* special cases */
 	switch (current_token) {
 	case UNEXPECTED:
 	    unexpected_char();
-	    goto done;
+	    break;
 
 	case BAD_DECIMAL:
 	    compile_error(
@@ -169,11 +172,7 @@ yyerror(const char *s GCC_UNUSED)
 	    compile_error("syntax error");
 	    break;
 	}
-    return;
-
-  done:
-    if (++compile_error_count == MAX_COMPILE_ERRORS)
-	mawk_exit(2);
+    }
 }
 
 /* generic error message with a hook into the system error
@@ -291,6 +290,8 @@ unexpected_char(void)
 	fprintf(stderr, "unexpected character '%c'\n", c);
     else
 	fprintf(stderr, "unexpected character 0x%02x\n", c);
+    if (++compile_error_count >= MAX_COMPILE_ERRORS)
+	mawk_exit(2);
 }
 
 const char *

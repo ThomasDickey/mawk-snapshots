@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.71 2024/08/05 22:18:07 tom Exp $
+ * $MawkId: mawk.h,v 1.73 2024/09/05 17:21:05 tom Exp $
  */
 
 /*  mawk.h  */
@@ -30,6 +30,7 @@ the GNU General Public License, version 2, 1991.
 
 #include <assert.h>
 
+#include <repl.h>
 #include <types.h>
 
 #ifdef HAVE_STDNORETURN_H
@@ -165,7 +166,8 @@ extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);
 extern INST *da_this(INST *, const INST *, FILE *);
 extern char *rm_escape(char *, size_t *);
-extern char *re_pos_match(char *, size_t, PTR, size_t *, int);
+extern char *re_pos_match(char *, size_t, RE_NODE *, size_t *, int);
+extern char *safe_string(char *);
 extern int binmode(void);
 
 #ifndef  REXP_H
