@@ -441,6 +441,12 @@ d_to_UL(double d)
     return result;
 }
 
+/* Since ULong and double are typically both 64-bit, but TOTAL_SIGNIFICAND_BITS_IN_DOUBLE is typically less
+   than 64 bits (eleven other bits used for the exponent, and one for the sign), this function adjusts ULongs that might
+   not be exactly representable as doubles by masking off high-order bits while exploiting the exponent property
+   of a double to exactly represent certain integers > 2^53-1 if they have leading zero bits.
+   This thread explains more: https://lists.gnu.org/archive/html/bug-gawk/2024-10/msg00022.html
+*/
 static ULong to_D_safe_UL(ULong ul)
 {
     /* only way ul could be > Max_Double_Safe_ULong is if
