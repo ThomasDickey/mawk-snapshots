@@ -55,39 +55,48 @@ the GNU General Public License, version 2, 1991.
 #define return_CELL(func, cell) return cell
 #endif
 
+#define NON_OVERRIDABLE	0
+#define OVERRIDABLE		1
+
 /* global for the disassembler */
 /* *INDENT-OFF* */
 const BI_REC bi_funct[] =
 {				/* info to load builtins */
 
-   { "index",    bi_index,    2, 2 },
-   { "substr",   bi_substr,   2, 3 },
-   { "sprintf",  bi_sprintf,  1, MAX_ARGS },
-   { "sin",      bi_sin,      1, 1 },
-   { "cos",      bi_cos,      1, 1 },
-   { "atan2",    bi_atan2,    2, 2 },
-   { "exp",      bi_exp,      1, 1 },
-   { "log",      bi_log,      1, 1 },
-   { "int",      bi_int,      1, 1 },
-   { "sqrt",     bi_sqrt,     1, 1 },
-   { "rand",     bi_rand,     0, 0 },
-   { "srand",    bi_srand,    0, 1 },
-   { "close",    bi_close,    1, 1 },
-   { "system",   bi_system,   1, 1 },
-   { "toupper",  bi_toupper,  1, 1 },
-   { "tolower",  bi_tolower,  1, 1 },
-   { "fflush",   bi_fflush,   0, 1 },
+   { "index",    bi_index,      2, 2, NON_OVERRIDABLE },
+   { "substr",   bi_substr,     2, 3, NON_OVERRIDABLE },
+   { "sprintf",  bi_sprintf,    1, MAX_ARGS, NON_OVERRIDABLE },
+   { "sin",      bi_sin,        1, 1, NON_OVERRIDABLE },
+   { "cos",      bi_cos,        1, 1, NON_OVERRIDABLE },
+   { "atan2",    bi_atan2,      2, 2, NON_OVERRIDABLE },
+   { "exp",      bi_exp,        1, 1, NON_OVERRIDABLE },
+   { "log",      bi_log,        1, 1, NON_OVERRIDABLE },
+   { "int",      bi_int,        1, 1, NON_OVERRIDABLE },
+   { "sqrt",     bi_sqrt,       1, 1, NON_OVERRIDABLE },
+   { "rand",     bi_rand,       0, 0, NON_OVERRIDABLE },
+   { "srand",    bi_srand,      0, 1, NON_OVERRIDABLE },
+   { "close",    bi_close,      1, 1, NON_OVERRIDABLE },
+   { "system",   bi_system,     1, 1, NON_OVERRIDABLE },
+   { "toupper",  bi_toupper,    1, 1, NON_OVERRIDABLE },
+   { "tolower",  bi_tolower,    1, 1, NON_OVERRIDABLE },
+   { "fflush",   bi_fflush,     0, 1, NON_OVERRIDABLE },
 
    /* useful gawk extension (time functions) */
-   { "systime",  bi_systime,  0, 0 },
+   { "systime",  bi_systime,    0, 0, NON_OVERRIDABLE },
 #ifdef HAVE_MKTIME
-   { "mktime",   bi_mktime,   1, 1 },
+   { "mktime",   bi_mktime,     1, 1, NON_OVERRIDABLE },
 #endif
 #ifdef HAVE_STRFTIME
-   { "strftime", bi_strftime, 0, 3 },
+   { "strftime", bi_strftime,   0, 3, NON_OVERRIDABLE },
 #endif
+   { "and",      bi_bit_and,    2, MAX_ARGS, OVERRIDABLE },
+   { "or",       bi_bit_or,     2, MAX_ARGS, OVERRIDABLE },
+   { "xor",      bi_bit_xor,    2, MAX_ARGS, OVERRIDABLE },
+   { "compl",    bi_bit_compl,  1, 1, OVERRIDABLE },
+   { "lshift",   bi_bit_lshift, 2, 2, OVERRIDABLE },
+   { "rshift",   bi_bit_rshift, 2, 2, OVERRIDABLE },
 
-   { "",         (PF_CP) 0, 0, 0 }
+   { "",         (PF_CP) 0,     0, 0, NON_OVERRIDABLE }
 };
 /* *INDENT-ON* */
 
@@ -1320,4 +1329,98 @@ bi_gsub(CELL *sp)
     repl_destroy(sp + 1);
 
     return_CELL("bi_gsub", sp);
+}
+
+#define BINARY_BITWISE_OPERATION(function_name, operator)                \
+    do {                                                                 \
+	int argcnt = sp->type;                                           \
+	int i;                                                           \
+	ULong result;                                                    \
+	                                                                 \
+	TRACE_FUNC2(function_name, sp, argcnt);                          \
+	                                                                 \
+	/* sp currently points to the arg count (pushed on the stack     \
+	   after the last arg); this makes it point to the first arg: */ \
+	sp -= argcnt;                                                    \
+	if (sp->type != C_DOUBLE)                                        \
+	    cast1_to_d(sp);                                              \
+	result = d_to_UL(sp->dval);                                      \
+	for (i = 1; i < argcnt; i++) {                                   \
+	    if ((sp + i)->type != C_DOUBLE)                              \
+		cast1_to_d(sp + i);                                      \
+	    result = result operator d_to_UL((sp + i)->dval);            \
+	}                                                                \
+	sp->dval = ul_to_D(result);                                      \
+	                                                                 \
+	return_CELL(function_name, sp);                                  \
+    } while (0)
+
+CELL *
+bi_bit_and(CELL *sp)
+{
+    BINARY_BITWISE_OPERATION("bi_bit_and", &);
+}
+
+CELL *
+bi_bit_or(CELL *sp)
+{
+    BINARY_BITWISE_OPERATION("bi_bit_or", |);
+}
+
+CELL *
+bi_bit_xor(CELL *sp)
+{
+    BINARY_BITWISE_OPERATION("bi_bit_xor", ^);
+}
+
+CELL *
+bi_bit_compl(CELL *sp)
+{
+    TRACE_FUNC2("bi_bit_compl", sp, 1);
+
+    if (sp->type != C_DOUBLE)
+	cast1_to_d(sp);
+    sp->dval = ul_to_D(~d_to_UL(sp->dval));
+
+    return_CELL(function_name, sp);
+}
+
+/* Implement bit shift handling negative shifts by doing the inverse and excessive shift
+   widths by returning zero (i.e., shifting all bits off the end and filling the entire value
+   with zero) (the Perl behavior):
+	"If the value of the right operand is negative or is greater than or equal to the
+	width in bits of the promoted left operand, the behavior is undefined" - ANSI C89 spec
+*/
+#define BIT_SHIFT_OPERATION(function_name, operator, inverse)                           \
+    do {                                                                                \
+	double value;                                                                   \
+	Long shift;                                                                     \
+	ULong result;                                                                   \
+	                                                                                \
+	TRACE_FUNC2(function_name, sp, 2);                                              \
+	                                                                                \
+	sp--;                                                                           \
+	if (TEST2(sp) != TWO_DOUBLES)                                                   \
+	    cast2_to_d(sp);                                                             \
+	value = sp->dval;                                                               \
+	shift = d_to_L((sp + 1)->dval);                                                 \
+	if (shift < 0)                                                                  \
+	    result = shift <= -TOTAL_BITS_IN_ULONG ? 0 : d_to_UL(value) inverse -shift; \
+	else                                                                            \
+	    result = shift >= TOTAL_BITS_IN_ULONG ? 0 : d_to_UL(value) operator shift;  \
+	sp->dval = ul_to_D(result);                                                     \
+	                                                                                \
+	return_CELL(function_name, sp);                                                 \
+    } while (0)
+
+CELL *
+bi_bit_lshift(CELL *sp)
+{
+    BIT_SHIFT_OPERATION("bi_bit_lshift", <<, >>);
+}
+
+CELL *
+bi_bit_rshift(CELL *sp)
+{
+    BIT_SHIFT_OPERATION("bi_bit_rshift", >>, <<);
 }

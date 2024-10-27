@@ -5,7 +5,7 @@
 #define YYBYACC 1
 #define YYMAJOR 2
 #define YYMINOR 0
-#define YYPATCH 20221106
+#define YYPATCH 20230521
 
 #define YYEMPTY        (-1)
 #define yyclearin      (yychar = YYEMPTY)
@@ -1704,7 +1704,7 @@ static YYINT  *yylexp = 0;
 
 static YYINT  *yylexemes = 0;
 #endif /* YYBTYACC */
-#line 1192 "parse.y"
+#line 1194 "parse.y"
 
 /*
  * Check for special case where there is a forward reference to a newly
@@ -3862,8 +3862,10 @@ case 161:
                    {
                          yystack.l_mark[0].stp->type = ST_FUNCT ;
                          fbp = yystack.l_mark[0].stp->stval.fbp = ZMALLOC(FBLOCK) ;
-                         fbp->name = yystack.l_mark[0].stp->name ;
-                         fbp->code = (INST*) 0 ;
+                         fbp->name  = yystack.l_mark[0].stp->name ;
+                         fbp->code  = (INST *) 0 ;
+                         fbp->typev = (SYM_TYPE *) 0 ;
+                         fbp->bip   = (const BI_REC *) 0 ;
                    }
                    else
                    {
@@ -3876,32 +3878,32 @@ case 161:
                    }
                    yyval.fbp = fbp ;
                  }
-#line 3880 "parse.c"
+#line 3882 "parse.c"
 break;
 case 162:
-#line 1087 "parse.y"
+#line 1089 "parse.y"
 	{ yyval.fbp = yystack.l_mark[0].fbp ;
                    if ( yystack.l_mark[0].fbp->code )
                        compile_error("redefinition of %s" , yystack.l_mark[0].fbp->name) ;
                  }
-#line 3888 "parse.c"
+#line 3890 "parse.c"
 break;
 case 163:
-#line 1093 "parse.y"
+#line 1095 "parse.y"
 	{ yyval.ival = init_arglist() ; }
-#line 3893 "parse.c"
+#line 3895 "parse.c"
 break;
 case 165:
-#line 1098 "parse.y"
+#line 1100 "parse.y"
 	{ init_arglist();
                 yystack.l_mark[0].stp = save_arglist(yystack.l_mark[0].stp->name) ;
                 yystack.l_mark[0].stp->offset = 0 ;
                 yyval.ival = 1 ;
               }
-#line 3902 "parse.c"
+#line 3904 "parse.c"
 break;
 case 166:
-#line 1104 "parse.y"
+#line 1106 "parse.y"
 	{ if ( is_local(yystack.l_mark[0].stp) )
                   compile_error("%s is duplicated in argument list",
                     yystack.l_mark[0].stp->name) ;
@@ -3911,10 +3913,10 @@ case 166:
                   yyval.ival = yystack.l_mark[-2].ival + 1 ;
                 }
               }
-#line 3915 "parse.c"
+#line 3917 "parse.c"
 break;
 case 167:
-#line 1116 "parse.y"
+#line 1118 "parse.y"
 	{  /* we may have to recover from a bungled function
                        definition */
                    /* can have local ids, before code scope
@@ -3923,10 +3925,10 @@ case 167:
 
                     switch_code_to_main() ;
                  }
-#line 3927 "parse.c"
+#line 3929 "parse.c"
 break;
 case 168:
-#line 1129 "parse.y"
+#line 1131 "parse.y"
 	{ yyval.start = yystack.l_mark[-1].start ;
              code2(_CALL, yystack.l_mark[-2].fbp) ;
 
@@ -3935,29 +3937,29 @@ case 168:
 
              check_fcall(yystack.l_mark[-2].fbp, scope, code_move_level, active_funct, yystack.l_mark[0].ca_p) ;
            }
-#line 3939 "parse.c"
+#line 3941 "parse.c"
 break;
 case 169:
-#line 1140 "parse.y"
+#line 1142 "parse.y"
 	{ yyval.ca_p = (CA_REC *) 0 ; }
-#line 3944 "parse.c"
+#line 3946 "parse.c"
 break;
 case 170:
-#line 1142 "parse.y"
+#line 1144 "parse.y"
 	{ yyval.ca_p = yystack.l_mark[0].ca_p ;
                  yyval.ca_p->link = yystack.l_mark[-1].ca_p ;
                  yyval.ca_p->arg_num = (NUM_ARGS) (yystack.l_mark[-1].ca_p ? yystack.l_mark[-1].ca_p->arg_num+1 : 0) ;
                  yyval.ca_p->call_lineno = token_lineno;
                }
-#line 3953 "parse.c"
+#line 3955 "parse.c"
 break;
 case 171:
-#line 1158 "parse.y"
+#line 1160 "parse.y"
 	{ yyval.ca_p = (CA_REC *) 0 ; }
-#line 3958 "parse.c"
+#line 3960 "parse.c"
 break;
 case 172:
-#line 1160 "parse.y"
+#line 1162 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->link = yystack.l_mark[-2].ca_p ;
                 yyval.ca_p->type = CA_EXPR  ;
@@ -3965,10 +3967,10 @@ case 172:
                 yyval.ca_p->call_offset = code_offset ;
                 yyval.ca_p->call_lineno = token_lineno;
               }
-#line 3969 "parse.c"
+#line 3971 "parse.c"
 break;
 case 173:
-#line 1168 "parse.y"
+#line 1170 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = ST_NONE ;
                 yyval.ca_p->link = yystack.l_mark[-2].ca_p ;
@@ -3977,25 +3979,25 @@ case 173:
 
                 code_call_id(yyval.ca_p, yystack.l_mark[-1].stp) ;
               }
-#line 3981 "parse.c"
+#line 3983 "parse.c"
 break;
 case 174:
-#line 1179 "parse.y"
+#line 1181 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = CA_EXPR ;
                 yyval.ca_p->call_offset = code_offset ;
               }
-#line 3989 "parse.c"
+#line 3991 "parse.c"
 break;
 case 175:
-#line 1185 "parse.y"
+#line 1187 "parse.y"
 	{ yyval.ca_p = ZMALLOC(CA_REC) ;
                 yyval.ca_p->type = ST_NONE ;
                 code_call_id(yyval.ca_p, yystack.l_mark[-1].stp) ;
               }
-#line 3997 "parse.c"
-break;
 #line 3999 "parse.c"
+break;
+#line 4001 "parse.c"
     default:
         break;
     }

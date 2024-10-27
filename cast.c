@@ -441,6 +441,49 @@ d_to_UL(double d)
     return result;
 }
 
+static ULong to_D_safe_UL(ULong ul)
+{
+    /* only way ul could be > Max_Double_Safe_ULong is if
+       TOTAL_BITS_IN_ULONG > TOTAL_SIGNIFICAND_BITS_IN_DOUBLE, so if this function is being called
+       after ul is compared with Max_Double_Safe_ULong, then
+       (ULong) 1 << TOTAL_SIGNIFICAND_BITS_IN_DOUBLE) can't overflow
+    */
+    ULong mask           = ((ULong) 1 << TOTAL_SIGNIFICAND_BITS_IN_DOUBLE) - 1;
+    int left_shift_space = TOTAL_BITS_IN_ULONG - TOTAL_SIGNIFICAND_BITS_IN_DOUBLE;
+    int sentinal         = 1;
+    while ((ul & sentinal) == 0 && left_shift_space-- > 0) {
+	mask     <<= 1;
+	sentinal <<= 1;
+    }
+    return ul & mask;
+}
+
+double
+l_to_D(Long l)
+{
+    double result;
+
+    if (l > Max_Double_Safe_Long) {
+	result = (double) to_D_safe_UL((unsigned long) l);
+    } else if (l < Min_Double_Safe_Long) {
+	result = -((double) to_D_safe_UL(
+	    /* because of zero, Min_Long < -Max_Long, which means -Min_Long overflows */
+	    (l == Min_Long && Min_Long < -Max_Long
+		? (unsigned long) Max_Long + 1
+		: (unsigned long) -l)));
+    } else {
+	result = (double) l;
+    }
+
+    return result;
+}
+
+double
+ul_to_D(ULong ul)
+{
+    return ul > Max_Double_Safe_ULong ? (double) to_D_safe_UL(ul) : (double) ul;
+}
+
 #ifdef NO_LEAKS
 typedef struct _all_cells {
     struct _all_cells *next;
