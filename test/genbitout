@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# use gawk's output for reference
+gawk -f bitbinarylogic.awk and > bitand.out
+gawk -f bitbinarylogic.awk or > bitor.out
+gawk -f bitbinarylogic.awk xor > bitxor.out
+gawk -f bitunarylogic.awk compl > bitcompl.out
+gawk -f bitshift.awk lshift > bitlshift.out
+gawk -f bitshift.awk rshift > bitrshift.out

@@ -270,6 +270,21 @@ Finish "long-lines test"
 
 #################################
 
+#################################
+Begin "bit operator tests"
+
+LC_ALL=C $PROG -f bitbinarylogic.awk and | cmp -s - bitand.out || Fail "bitbinarylogic.awk and"
+LC_ALL=C $PROG -f bitbinarylogic.awk or | cmp -s - bitor.out || Fail "bitbinarylogic.awk or"
+LC_ALL=C $PROG -f bitbinarylogic.awk xor | cmp -s - bitxor.out || Fail "bitbinarylogic.awk xor"
+LC_ALL=C $PROG -f bitunarylogic.awk compl | cmp -s - bitcompl.out || Fail "bitunarylogic.awk compl"
+LC_ALL=C $PROG -f bitshift.awk lshift | cmp -s - bitlshift.out || Fail "bitshift.awk lshift"
+LC_ALL=C $PROG -f bitshift.awk rshift | cmp -s - bitrshift.out || Fail "bitshift.awk rshift"
+
+
+Finish "bit operator tests"
+
+#################################
+
 echo
 echo "##################################################"
 Summary "tested $PROG"

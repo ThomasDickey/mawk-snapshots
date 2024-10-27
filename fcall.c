@@ -15,6 +15,7 @@ the GNU General Public License, version 2, 1991.
  */
 
 #define Visible_ARRAY
+#define Visible_BI_REC
 #define Visible_CA_REC
 #define Visible_CELL
 #define Visible_CODEBLOCK
@@ -303,14 +304,40 @@ call_arg_check(FBLOCK * callee,
 
 static int
 arg_cnt_ok(FBLOCK * fbp,
-	   CA_REC * q)
+	   CA_REC * arg_list)
 {
-    if ((int) q->arg_num >= (int) fbp->nargs) {
-	token_lineno = q->call_lineno;
+    /* note arg_list starts with last argument, and arg_list->arg_num is its stack pos. */
+    if ((int) arg_list->arg_num >= (int) fbp->nargs) {
+	token_lineno = arg_list->call_lineno;
 	compile_error("too many arguments in call to %s", fbp->name);
 	return 0;
-    } else
+    } else {
 	return 1;
+    }
+}
+
+static int
+bi_arg_cnt_ok(FBLOCK * fbp,
+	      CA_REC * arg_list)
+{
+    const BI_REC *bi_rec = fbp->bip;
+    /* note arg_list starts with last argument, and arg_list->arg_num is its stack pos., so arg_num + 1 == total args */
+    int total_args = arg_list ? arg_list->arg_num + 1 : 0;
+    if (total_args < (int) bi_rec->min_args) {
+	token_lineno = arg_list->call_lineno;
+	compile_error(
+	    "not enough arguments in call to %s: %d (need %d)" ,
+	    fbp->name, total_args, (int) bi_rec->min_args);
+	return 0;
+    } else if (total_args > (int) bi_rec->max_args) {
+	token_lineno = arg_list->call_lineno;
+	compile_error(
+	    "too many arguments in call to %s: %d (maximum %d)" ,
+	    fbp->name, total_args, (int) bi_rec->max_args);
+	return 0;
+    } else {
+	return 1;
+    }
 }
 
 FCALL_REC *resolve_list;
@@ -333,14 +360,22 @@ first_pass(FCALL_REC * p)
     q->link = p;
     while (p) {
 	if (!p->callee->code) {
-	    /* callee never defined */
-	    compile_error("function %s never defined", p->callee->name);
-	    /* delete p from list */
-	    q->link = p->link;
-	    /* don't worry about freeing memory, we'll exit soon */
-	}
-	/* note p->arg_list starts with last argument */
-	else if (!p->arg_list /* nothing to do */  ||
+	    if (!p->callee->bip) {
+		/* function never defined and isn't an overridable built-in */
+		compile_error("function %s never defined", p->callee->name);
+		q->link = p->link;
+		/* don't worry about freeing memory, we'll exit soon */
+	    } else if (!bi_arg_cnt_ok(p->callee, p->arg_list)) {
+		/* non-overridden overridable built-in called with wrong number of arguments; also an
+		   error (raised in bi_arg_cnt_ok())
+		*/
+		q->link = p->link;
+	    } else {
+	        /* no error */
+		q->link = p->link;
+		ZFREE(p);
+	    }
+	} else if (!p->arg_list /* nothing to do */ ||
 		 (!p->arg_cnt_checked &&
 		  !arg_cnt_ok(p->callee, p->arg_list))) {
 	    q->link = p->link;	/* delete p */

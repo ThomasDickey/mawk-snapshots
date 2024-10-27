@@ -60,4 +60,12 @@ CELL *bi_close(CELL *);
 CELL *bi_system(CELL *);
 CELL *bi_fflush(CELL *);
 
+/* bitwise overridable builtins */
+CELL *bi_bit_and(CELL *);
+CELL *bi_bit_or(CELL *);
+CELL *bi_bit_xor(CELL *);
+CELL *bi_bit_compl(CELL *);
+CELL *bi_bit_lshift(CELL *);
+CELL *bi_bit_rshift(CELL *);
+
 #endif /* BI_FUNCT_H  */

@@ -1068,8 +1068,10 @@ funct_head    :  FUNCTION  ID
                    {
                          $2->type = ST_FUNCT ;
                          fbp = $2->stval.fbp = ZMALLOC(FBLOCK) ;
-                         fbp->name = $2->name ;
-                         fbp->code = (INST*) 0 ;
+                         fbp->name  = $2->name ;
+                         fbp->code  = (INST *) 0 ;
+                         fbp->typev = (SYM_TYPE *) 0 ;
+                         fbp->bip   = (const BI_REC *) 0 ;
                    }
                    else
                    {

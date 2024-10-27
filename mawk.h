@@ -151,6 +151,8 @@ extern void cast_to_REPL(CELL *);
 extern Int d_to_I(double);
 extern Long d_to_L(double);
 extern ULong d_to_UL(double d);
+extern double l_to_D(Long l);
+extern double ul_to_D(ULong l);
 
 #define d_to_i(d)     ((int)d_to_I(d))
 #define d_to_l(d)     ((long)d_to_L(d))

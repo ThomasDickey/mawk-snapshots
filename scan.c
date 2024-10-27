@@ -16,6 +16,7 @@ the GNU General Public License, version 2, 1991.
  */
 
 #define Visible_ARRAY
+#define Visible_BI_REC
 #define Visible_CELL
 #define Visible_CODEBLOCK
 #define Visible_FBLOCK
@@ -32,6 +33,7 @@ the GNU General Public License, version 2, 1991.
 #include <init.h>
 #include <fin.h>
 #include <code.h>
+#include <symtype.h>
 
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -763,10 +765,12 @@ yylex(void)
 		/* check for function call before defined */
 		if (next() == CHR_LPAREN) {
 		    stp->type = ST_FUNCT;
-		    stp->stval.fbp = ZMALLOC(FBLOCK);
-		    stp->stval.fbp->name = stp->name;
-		    stp->stval.fbp->code = (INST *) 0;
-		    stp->stval.fbp->size = 0;
+		    stp->stval.fbp        = ZMALLOC(FBLOCK);
+		    stp->stval.fbp->name  = stp->name;
+		    stp->stval.fbp->code  = (INST *) 0;
+		    stp->stval.fbp->size  = 0;
+		    stp->stval.fbp->typev = (SYM_TYPE *) 0;
+		    stp->stval.fbp->bip   = (const BI_REC *) 0;
 		    yylval.fbp = stp->stval.fbp;
 		    current_token = FUNCT_ID;
 		} else {
@@ -812,8 +816,21 @@ yylex(void)
 		break;
 
 	    case ST_BUILTIN:
-		yylval.bip = stp->stval.bip;
-		current_token = BUILTIN;
+		if (stp->stval.bip->overridable) {
+		    const BI_REC *bi_rec = stp->stval.bip;
+		    stp->type = ST_FUNCT;
+		    stp->stval.fbp        = ZMALLOC(FBLOCK);
+		    stp->stval.fbp->name  = stp->name;
+		    stp->stval.fbp->code  = (INST *) 0;
+		    stp->stval.fbp->size  = 0;
+		    stp->stval.fbp->typev = (SYM_TYPE *) 0;
+		    stp->stval.fbp->bip   = bi_rec;
+		    yylval.fbp = stp->stval.fbp;
+		    current_token = FUNCT_ID;
+		} else {
+			yylval.bip = stp->stval.bip;
+			current_token = BUILTIN;
+		}
 		break;
 
 	    case ST_FIELD:
