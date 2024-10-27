@@ -470,13 +470,13 @@ l_to_D(Long l)
     double result;
 
     if (l > Max_Double_Safe_Long) {
-	result = (double) to_D_safe_UL((unsigned long) l);
+	result = (double) to_D_safe_UL((ULong) l);
     } else if (l < Min_Double_Safe_Long) {
 	result = -((double) to_D_safe_UL(
 	    /* because of zero, Min_Long < -Max_Long, which means -Min_Long overflows */
 	    (l == Min_Long && Min_Long < -Max_Long
-		? (unsigned long) Max_Long + 1
-		: (unsigned long) -l)));
+		? (ULong) Max_Long + 1
+		: (ULong) -l)));
     } else {
 	result = (double) l;
     }
