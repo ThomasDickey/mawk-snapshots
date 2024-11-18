@@ -1,6 +1,6 @@
 /********************************************
 config_h.in
-copyright 2009-2020,2023 Thomas E. Dickey
+copyright 2009-2023,2024 Thomas E. Dickey
  vile:cmode
 
 This is a source file for mawk, an implementation of
@@ -11,24 +11,27 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: config_h.in,v 1.39 2023/02/15 23:54:28 tom Exp $
+ * $MawkId: config_h.in,v 1.42 2024/11/17 22:07:11 tom Exp $
  * template for config.h
  */
 
 #undef DECL_ENVIRON
 #undef FPE_TRAPS_ON
 #undef GCC_NORETURN
-#undef GCC_PRINTF
 #undef GCC_PRINTFLIKE
-#undef GCC_SCANF
 #undef GCC_SCANFLIKE
 #undef GCC_UNUSED
 #undef HAVE_BSD_STDLIB_H
+#undef HAVE_CLOCK_GETTIME
+#undef HAVE_ENVIRON
 #undef HAVE_ERRNO_H
 #undef HAVE_FCNTL_H
 #undef HAVE_FORK
+#undef HAVE_FSEEKO
+#undef HAVE_GETTIMEOFDAY
 #undef HAVE_INT64_T
 #undef HAVE_INTTYPES_H
+#undef HAVE_ISINF
 #undef HAVE_ISNAN
 #undef HAVE_LIMITS_H
 #undef HAVE_LONG_LONG
@@ -71,6 +74,8 @@ the GNU General Public License, version 2, 1991.
 #undef NO_INIT_SRAND
 #undef NO_INTERVAL_EXPR
 #undef NO_LEAKS
+#undef SIZEOF_DOUBLE
+#undef SIZEOF_FLOAT
 #undef SIZEOF_INT64_T
 #undef SIZEOF_LONG
 #undef SIZEOF_LONG_LONG

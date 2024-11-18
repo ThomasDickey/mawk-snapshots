@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.73 2024/09/05 17:21:05 tom Exp $
+ * $MawkId: mawk.h,v 1.75 2024/11/17 20:40:48 tom Exp $
  */
 
 /*  mawk.h  */
@@ -30,14 +30,15 @@ the GNU General Public License, version 2, 1991.
 
 #include <assert.h>
 
-#include <repl.h>
-#include <types.h>
-
 #ifdef HAVE_STDNORETURN_H
 #include <stdnoreturn.h>
 #undef GCC_NORETURN
 #define GCC_NORETURN STDC_NORETURN
 #endif
+
+#include <repl.h>
+#include <types.h>
+#include <makebits.h>
 
 #ifndef GCC_NORETURN
 #define GCC_NORETURN		/* nothing */
@@ -155,12 +156,15 @@ extern ULong d_to_UL(double d);
 #define d_to_i(d)     ((int)d_to_I(d))
 #define d_to_l(d)     ((long)d_to_L(d))
 
+#define IsMaxBound(n) ((n) == UNSIGNED_LIMITS || (n) == INTEGERS_LIMITS)
+#define PastBound(n)  ((n) > UNSIGNED_LIMITS)
+
 extern int test(CELL *);	/* test for null non-null */
 extern CELL *cellcpy(CELL *, CELL *);
 extern CELL *repl_cpy(CELL *, CELL *);
 extern void DB_cell_destroy(CELL *);
-extern void overflow(const char *, unsigned);
-extern void rt_overflow(const char *, unsigned);
+extern GCC_NORETURN void overflow(const char *, unsigned);
+extern GCC_NORETURN void rt_overflow(const char *, unsigned);
 extern GCC_NORETURN void rt_error(const char *,...) GCC_PRINTFLIKE(1,2);
 extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);

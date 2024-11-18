@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.51 2024/09/04 23:02:39 tom Exp $
+ * $MawkId: rexp.c,v 1.52 2024/11/17 23:31:54 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -438,9 +438,9 @@ void
 duplicate_m(MACHINE * newmp, MACHINE * oldmp)
 {
     register STATE *p;
-    TRACE(("duplicate_m %p -> %p\n", oldmp, newmp));
-    TRACE(("...start %p\n", oldmp->start));
-    TRACE(("...stop  %p\n", oldmp->stop));
+    TRACE(("duplicate_m %p -> %p\n", (void *) oldmp, (void *) newmp));
+    TRACE(("...start %p\n", (void *) oldmp->start));
+    TRACE(("...stop  %p\n", (void *) oldmp->stop));
     p = (STATE *) RE_malloc(2 * STATESZ);
     RE_copy_states(p, oldmp->start, 2);
     newmp->start = (STATE *) p;

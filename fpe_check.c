@@ -1,6 +1,6 @@
 /********************************************
 fpe_check.c
-copyright 2008-2013,2023 Thomas E. Dickey
+copyright 2008-2023,2024 Thomas E. Dickey
 copyright 1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -15,8 +15,10 @@ the GNU General Public License, version 2, 1991.
 */
 
 /*
- * $MawkId: fpe_check.c,v 1.17 2023/07/22 22:27:46 tom Exp $
+ * $MawkId: fpe_check.c,v 1.19 2024/11/17 22:11:48 tom Exp $
  */
+
+#include "confdefs.h"
 
 #include <stdlib.h>
 #include <stdio.h>

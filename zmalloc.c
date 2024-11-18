@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.35 2024/08/25 17:18:07 tom Exp $
+ * $MawkId: zmalloc.c,v 1.36 2024/11/11 20:56:32 tom Exp $
  */
 
 /*  zmalloc.c  */
@@ -188,7 +188,7 @@ finish_ptr(PTR ptr, size_t size)
 
 /*****************************************************************************/
 
-static void
+static GCC_NORETURN void
 out_of_mem(void)
 {
     static char out[] = "out of memory";

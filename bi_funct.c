@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.134 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: bi_funct.c,v 1.139 2024/11/18 00:06:50 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -41,6 +41,12 @@ the GNU General Public License, version 2, 1991.
 
 #if defined(HAVE_BSD_STDLIB_H) && defined(USE_SYSTEM_SRAND)
 #include <bsd/stdlib.h>		/* prototype arc4random */
+#endif
+
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#else
+#undef HAVE_GETTIMEOFDAY
 #endif
 
 #if defined(WINVER) && (WINVER >= 0x501)
@@ -744,13 +750,13 @@ initial_seed(void)
 #if defined(HAVE_CLOCK_GETTIME)
     struct timespec data;
     if (clock_gettime(CLOCK_REALTIME, &data) == 0)
-	result = (data.tv_sec * 1000000000L) + data.tv_nsec;
+	result = (((double) data.tv_sec * 1e9) + (double) data.tv_nsec);
     else
 	result = 0.0;
 #elif defined(HAVE_GETTIMEOFDAY)
     struct timeval data;
     if (gettimeofday(&data, (struct timezone *) 0) == 0)
-	result = (data.tv_sec * 1000000) + data.tv_usec;
+	result = (((double) data.tv_sec * 1e6) + (double) data.tv_usec);
     else
 	result = 0.0;
 #elif defined(WINVER) && (WINVER >= 0x501)
@@ -903,7 +909,7 @@ bi_fflush(CELL *sp)
 }
 
 CELL *
-bi_system(CELL *sp GCC_UNUSED)
+bi_system(CELL *sp)
 {
     int ret_val;
 

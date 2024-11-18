@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawkerrs,v 1.18 2024/08/27 07:50:27 tom Exp $
+# $MawkId: mawkerrs,v 1.19 2024/11/11 23:40:39 tom Exp $
 ###############################################################################
 # copyright 2024, Thomas E. Dickey
 #
@@ -16,12 +16,12 @@ MYTEMP=`mktemp -d 2>/dev/null`
 if [ -z "$MYTEMP" ]
 then
 	MYTEMP=${TMPDIR-/tmp}/mawktest$$
-	mkdir -p "$MYTEMP" || exit
 fi
+mkdir -p "$MYTEMP" || exit
+trap 'echo mawk_errs failed ; rm -rf "$MYTEMP"; exit 1'  0
+
 STDOUT=$MYTEMP/mawk-out
 STDERR=$MYTEMP/mawk-err
-
-trap 'echo mawk_errs failed ; rm -rf "$MYTEMP"; exit 1'  0
 
 Fail() {
 	echo "?? fail $*"

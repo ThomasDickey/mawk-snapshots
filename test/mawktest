@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawktest,v 1.53 2024/08/25 21:44:56 tom Exp $
+# $MawkId: mawktest,v 1.54 2024/11/11 23:40:27 tom Exp $
 ###############################################################################
 # copyright 2008-2023,2024, Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
@@ -26,12 +26,12 @@ MYTEMP=`mktemp -d 2>/dev/null`
 if [ -z "$MYTEMP" ]
 then
 	MYTEMP=${TMPDIR-/tmp}/mawktest$$
-	mkdir -p "$MYTEMP" || exit
 fi
+mkdir -p "$MYTEMP" || exit
+trap 'echo mawktest failed ; rm -rf "$MYTEMP"; exit 1'  0
+
 STDOUT=$MYTEMP/mawk-out
 STDERR=$MYTEMP/mawk-err
-
-trap 'echo mawktest failed ; rm -rf "$MYTEMP"; exit 1'  0
 
 # POSIX shells have functions...
 Fail() {

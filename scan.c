@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.66 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: scan.c,v 1.67 2024/11/11 20:58:37 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -121,7 +121,7 @@ static struct {
 /* overused tmp buffer */
 char string_buff[SPRINTF_LIMIT];
 
-static void
+static GCC_NORETURN void
 string_too_long(void)
 {
     compile_error("string too long \"%.10s ...", string_buff);

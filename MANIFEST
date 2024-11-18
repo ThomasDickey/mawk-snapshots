@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20240905
+MANIFEST for mawk, version t20241117
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -41,6 +41,7 @@ jmp.c                           byte-code jumps/branches
 jmp.h                           byte-code jumps/branches header
 kw.c                            keyword table and lookup functions
 main.c                          main program
+makebits.c                      generate makebits.h
 makedeps.sh                     script to regenerate object-dependencies for Makefile.in
 makescan.c                      utility which builds scancode.c
 matherr.c                       catch/report math-errors

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.46 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: field.c,v 1.48 2024/11/15 23:03:38 tom Exp $
  */
 
 #define Visible_CELL
@@ -286,7 +286,7 @@ split_field0(void)
     }
 }
 
-static void
+static GCC_NORETURN void
 invalid_format(CELL *fp)
 {
     const char *what = (fp == CONVFMT) ? "CONVFMT" : "OFMT";
@@ -433,6 +433,8 @@ field_assign(CELL *fp, CELL *cp)
 	break;
 
     case OFMT_field:
+	OFMT_type = -1;
+	/* FALLTHRU */
     case CONVFMT_field:
 	/* If the user does something stupid with OFMT or CONVFMT,
 	   we could crash.

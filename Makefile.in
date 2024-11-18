@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.65 2024/09/05 22:44:14 tom Exp $
+# $MawkId: Makefile.in,v 1.66 2024/11/17 20:41:43 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
 # copyright 2009-2023,2024 Thomas E. Dickey
@@ -123,10 +123,16 @@ parse.c  : parse.y
 
 NOIDENT = sed -e 's/[$$]MawkId\([^$$]*\)[$$]/@MawkId\1@/'
 
+makebits.h :  $(srcdir)/makebits.c  config.h
+	@ECHO_LD@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o makebits$x $(srcdir)/makebits.c
+	rm -f $@
+	./makebits$x > $@
+	rm makebits$x
+
 scancode.c :  $(srcdir)/makescan.c  scancode.h nstd.h config.h
 	@ECHO_LD@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o makescan$x $(srcdir)/makescan.c
-	rm -f scancode.c
-	./makescan$x > scancode.c
+	rm -f $@
+	./makescan$x > $@
 	rm makescan$x
 
 install ::  $(BINDIR) $(PROGRAM)
@@ -147,6 +153,7 @@ clean :
 distclean :  clean
 	-cd man && $(MAKE) $(MAKE_RECUR) $@
 	-rm -f scancode.c
+	-rm -f makebits.h
 	-rm -f man2html.tmp
 	-rm -f defines.out maxint.out fpe_check$x tags makedeps.awk
 	-rm -f config.h Makefile config.status config.log config.cache
@@ -170,34 +177,35 @@ $(BINDIR) :
 	mkdir -p "$@"
 
 # output from makedeps.sh
-array.o : array.h bi_vars.h config.h field.h mawk.h memory.h nstd.h repl.h sizes.h split.h symtype.h types.h zmalloc.h
-bi_funct.o : array.h bi_funct.h bi_vars.h config.h field.h files.h fin.h init.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
-bi_vars.o : array.h bi_vars.h config.h field.h init.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-cast.o : array.h config.h field.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
-code.o : array.h code.h config.h field.h init.h jmp.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
-da.o : array.h bi_funct.h code.h config.h field.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
-error.o : array.h bi_vars.h config.h mawk.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h
-execute.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h fin.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
-fcall.o : array.h code.h config.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-field.o : array.h bi_vars.h config.h field.h init.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h split.h symtype.h types.h zmalloc.h
-files.o : array.h config.h files.h fin.h init.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-fin.o : array.h bi_vars.h config.h field.h fin.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
-hash.o : array.h bi_vars.h config.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-init.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h init.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-jmp.o : array.h code.h config.h init.h jmp.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-kw.o : array.h config.h init.h mawk.h nstd.h parse.h repl.h sizes.h symtype.h types.h
-main.o : array.h bi_vars.h code.h config.h files.h init.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+array.o : array.h bi_vars.h config.h field.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h split.h symtype.h types.h zmalloc.h
+bi_funct.o : array.h bi_funct.h bi_vars.h config.h field.h files.h fin.h init.h makebits.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
+bi_vars.o : array.h bi_vars.h config.h field.h init.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+cast.o : array.h config.h field.h makebits.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+code.o : array.h code.h config.h field.h init.h jmp.h makebits.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+da.o : array.h bi_funct.h code.h config.h field.h makebits.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
+error.o : array.h bi_vars.h config.h makebits.h mawk.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h
+execute.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h fin.h makebits.h mawk.h memory.h nstd.h regexp.h repl.h rexp.h sizes.h symtype.h types.h zmalloc.h
+fcall.o : array.h code.h config.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+field.o : array.h bi_vars.h config.h field.h init.h makebits.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h split.h symtype.h types.h zmalloc.h
+files.o : array.h config.h files.h fin.h init.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+fin.o : array.h bi_vars.h config.h field.h fin.h makebits.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+hash.o : array.h bi_vars.h config.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+init.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h init.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+jmp.o : array.h code.h config.h init.h jmp.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+kw.o : array.h config.h init.h makebits.h mawk.h nstd.h parse.h repl.h sizes.h symtype.h types.h
+main.o : array.h bi_vars.h code.h config.h files.h init.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+makebits.o : config.h
 makescan.o : config.h nstd.h scancode.h
-matherr.o : array.h config.h init.h mawk.h nstd.h repl.h sizes.h symtype.h types.h
-memory.o : config.h mawk.h memory.h nstd.h repl.h sizes.h types.h zmalloc.h
-parse.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h jmp.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
-print.o : array.h bi_funct.h bi_vars.h config.h field.h files.h init.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
-re_cmpl.o : array.h config.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+matherr.o : array.h config.h init.h makebits.h mawk.h nstd.h repl.h sizes.h symtype.h types.h
+memory.o : config.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h types.h zmalloc.h
+parse.o : array.h bi_funct.h bi_vars.h code.h config.h field.h files.h jmp.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h symtype.h types.h zmalloc.h
+print.o : array.h bi_funct.h bi_vars.h config.h field.h files.h init.h makebits.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+re_cmpl.o : array.h config.h makebits.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
 regexp.o : config.h
-scan.o : array.h code.h config.h field.h files.h fin.h init.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
+scan.o : array.h code.h config.h field.h files.h fin.h init.h makebits.h mawk.h memory.h nstd.h parse.h repl.h scan.h scancode.h sizes.h symtype.h types.h zmalloc.h
 scancode.o : scancode.h
-split.o : array.h bi_funct.h bi_vars.h config.h field.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h split.h symtype.h types.h zmalloc.h
-trace.o : code.h config.h mawk.h memory.h nstd.h repl.h sizes.h types.h zmalloc.h
-version.o : array.h config.h init.h mawk.h nstd.h patchlev.h repl.h sizes.h symtype.h types.h
-zmalloc.o : config.h mawk.h nstd.h repl.h sizes.h types.h zmalloc.h
-regexp.o : rexpdb.c rexp4.c rexp2.c regexp_system.c sizes.h rexp0.c mawk.h rexp1.c config.h rexp.h regexp.h nstd.h repl.h rexp3.c rexp.c field.h
+split.o : array.h bi_funct.h bi_vars.h config.h field.h makebits.h mawk.h memory.h nstd.h parse.h regexp.h repl.h rexp.h scan.h scancode.h sizes.h split.h symtype.h types.h zmalloc.h
+trace.o : code.h config.h makebits.h mawk.h memory.h nstd.h repl.h sizes.h types.h zmalloc.h
+version.o : array.h config.h init.h makebits.h mawk.h nstd.h patchlev.h repl.h sizes.h symtype.h types.h
+zmalloc.o : config.h makebits.h mawk.h nstd.h repl.h sizes.h types.h zmalloc.h
+regexp.o : rexpdb.c rexp4.c rexp2.c regexp_system.c sizes.h rexp0.c mawk.h rexp1.c config.h rexp.h regexp.h nstd.h repl.h makebits.h rexp3.c rexp.c field.h

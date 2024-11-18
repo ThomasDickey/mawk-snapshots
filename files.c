@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.36 2024/08/25 17:11:06 tom Exp $
+ * $MawkId: files.c,v 1.37 2024/11/11 20:55:25 tom Exp $
  */
 
 #define Visible_STRING
@@ -64,7 +64,7 @@ static FILE_NODE *file_list;
 
 static FILE *tfopen(const char *, const char *);
 static int efflush(FILE *);
-static void close_error(FILE_NODE * p);
+static GCC_NORETURN void close_error(FILE_NODE * p);
 
 static FILE_NODE *
 alloc_filenode(void)
@@ -92,7 +92,7 @@ free_filenode(FILE_NODE * p)
     zfree(p, sizeof(FILE_NODE));
 }
 
-static void
+static GCC_NORETURN void
 output_failed(const char *name)
 {
     errmsg(errno, "cannot open \"%s\" for output", name);

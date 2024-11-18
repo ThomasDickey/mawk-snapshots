@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.82 2024/09/04 22:21:58 tom Exp $
+ * $MawkId: init.c,v 1.83 2024/11/11 20:58:46 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -108,7 +108,7 @@ static const struct {
 };
 /* *INDENT-ON* */
 
-static void
+static GCC_NORETURN void
 no_program(void)
 {
     mawk_exit(0);

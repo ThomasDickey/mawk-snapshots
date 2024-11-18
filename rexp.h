@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.43 2024/08/25 17:15:43 tom Exp $
+ * $MawkId: rexp.h,v 1.44 2024/11/11 20:59:21 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -165,7 +165,7 @@ RT_POS_ENTRY;
 
 /*  error  trap   */
 extern int REerrno;
-void RE_error_trap(int);
+void GCC_NORETURN RE_error_trap(int);
 
 #ifndef GCC_NORETURN
 #define GCC_NORETURN		/* nothing */

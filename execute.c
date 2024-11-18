@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.62 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: execute.c,v 1.63 2024/11/11 21:02:23 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -1489,7 +1489,6 @@ compare(CELL *cp)
 
     default:			/* there are no default cases */
 	bozo("bad cell type passed to compare");
-	break;
     }
     return result;
 }
@@ -1531,7 +1530,6 @@ cellcpy(CELL *target, CELL *source)
 
     default:
 	bozo("bad cell passed to cellcpy()");
-	break;
     }
     return target;
 }

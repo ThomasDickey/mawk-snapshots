@@ -1,4 +1,11 @@
--- $MawkId: CHANGES,v 1.397 2024/09/05 22:57:27 tom Exp $
+-- $MawkId: CHANGES,v 1.401 2024/11/17 21:58:44 tom Exp $
+
+20241117
+	+ improve printf/sprintf by handling special case of 2^64 which can be
+	  represented as an exact value (Original-Mawk #78).
+	+ modify use of mktemp in test-scripts to work with HPUX, which uses
+	  a different interpretation of the "-d" option.
+	+ update configure script
 
 20240905
 	+ update manual page discussing approved extensions.
@@ -9,7 +16,7 @@
 	+ fix sign-extension in scan.c (report/testcase by Tyler Hawkins).
 
 20240827
-	+ amend fix for Original Mawk #48, providing for deep function
+	+ amend fix for Original-Mawk #48, providing for deep function
 	  recursion, but disallowing more than 255 parameters for printf, etc.
 	+ add test-cases to test/mawkerrs
 	+ update config.guess and config.sub
@@ -59,7 +66,7 @@
 	+ add test/longline.sh
 	+ add test/hashbang-S.sh for later use in testing.
 	+ add test/cclass.awk script for character-classes
-	+ improve regular expression matching (Original Mawk #76).
+	+ improve regular expression matching (Original-Mawk #76).
 
 20240716
 	+ add --enable-arc4random option to configure script; this is normally

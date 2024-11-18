@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.31 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: cast.c,v 1.32 2024/11/17 20:39:54 tom Exp $
  */
 
 #define Visible_CELL
@@ -137,7 +137,9 @@ cast2_to_d(CELL *cp)
 }
 
 #define DoubleToString(target,source) \
-	if (source->dval >= (double) Max_Long) { \
+	if (IsMaxBound(fabs(source->dval))) { \
+	    sprintf(target, UNSIGNED_FORMAT, source->dval); \
+	} else if (source->dval >= (double) Max_ULong) { \
 	    ULong lval = d_to_UL(source->dval); \
 	    if (lval == source->dval) { \
 		sprintf(target, ULONG_FMT, lval); \
