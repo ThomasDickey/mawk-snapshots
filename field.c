@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.48 2024/11/15 23:03:38 tom Exp $
+ * $MawkId: field.c,v 1.49 2024/11/20 00:05:54 tom Exp $
  */
 
 #define Visible_CELL
@@ -310,7 +310,9 @@ valid_format(CELL *fp)
 	    int l_flag = 0;
 	    int h_flag = 0;
 
-	    if (++args > 1)
+	    if (*q == '%') {
+		continue;	/* allow an escaped '%' */
+	    } else if (++args > 1)
 		invalid_format(fp);
 
 	    while (*q == '-' || *q == '+' || *q == ' ' ||

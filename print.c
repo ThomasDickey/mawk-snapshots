@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.54 2024/11/17 21:43:39 tom Exp $
+ * $MawkId: print.c,v 1.55 2024/12/10 01:13:31 tom Exp $
  */
 
 #define Visible_BI_REC
@@ -87,9 +87,18 @@ print_cell(CELL *p, FILE *fp)
 	break;
 
     case C_DOUBLE:
+#if (defined(HAVE_ISINF) && defined(HAVE_ISNAN))
+	if ((isinf(p->dval) || isnan(p->dval))) {
+	    char xbuff[256];
+	    char *s = xbuff;
+	    (void) sprintf(s, "%g", p->dval);
+	    (void) strcpy(s, (*s != '-' && *s != '+') ? "+%g" : "%g");
+	    fprintf(fp, xbuff, p->dval);
+	} else
+#endif
 	if (IsMaxBound(fabs(p->dval))) {
 	    fprintf(fp, UNSIGNED_FORMAT, p->dval);
-	} else if (p->dval >= (double) Max_ULong) {
+	} else if (p->dval >= (double) Max_Long) {
 	    ULong ival = d_to_UL(p->dval);
 
 	    /* integers can print as "%[l]u", for additional range */
@@ -450,6 +459,9 @@ type_of_OFMT(void)
 		checks = PF_D;
 		break;
 	    case 'u':
+	    case 'o':
+	    case 'x':
+	    case 'X':
 		checks = PF_U;
 		break;
 	    case 'c':
@@ -465,6 +477,7 @@ type_of_OFMT(void)
 	    }
 	}
 	OFMT_type = result;
+	TRACE(("type_of_OFMT %s = %d\n", string(OFMT)->str, result));
     }
     return result;
 }
@@ -483,7 +496,7 @@ type_of_OFMT(void)
 	break; \
     }
 #else
-#define validate_number(cp) /* nothing */
+#define validate_number(cp)	/* nothing */
 #endif
 
 /*
@@ -514,6 +527,7 @@ do_printf(FILE *fp,
     char xbuff[256];		/* splice in l qualifier here */
 
     TRACE(("do_printf fmt=%s, argc=%d\n", format, argcnt));
+
     while (1) {
 	while (*q != '%') {
 	    if (*q == 0) {
@@ -648,6 +662,19 @@ do_printf(FILE *fp,
 		pf_type = type_of_OFMT();
 		splice = 0;
 		p = strcpy(xbuff, string(OFMT)->str);
+		if (cp->type == C_DOUBLE) {
+		    switch (pf_type) {
+		    case PF_C:
+		    case PF_D:
+		    case PF_U:
+			strcpy(xbuff, "%.6g");
+			pf_type = PF_F;
+			break;
+		    case PF_S:
+			cast1_to_s(cp);
+			break;
+		    }
+		}
 	    } else {
 		if (cp->dval >= (double) Max_Long) {
 		    Uval = d_to_UL(cp->dval);
@@ -1019,6 +1046,19 @@ do_sprintf(
 		pf_type = type_of_OFMT();
 		splice = 0;
 		p = strcpy(xbuff, string(OFMT)->str);
+		if (cp->type == C_DOUBLE) {
+		    switch (pf_type) {
+		    case PF_C:
+		    case PF_D:
+		    case PF_U:
+			strcpy(xbuff, "%.6g");
+			pf_type = PF_F;
+			break;
+		    case PF_S:
+			cast1_to_s(cp);
+			break;
+		    }
+		}
 	    } else {
 		if (cp->dval >= (double) Max_Long) {
 		    Uval = d_to_UL(cp->dval);

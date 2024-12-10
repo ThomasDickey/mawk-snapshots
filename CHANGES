@@ -1,4 +1,11 @@
--- $MawkId: CHANGES,v 1.401 2024/11/17 21:58:44 tom Exp $
+-- $MawkId: CHANGES,v 1.405 2024/12/10 01:25:31 tom Exp $
+
+20241209
+	+ modify use of OFMT when given a format such as %c which cannot fully
+	  represent a floating point value, like gawk/bwk.
+	+ modify format for infinite values, showing plus/minus signs.
+	+ allow format to contain an escaped '%'
+	+ further printf/sprintf fixes, using line-coverage to guide testing
 
 20241117
 	+ improve printf/sprintf by handling special case of 2^64 which can be
