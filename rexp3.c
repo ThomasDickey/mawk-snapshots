@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp3.c,v 1.65 2024/08/27 20:48:02 tom Exp $
+ * $MawkId: rexp3.c,v 1.69 2024/12/11 21:45:11 tom Exp $
  */
 
 /*  match a string against a machine   */
@@ -214,9 +214,7 @@ REmatch(char *str,		/* string to test */
 	TR_AT("next");
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_STR + U_ON + END_ON:
-	/* NOTREACHED */
 	TR_AT("now");
 	if (s >= str_end) {
 	    RE_FILL();
@@ -241,7 +239,6 @@ REmatch(char *str,		/* string to test */
 	u_flag = U_OFF;
 	TR_AT("next");
 	RE_CASE();
-#endif
 
     case M_CLASS + U_OFF + END_OFF:
 	if (s >= str_end) {
@@ -332,10 +329,8 @@ REmatch(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_ANY + U_OFF + END_ON:
-	/* NOTREACHED */
-	if (s >= str_end) {
+	if ((s >= str_end) || ((s + 1) < str_end)) {
 	    RE_FILL();
 	} else if (!ss) {
 	    if (cb_ss && current_best(s)) {
@@ -347,7 +342,6 @@ REmatch(char *str,		/* string to test */
 	s = str_end;
 	m++;
 	RE_CASE();
-#endif
 
     case M_ANY + U_ON + END_OFF:
 	if (s < str)
@@ -368,9 +362,7 @@ REmatch(char *str,		/* string to test */
 	u_flag = U_OFF;
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_ANY + U_ON + END_ON:
-	/* NOTREACHED */
 	if (s < str)
 	    s = str;
 	if (s >= str_end) {
@@ -388,7 +380,6 @@ REmatch(char *str,		/* string to test */
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
-#endif
 
       CASE_UANY(M_START + END_OFF):
 	if (s != str || no_bol) {

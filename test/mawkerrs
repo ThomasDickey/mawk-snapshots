@@ -1,5 +1,5 @@
 #!/bin/sh
-# $MawkId: mawkerrs,v 1.19 2024/11/11 23:40:39 tom Exp $
+# $MawkId: mawkerrs,v 1.21 2024/12/11 00:43:22 tom Exp $
 ###############################################################################
 # copyright 2024, Thomas E. Dickey
 #
@@ -245,10 +245,25 @@ echo 'mawk: line 1: illegal reference to variable bar' >$STDERR
 $PROG -Wd 'function foo() { bar = 1; }function bar(){ }BEGIN{ print(); }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to variable"
 Finish "test for illegal reference to variable"
 
+Begin "test for illegal reference to variable NR"
+echo 'mawk: line 1: illegal reference to variable NR' >$STDERR
+$PROG -Wd '{ NR[1] = "alpha"; }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to array ENVIRON"
+Finish "test for illegal reference to variable NR"
+
 Begin "test for illegal reference to array"
 echo 'mawk: line 1: illegal reference to array A' >$STDERR
 $PROG -Wd 'function foo() { A[1] = 1; }function A(){ }BEGIN{ print(); }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to array"
 Finish "test for illegal reference to array"
+
+Begin "test for illegal reference to array ENVIRON"
+echo 'mawk: line 1: illegal reference to array ENVIRON' >$STDERR
+$PROG -Wd '{ ENVIRON = "alpha"; }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to array ENVIRON"
+Finish "test for illegal reference to array ENVIRON"
+
+Begin "test for reference to undefined function"
+echo 'mawk: line 2: function f never defined' >$STDERR
+$PROG -Wd '{ f(z); }' 2>&1 | cmp -s - "$STDERR" || Fail "illegal reference to undefined function"
+Finish "test for reference to undefined function"
 
 ######## print.c
 

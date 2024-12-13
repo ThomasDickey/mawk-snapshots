@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.46 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: rexp2.c,v 1.48 2024/12/10 21:34:14 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -322,7 +322,6 @@ REtest(char *str,		/* string to test */
 	m++;
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_ANY + U_OFF + END_ON:
 	/* NOTREACHED */
 	if (s >= str_end || (s + 1) < str_end) {
@@ -331,7 +330,6 @@ REtest(char *str,		/* string to test */
 	s++;
 	m++;
 	RE_CASE();
-#endif
 
     case M_ANY + U_ON + END_OFF:
 	if (s >= str_end) {
@@ -343,7 +341,6 @@ REtest(char *str,		/* string to test */
 	u_flag = U_OFF;
 	RE_CASE();
 
-#ifndef LCOV_UNUSED
     case M_ANY + U_ON + END_ON:
 	/* NOTREACHED */
 	if (s >= str_end) {
@@ -353,7 +350,6 @@ REtest(char *str,		/* string to test */
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
-#endif
 
     case M_START + U_OFF + END_OFF:
     case M_START + U_ON + END_OFF:

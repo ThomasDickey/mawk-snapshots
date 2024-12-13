@@ -1,4 +1,10 @@
--- $MawkId: CHANGES,v 1.405 2024/12/10 01:25:31 tom Exp $
+-- $MawkId: CHANGES,v 1.409 2024/12/13 00:44:41 tom Exp $
+
+20241212
+	+ modify calls on stdtod() to disallow hexadecimal, infinite and
+	  not-a-number values unless the "--posix" option is given (report by
+	  Xose Vazquez Perez).
+	+ fix a regression in rexp3.c for pattern /^.$/ (cf: 20240819)
 
 20241209
 	+ modify use of OFMT when given a format such as %c which cannot fully
