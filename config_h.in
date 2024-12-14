@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: config_h.in,v 1.42 2024/11/17 22:07:11 tom Exp $
+ * $MawkId: config_h.in,v 1.43 2024/12/14 01:12:07 tom Exp $
  * template for config.h
  */
 
@@ -28,6 +28,7 @@ the GNU General Public License, version 2, 1991.
 #undef HAVE_FCNTL_H
 #undef HAVE_FORK
 #undef HAVE_FSEEKO
+#undef HAVE_FSTAT
 #undef HAVE_GETTIMEOFDAY
 #undef HAVE_INT64_T
 #undef HAVE_INTTYPES_H

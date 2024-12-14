@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.76 2024/11/17 23:54:26 tom Exp $
+dnl $MawkId: configure.in,v 1.77 2024/12/14 00:43:08 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2023,2024, Thomas E. Dickey
@@ -132,7 +132,7 @@ CF_MAWK_FIND_SIZE_T
 CF_LOCALE
 CF_CHECK_ENVIRON(environ)
 
-AC_CHECK_FUNCS(fork matherr mktime pipe strftime tsearch wait)
+AC_CHECK_FUNCS(fork fstat matherr mktime pipe strftime tsearch wait)
 CF_FUNC_GETTIME
 
 ###	Checks for libraries.

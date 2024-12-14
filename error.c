@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.29 2024/12/11 21:57:28 tom Exp $
+ * $MawkId: error.c,v 1.30 2024/12/13 23:40:55 tom Exp $
  */
 
 #define Visible_CELL
@@ -190,7 +190,7 @@ errmsg(int errnum, const char *format, ...)
 
 #if OPT_TRACE > 0
     va_start(args, format);
-    Trace("\n?? errmsg \n");
+    Trace("\n?? errmsg: ");
     TraceVA(format, args);
     Trace("\n");
     va_end(args);

@@ -11163,7 +11163,7 @@ EOF
 
 fi
 
-for ac_func in fork matherr mktime pipe strftime tsearch wait
+for ac_func in fork fstat matherr mktime pipe strftime tsearch wait
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:11169: checking for $ac_func" >&5

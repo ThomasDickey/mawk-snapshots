@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.57 2024/09/05 17:38:30 tom Exp $
+ * $MawkId: fin.c,v 1.60 2024/12/14 01:35:23 tom Exp $
  */
 
 #define Visible_CELL
@@ -30,6 +30,11 @@ the GNU General Public License, version 2, 1991.
 
 #ifdef	  HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
+
+#ifdef	  HAVE_FSTAT
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 /* This file handles input files.  Opening, closing,
@@ -125,8 +130,17 @@ FINopen(char *filename, int main_flag)
 	    setmode(0, O_BINARY);
 #endif
 	result = FINdopen(0, main_flag);
-    } else if ((fd = open(filename, oflag, 0)) != -1) {
-	result = FINdopen(fd, main_flag);
+    } else {
+	if ((fd = open(filename, oflag, 0)) != -1) {
+#ifdef HAVE_FSTAT
+	    struct stat sb;
+	    if (fstat(fd, &sb) != -1 && (sb.st_mode & S_IFMT) == S_IFDIR) {
+		close(fd);
+		errno = EISDIR;
+	    } else
+#endif /* HAVE_FSTAT */
+		result = FINdopen(fd, main_flag);
+	}
     }
     return result;
 }

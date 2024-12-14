@@ -1,4 +1,7 @@
--- $MawkId: CHANGES,v 1.409 2024/12/13 00:44:41 tom Exp $
+-- $MawkId: CHANGES,v 1.411 2024/12/14 01:09:36 tom Exp $
+
+20241213
+	+ disallow reading from a directory like a file (Original-Mawk #83).
 
 20241212
 	+ modify calls on stdtod() to disallow hexadecimal, infinite and

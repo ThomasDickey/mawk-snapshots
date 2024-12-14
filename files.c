@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.37 2024/11/11 20:55:25 tom Exp $
+ * $MawkId: files.c,v 1.40 2024/12/14 01:35:10 tom Exp $
  */
 
 #define Visible_STRING
@@ -39,6 +39,11 @@ the GNU General Public License, version 2, 1991.
 
 #else
 #define	 CLOSE_ON_EXEC(fd) ioctl(fd, FIOCLEX, (PTR) 0)
+#endif
+
+#ifdef	  HAVE_FSTAT
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 /* We store dynamically created files on a linked linear
@@ -635,6 +640,15 @@ tfopen(const char *name, const char *mode)
     FILE *retval = fopen(name, mode);
 
     if (retval) {
+#ifdef HAVE_FSTAT
+	struct stat sb;
+	int fd = fileno(retval);
+	if (fstat(fd, &sb) != -1 && (sb.st_mode & S_IFMT) == S_IFDIR) {
+	    fclose(retval);
+	    retval = NULL;
+	    errno = EISDIR;
+	} else
+#endif /* HAVE_FSTAT */
 	if (isatty(fileno(retval)))
 	    setbuf(retval, (char *) 0);
 	else {
