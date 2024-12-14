@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.30 2024/12/13 23:40:55 tom Exp $
+ * $MawkId: error.c,v 1.31 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_CELL
@@ -118,7 +118,7 @@ missing(int c, const char *n, unsigned ln)
 void
 yyerror(const char *s GCC_UNUSED)
 {
-    const char *ss = 0;
+    const char *ss = NULL;
     const struct token_str *p;
     const int *ip;
 
@@ -299,7 +299,7 @@ unexpected_char(void)
 const char *
 type_to_str(int type)
 {
-    const char *retval = 0;
+    const char *retval = NULL;
 
     switch (type) {
     case ST_NONE:

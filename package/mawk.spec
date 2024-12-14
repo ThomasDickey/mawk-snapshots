@@ -1,9 +1,9 @@
 Summary: mawk - pattern scanning and text processing language
 %global AppProgram mawk
 %global AppVersion 1.3.4
-%global AppPatched 20241213
+%global AppPatched 20241214
 %global MySite https://invisible-island.net
-# $MawkId: mawk.spec,v 1.135 2024/12/14 01:01:15 tom Exp $
+# $MawkId: mawk.spec,v 1.136 2024/12/14 17:00:30 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppPatched}

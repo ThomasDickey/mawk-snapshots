@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.34 2024/12/13 00:20:03 tom Exp $
+ * $MawkId: cast.c,v 1.35 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -512,7 +512,7 @@ no_leaks_cell_ptr(CELL *cp)
 void
 cell_leaks(void)
 {
-    while (all_cells != 0) {
+    while (all_cells != NULL) {
 	ALL_CELLS *next = all_cells->next;
 	if (all_cells->ptr) {
 	    zfree(all_cells->cp, sizeof(CELL));

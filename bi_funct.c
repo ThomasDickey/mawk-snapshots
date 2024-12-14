@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.139 2024/11/18 00:06:50 tom Exp $
+ * $MawkId: bi_funct.c,v 1.140 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -163,7 +163,7 @@ str_str(char *target, size_t target_len, const char *key, size_t key_len)
     register int k = key[0];
     int k1;
     const char *prior;
-    char *result = 0;
+    char *result = NULL;
 
     switch (key_len) {
     case 0:
@@ -469,7 +469,7 @@ bi_strftime(CELL *sp)
     struct tm *ptm;
     int n_args;
     int utc;
-    STRING *sval = 0;		/* strftime(sval->str, timestamp, utc) */
+    STRING *sval = NULL;		/* strftime(sval->str, timestamp, utc) */
     size_t result;
 
     TRACE_FUNC("bi_strftime", sp);
@@ -781,7 +781,7 @@ bi_srand(CELL *sp)
 #ifdef USE_SYSTEM_SRAND
     static CELL cseed =
     {
-	C_DOUBLE, 0, 0, 1.0
+	C_DOUBLE, 0, NULL, 1.0
     };
     double seed32;
 #endif
@@ -949,8 +949,8 @@ CELL *
 bi_getline(CELL *sp)
 {
     CELL tc;
-    CELL *cp = 0;
-    char *p = 0;
+    CELL *cp = NULL;
+    char *p = NULL;
     size_t len = 0;
     FIN *fin_p;
 
@@ -1085,7 +1085,7 @@ bi_sub(CELL *sp)
 		     &middle_len,
 		     0);
 
-    if (middle != 0) {
+    if (middle != NULL) {
 	size_t front_len = (size_t) (middle - front);
 	char *back = middle + middle_len;
 	size_t back_len = string(&sc)->len - front_len - middle_len;
@@ -1173,7 +1173,7 @@ gsub3(PTR re, CELL *repl, CELL *target)
 	 * that can be an empty string, e.g., for "*" or "?".  The length
 	 * is in 'howmuch'.
 	 */
-	if (where != 0) {
+	if (where != NULL) {
 	    have = (size_t) (where - (input->str + j));
 	    if (have) {
 		skip0 = -1;
@@ -1189,11 +1189,11 @@ gsub3(PTR re, CELL *repl, CELL *target)
 	    TRACE(("\n"));
 
 	    if (repl->type == C_REPLV) {
-		if (xrepl.ptr == 0 ||
+		if (xrepl.ptr == NULL ||
 		    string(&xrepl)->len != howmuch ||
 		    (howmuch != 0 &&
 		     memcmp(string(&xrepl)->str, where, howmuch))) {
-		    if (xrepl.ptr != 0)
+		    if (xrepl.ptr != NULL)
 			repl_destroy(&xrepl);
 		    sval = new_STRING1(where, howmuch);
 		    cellcpy(&xrepl, repl);

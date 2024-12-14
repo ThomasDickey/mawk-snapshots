@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: code.c,v 1.48 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: code.c,v 1.50 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -38,7 +38,7 @@ CODEBLOCK *main_code_p, *begin_code_p, *end_code_p;
 INST *begin_start, *main_start, *end_start;
 size_t begin_size, main_size, end_size;
 
-INST *execution_start = 0;
+INST *execution_start = NULL;
 
 /* grow the active code */
 void
@@ -157,7 +157,7 @@ set_code(void)
 	execution_start = main_start;
     } else {			/* only BEGIN */
 	zfree(code_base, INST_BYTES(PAGESZ));
-	code_base = 0;
+	code_base = NULL;
 	ZFREE(main_code_p);
     }
 
@@ -292,7 +292,7 @@ free_codes(const char *tag, INST * base, size_t size)
 	   (void *) base,
 	   (unsigned long) size));
 
-    if (base != 0 && size != 0) {
+    if (base != NULL && size != 0) {
 	for (cdp = base; cdp < last; ++cdp) {
 #ifndef NO_LEAKS
 	    TRACE_INST(cdp, base);
@@ -303,7 +303,7 @@ free_codes(const char *tag, INST * base, size_t size)
 	    case AE_PUSHI:
 		++cdp;		/* skip pointer */
 		cp = (CELL *) (cdp->ptr);
-		if (cp != 0) {
+		if (cp != NULL) {
 		    free_cell_data(cp);
 		}
 		break;
@@ -432,19 +432,19 @@ void
 code_leaks(void)
 {
     TRACE(("code_leaks\n"));
-    if (begin_start != 0) {
+    if (begin_start != NULL) {
 	free_codes("BEGIN", begin_start, begin_size);
-	begin_start = 0;
+	begin_start = NULL;
 	begin_size = 0;
     }
-    if (end_start != 0) {
+    if (end_start != NULL) {
 	free_codes("END", end_start, end_size);
-	end_start = 0;
+	end_start = NULL;
 	end_size = 0;
     }
-    if (main_start != 0) {
+    if (main_start != NULL) {
 	free_codes("MAIN", main_start, main_size);
-	main_start = 0;
+	main_start = NULL;
 	main_size = 0;
     }
 }

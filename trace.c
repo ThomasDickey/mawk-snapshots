@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.24 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: trace.c,v 1.26 2024/12/14 21:21:34 tom Exp $
  */
 
 #define Visible_CELL
@@ -26,10 +26,10 @@ Trace(const char *format, ...)
 {
     va_list args;
 
-    if (trace_fp == 0)
+    if (trace_fp == NULL)
 	trace_fp = fopen("Trace.out", "w");
 
-    if (trace_fp == 0)
+    if (trace_fp == NULL)
 	rt_error("cannot open Trace.out");
 
     va_start(args, format);
@@ -49,7 +49,7 @@ void
 TraceCell(CELL *cp)
 {
     TRACE(("cell %p ", (void *) cp));
-    if (cp != 0) {
+    if (cp != NULL) {
 	switch ((MAWK_CELL_TYPES) cp->type) {
 	case C_NOINIT:
 	    TRACE(("is empty\n"));
@@ -284,9 +284,9 @@ TraceString(STRING * sp)
 void
 trace_leaks(void)
 {
-    if (trace_fp != 0) {
+    if (trace_fp != NULL) {
 	fclose(trace_fp);
-	trace_fp = 0;
+	trace_fp = NULL;
     }
 }
 #endif

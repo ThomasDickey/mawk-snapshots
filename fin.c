@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.60 2024/12/14 01:35:23 tom Exp $
+ * $MawkId: fin.c,v 1.62 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -112,7 +112,7 @@ FINdopen(int fd, int main_flag)
 FIN *
 FINopen(char *filename, int main_flag)
 {
-    FIN *result = 0;
+    FIN *result = NULL;
     int fd;
     int oflag = O_RDONLY;
 
@@ -187,7 +187,7 @@ char *
 FINgets(FIN * fin, size_t *len_p)
 {
     char *p;
-    char *q = 0;
+    char *q = NULL;
     size_t match_len;
     size_t r;
 
@@ -355,7 +355,7 @@ FINgets(FIN * fin, size_t *len_p)
 	r = amount;
 	if (fin->buff_size < r) {
 	    fin->flags |= EOF_FLAG;
-	    return 0;
+	    return NULL;
 	}
 
 	p = (char *) memmove(fin->buff, p, r);
@@ -394,7 +394,7 @@ enlarge_fin_buffer(FIN * fin)
     fin->buffp =
 	fin->buff = (char *) zrealloc(fin->buff, oldsize, newsize);
 
-    if (fin->fp == 0) {
+    if (fin->fp == NULL) {
 	r = fillbuff(fin->fd, fin->buff + oldsize, extra);
 	if (r < extra)
 	    fin->flags |= EOF_FLAG;
@@ -493,7 +493,7 @@ next_main(int open_flag)	/* called by open_main() if on */
 
     if (main_fin) {
 	FINclose(main_fin);
-	main_fin = 0;
+	main_fin = NULL;
     }
     /* FILENAME and FNR don't change unless we really open
        a new file */
@@ -571,7 +571,7 @@ is_cmdline_assign(char *s)
 
     int c;
     SYMTAB *stp;
-    CELL *cp = 0;
+    CELL *cp = NULL;
     size_t len;
     CELL cell = empty_cell;	/* used if command line assign to pseudo field */
     CELL *fp = NULL;		/* ditto */
@@ -638,7 +638,7 @@ fin_leaks(void)
     TRACE(("fin_leaks\n"));
     if (main_fin) {
 	free_fin_data(main_fin);
-	main_fin = 0;
+	main_fin = NULL;
     }
 }
 #endif

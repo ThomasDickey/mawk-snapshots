@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.75 2024/11/17 20:40:48 tom Exp $
+ * $MawkId: mawk.h,v 1.76 2024/12/14 21:21:20 tom Exp $
  */
 
 /*  mawk.h  */
@@ -289,7 +289,7 @@ extern void zmalloc_leaks(void);
  * Optimize-out the assignment to clear the pointer in the array.
  */
 #ifdef NO_LEAKS
-#define USED_SPLIT_BUFF(n) split_buff[n] = 0
+#define USED_SPLIT_BUFF(n) split_buff[n] = NULL
 #else
 #define USED_SPLIT_BUFF(n)	/* nothing */
 #endif

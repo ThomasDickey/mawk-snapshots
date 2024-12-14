@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: main.c,v 1.34 2024/09/04 20:28:21 tom Exp $
+ * $MawkId: main.c,v 1.35 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_CELL
@@ -52,8 +52,8 @@ main(int argc, char **argv)
 	decimal_dot = '\0';	/* only set to nonzero if not POSIX '.' */
 	setlocale(LC_NUMERIC, "");
 	data = localeconv();
-	if (data != 0
-	    && data->decimal_point != 0
+	if (data != NULL
+	    && data->decimal_point != NULL
 	    && strlen(data->decimal_point) == 1) {
 	    decimal_dot = data->decimal_point[0];
 	} else {

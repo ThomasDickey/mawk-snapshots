@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.52 2024/11/17 23:31:54 tom Exp $
+ * $MawkId: rexp.c,v 1.53 2024/12/14 12:55:59 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -174,7 +174,7 @@ REcompile(char *re, size_t len)
 		goto default_case;
 	    }
 	    /* interval expression {n,m}
-	     * eg, 
+	     * eg,
 	     *   convert m{3} to mmm
 	     *   convert m{3,} to mmm* (with a limit of MAX_INT)
 	     *   convert m{3,10} to mmm* with a limit of 10
@@ -185,7 +185,7 @@ REcompile(char *re, size_t len)
 	    if (intrvalmin == 0) {	/* zero or more */
 		switch (intrvalmax) {
 		case 0:
-		    /* user stupidity: m{0} or m{0,0} 
+		    /* user stupidity: m{0} or m{0,0}
 		     * don't add this re token
 		     */
 		    if (m_ptr == m_array) {
@@ -249,7 +249,7 @@ REcompile(char *re, size_t len)
 		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
 		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
 #endif
-	    } else if (m_ptr->start != 0) {	/* n or more */
+	    } else if (m_ptr->start != NULL) {	/* n or more */
 		register Int i;
 		/* copy 2 copies of m_ptr, use 2nd copy to replace
 		   the first copy that gets swallowed by concat */

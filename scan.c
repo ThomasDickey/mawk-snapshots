@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.67 2024/11/11 20:58:37 tom Exp $
+ * $MawkId: scan.c,v 1.69 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -843,7 +843,7 @@ collect_decimal(int c, int *flag)
     register char *p = string_buff + 1;
     char *endp;
     char *temp;
-    char *last_decimal = 0;
+    char *last_decimal = NULL;
     double d;
 
     *flag = 0;
@@ -1089,7 +1089,7 @@ rm_escape(char *s, size_t *lenp)
     }
 
     *q = 0;
-    if (lenp != 0)
+    if (lenp != NULL)
 	*lenp = (unsigned) (q - s);
     return s;
 }
@@ -1186,7 +1186,7 @@ collect_RE(void)
 	switch (scan_code[NextChar(c = *p++)]) {
 	case SC_POW:
 	    /* Handle [^]] and [^^] correctly. */
-	    if ((p - 1) == first && first != 0 && first[-1] == '[') {
+	    if ((p - 1) == first && first != NULL && first[-1] == '[') {
 		first = p;
 	    }
 	    break;
@@ -1280,7 +1280,7 @@ scan_leaks(void)
     TRACE(("scan_leaks\n"));
     if (yylval.ptr) {
 	free(yylval.ptr);
-	yylval.ptr = 0;
+	yylval.ptr = NULL;
     }
 }
 #endif

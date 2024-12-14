@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.48 2024/12/10 21:34:14 tom Exp $
+ * $MawkId: rexp2.c,v 1.49 2024/12/14 12:57:40 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -452,7 +452,7 @@ is_string_split(PTR q, size_t * lenp)
 {
     STATE *p = cast_to_re(q);
 
-    if (p != 0 && (p[0].s_type == M_STR && p[1].s_type == M_ACCEPT)) {
+    if (p != NULL && (p[0].s_type == M_STR && p[1].s_type == M_ACCEPT)) {
 	*lenp = p->s_len;
 	return p->s_data.str;
     } else

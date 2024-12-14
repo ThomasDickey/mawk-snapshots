@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.27 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: rexp1.c,v 1.28 2024/12/14 12:57:40 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -327,7 +327,7 @@ RE_malloc(size_t sz)
 
     p = malloc(sz);
     TRACE(("RE_malloc(%lu) ->%p\n", (unsigned long) sz, p));
-    if (p == 0)
+    if (p == NULL)
 	RE_error_trap(MEMORY_FAILURE);
     return p;
 }
@@ -340,7 +340,7 @@ RE_realloc(PTR p, size_t sz)
     TRACE(("RE_realloc(%p, %lu) ", p, (unsigned long) sz));
     q = realloc(p, sz);
     TRACE(("->%p\n", q));
-    if (q == 0)
+    if (q == NULL)
 	RE_error_trap(MEMORY_FAILURE);
     return q;
 }

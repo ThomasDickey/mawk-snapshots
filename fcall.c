@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fcall.c,v 1.23 2024/08/25 19:33:50 tom Exp $
+ * $MawkId: fcall.c,v 1.24 2024/12/14 12:57:40 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -43,7 +43,7 @@ trace_arg_list(CA_REC * arg_list)
     CA_REC *item;
     int count = 0;
     TRACE(("trace_arg_list\n"));
-    while ((item = arg_list) != 0) {
+    while ((item = arg_list) != NULL) {
 	arg_list = item->link;
 	TRACE(("...arg %d is %s\n", item->arg_num + 1, type_to_str(item->type)));
 	++count;
@@ -63,7 +63,7 @@ static int
 inst_len(INST * p)
 {
     int result = 0;
-    while (p != 0 && p->op != _HALT) {
+    while (p != NULL && p->op != _HALT) {
 	++result;
 	switch ((MAWK_OPCODES) (p++->op)) {
 	case _HALT:

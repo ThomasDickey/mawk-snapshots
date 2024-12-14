@@ -1,6 +1,6 @@
 /* array.h */
 /*
-$MawkId: array.h,v 1.23 2024/08/25 18:31:19 tom Exp $
+$MawkId: array.h,v 1.24 2024/12/14 12:49:15 tom Exp $
 
 copyright 2009-2020,2024 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
@@ -13,8 +13,8 @@ the GNU General Public License, version 2, 1991.
 
 array.c and array.h were originally generated with the commands
 
-   notangle -R'"array.c"' array.w > array.c 
-   notangle -R'"array.h"' array.w > array.h 
+   notangle -R'"array.c"' array.w > array.c
+   notangle -R'"array.h"' array.w > array.h
 
 Notangle is part of Norman Ramsey's noweb literate programming package
 available from CTAN(ftp.shsu.edu).

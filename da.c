@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.53 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: da.c,v 1.54 2024/12/14 12:53:14 tom Exp $
  */
 
 /* disassemble code */
@@ -610,7 +610,7 @@ const char *
 da_op_name(const INST * cdp)
 {
     int n;
-    const char *result = 0;
+    const char *result = NULL;
 
     if (cdp->op == _BUILTIN) {
 	result = find_bi_name(cdp[1].fnc);
@@ -627,7 +627,7 @@ da_op_name(const INST * cdp)
 		break;
 	    }
 	}
-	if (result == 0) {
+	if (result == NULL) {
 	    for (n = 0; other_codes[n].op != _HALT; ++n) {
 		if (other_codes[n].op == cdp->op) {
 		    result = other_codes[n].name;
@@ -635,7 +635,7 @@ da_op_name(const INST * cdp)
 		}
 	    }
 	}
-	if (result == 0) {
+	if (result == NULL) {
 	    result = "bad instruction";
 	}
     }
