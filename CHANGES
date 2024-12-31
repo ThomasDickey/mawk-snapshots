@@ -1,4 +1,10 @@
--- $MawkId: CHANGES,v 1.412 2024/12/14 17:00:30 tom Exp $
+-- $MawkId: CHANGES,v 1.414 2024/12/31 15:21:17 tom Exp $
+
+20241231
+	+ in-progress changes to improve regex brace expressions, using new
+	  machine codes M_ENTER and M_LOOP.
+	+ add a T_CAT in compiled regex to fix a panic (report by Dimitar
+	  Dimitrov).
 
 20241214
 	+ fix stricter gcc15 warnings.

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp1.c,v 1.28 2024/12/14 12:57:40 tom Exp $
+ * $MawkId: rexp1.c,v 1.31 2024/12/30 15:46:23 tom Exp $
  */
 
 /*  re machine	operations  */
@@ -113,9 +113,6 @@ RE_cat(MACHINE * mp, MACHINE * np)
 #endif
     mp->stop = mp->start + (sz - 1);
     RE_copy_states(mp->start + sz1, np->start, sz2);
-#ifndef NO_INTERVAL_EXPR
-    mp->start[sz].s_type = M_ACCEPT;	/* this is needed in RE_init_it_cnt */
-#endif
     RE_free(np->start);
 }
 
@@ -143,6 +140,12 @@ RE_or(MACHINE * mp, MACHINE * np)
     p->s_data.jump = (int) szn;
 }
 
+#ifndef NO_INTERVAL_EXPR
+#define is_LOOP_TYPE(type) ((type) == M_2JC || (type) == M_LOOP)
+#else
+#define is_LOOP_TYPE(type) ((type) == M_2JC)
+#endif
+
 /*
  * Ignore attempts to wrap an atom using zero-or-more repetitions in another
  * loop with the same condition.
@@ -162,58 +165,14 @@ RE_or(MACHINE * mp, MACHINE * np)
 		   ((ps + 2)->s_type % U_ON) != M_STR && \
 		   ((ps + 2)->s_type % U_ON) != M_U) { \
 	    TRACE((".. expected atom %s\n", REs_type(ps + 2))); \
-	} else if (((ps + 3)->s_type % U_ON) != M_2JC) { \
-	    TRACE((".. expected loop %s\n", REs_type(ps + 3))); \
-	} else { \
+	} else if (is_LOOP_TYPE((ps + 3)->s_type)) { \
 	    TRACE(("ignore repeated loop\n")); \
+	} else { \
+	    TRACE((".. expected loop %s\n", REs_type(ps + 3))); \
 	    return NULL; \
 	} \
     } \
 }
-
-#ifndef NO_INTERVAL_EXPR
-/*  replace m with m*  limited to the max iterations
-        (variation of m*   closure)   */
-void
-RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
-{
-#ifdef NO_RI_LOOP_UNROLL
-    STATE *s;
-
-    TRACE(("RE_close_limit " INT_FMT ".." INT_FMT "\n", min_limit, max_limit));
-    if ((s = RE_close(mp)) != 0) {
-	if (s->s_type == M_2JC) {
-	    s->it_min = min_limit;
-	    s->it_max = max_limit;
-	}
-    }
-#else
-    RE_close(mp);
-    RE_set_limit(mp->start, min_limit, max_limit);
-#endif
-}
-
-/*  replace m with m+  limited to the max iterations
-     which is one or more, limited
-        (variation of m+   positive closure)   */
-void
-RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit)
-{
-#ifdef NO_RI_LOOP_UNROLL
-    STATE *s;
-    TRACE(("RE_poscl_limit " INT_FMT ".." INT_FMT "\n", min_limit, max_limit));
-    if ((s = RE_poscl(mp)) != NULL) {
-	if (s->s_type == M_2JC) {
-	    s->it_min = min_limit;
-	    s->it_max = max_limit;
-	}
-    }
-#else
-    RE_poscl(mp);
-    RE_set_limit(mp->start, min_limit, max_limit);
-#endif
-}
-#endif /* ! NO_INTERVAL_EXPR */
 
 /*  UNARY  OPERATIONS	  */
 
@@ -226,7 +185,7 @@ RE_close(MACHINE * mp)
     size_t sz;
 
     /*
-     *                2JA end
+     *          2JA end
      * loop:
      *          SAVE_POS
      *          m
@@ -329,6 +288,9 @@ RE_malloc(size_t sz)
     TRACE(("RE_malloc(%lu) ->%p\n", (unsigned long) sz, p));
     if (p == NULL)
 	RE_error_trap(MEMORY_FAILURE);
+#ifdef OPT_TRACE
+    memset(p, 0, sz);
+#endif
     return p;
 }
 

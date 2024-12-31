@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.44 2024/11/11 20:59:21 tom Exp $
+ * $MawkId: rexp.h,v 1.45 2024/12/31 11:42:44 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -46,7 +46,11 @@ typedef enum {
     ,M_2JA			/* optional (undesirable) jump */
     ,M_2JB			/* optional (desirable) jump */
     ,M_SAVE_POS			/* push position onto stack */
-    ,M_2JC			/* pop pos'n, optional jump if advanced */
+    ,M_2JC			/* pop position, optional jump if advanced */
+#ifndef NO_INTERVAL_EXPR
+    ,M_ENTER			/* begin counted loop (reset counter) */
+    ,M_LOOP			/* end counted loop (update/test counter) */
+#endif
     ,M_ACCEPT			/* end of match */
     ,U_ON			/* ...distinct from the preceding */
 } MAWK_REGEX;
@@ -71,8 +75,8 @@ typedef struct _state
 	int jump;
     } s_data;
 #ifndef NO_INTERVAL_EXPR
-    Int it_min;			/* used for s_type == M_2JC */
-    Int it_max;			/* used for s_type == M_2JC */
+    Int it_min;			/* used for s_type == M_LOOP */
+    Int it_max;			/* used for s_type == M_LOOP */
     Int it_cnt;
 #endif
 }
@@ -139,8 +143,8 @@ typedef struct _rt_state
     STATE *m;			/* save the machine ptr */
     int u;			/* save the u_flag */
     char *s;			/* save the active string ptr */
-    int sp;			/* size of position stack */
-    int tp;			/* offset to top entry of position stack */
+    int pos_index;		/* index into position stack */
+    int top_index;		/* offset to top entry of position stack */
     char *ss;			/* save the match start -- only used by REmatch */
 }
 #endif
@@ -157,7 +161,7 @@ typedef struct _rt_pos_entry
 
     /* run time stack frame responsible for removing this node */
     int owner;
-    /* previous node is this - this->prev_offset.  See RE_pos_pop() */
+    /* previous node is this - this->prev_offset.  See pos_pop() */
     int prev_offset;
 }
 #endif
@@ -184,12 +188,6 @@ extern STATE *RE_poscl(MACHINE *);
 extern void RE_01(MACHINE *);
 extern GCC_NORETURN void RE_panic(const char *, ...) GCC_PRINTFLIKE(1,2);
 
-#ifndef NO_INTERVAL_EXPR
-extern void RE_close_limit(MACHINE *, Int, Int);
-extern void RE_poscl_limit(MACHINE *, Int, Int);
-extern void duplicate_m(MACHINE *, MACHINE *);
-#endif
-
 #ifndef MAWK_H
 extern char *str_str(char *, size_t, char *, size_t);
 #endif
@@ -213,73 +211,57 @@ extern Int intrvalmin;
 extern Int intrvalmax;
 extern char *re_exp;
 
-#if defined(LOCAL_REGEXP) && defined(REGEXP_INTERNALS)
-static /* inline */ RT_POS_ENTRY *
-RE_pos_push(RT_POS_ENTRY * head, const RT_STATE * owner, const char *s)
-{
-    head->pos = s;
-    head->owner = (int) (owner - RE_run_stack_base);
-
-    if (++head == RE_pos_stack_limit) {
-	head = RE_new_pos_stack();
-    }
-    head->prev_offset = 1;
-    return head;
-}
-
-static /* inline */ const char *
-RE_pos_pop(RT_POS_ENTRY ** head, const RT_STATE * current)
-{
-    RT_POS_ENTRY *prev2 = *head - (*head)->prev_offset;
-
-    if (prev2->owner == current - RE_run_stack_base) {	/* likely */
-	/* no need to preserve intervening nodes */
-	*head = prev2;
-    } else if (*head == prev2) {
-	RE_panic("unbalanced M_SAVE_POS and M_2JC");
-    } else {
-	(*head)->prev_offset += prev2->prev_offset;
-    }
-
-    return prev2->pos;
-}
-
-#ifndef NO_INTERVAL_EXPR
-/* reset it_cnt to zero for the M_2JC state
- *  which is where loop count is checked
- */
-static void
-RE_init_it_cnt(STATE * s)
-{
-    STATE *p = s;
-    while (p->s_type < M_ACCEPT) {
-	if (p->s_type == M_2JC)
-	    p->it_cnt = 0;
-	p++;
-    }
-}
+#if OPT_TRACE
+#define if_TRACE(stmt) stmt
 #else
-#define RE_init_it_cnt(s)	/* nothing */
+#define if_TRACE(stmt) /*nothing*/
 #endif
 
-#ifndef NO_INTERVAL_EXPR
-#undef NO_RI_LOOP_UNROLL	/* experimental 2020/10/22 -TD */
-#ifdef NO_RI_LOOP_UNROLL
-#else
-static void
-RE_set_limit(STATE * s, Int minlimit, Int maxlimit)
-{
-    STATE *p = s;
-    while (p->s_type < M_ACCEPT) {
-	if (p->s_type == M_2JC) {
-	    p->it_min = minlimit;
-	    p->it_max = maxlimit;
-	}
-	p++;
-    }
-}
-#endif /* ! NO_RI_LOOP_UNROLL */
-#endif /* ! NO_INTERVAL_EXPR */
+#define pos_push(pos_param, run_param, position) do { \
+    pos_param->pos = s; \
+    pos_param->owner = (int) (run_param - RE_run_stack_base); \
+ \
+    TRACE2(("[%s@%d] pos_push #%ld: \"%s\" owner %d\n", \
+	    __FILE__, __LINE__, \
+	    (pos_param - RE_pos_stack_base), \
+	    NonNull(position), \
+	    pos_param->owner)); \
+ \
+    if (++pos_param == RE_pos_stack_limit) { \
+	pos_param = RE_new_pos_stack(); \
+    } \
+    if_TRACE(pos_param->pos = NULL); \
+    if_TRACE(pos_param->owner = 0); \
+    pos_param->prev_offset = 1; \
+} while (0)
+
+#define pos_pop(pos_param, run_param, popped_position) do { \
+    RT_POS_ENTRY *prev2 = pos_param - pos_param->prev_offset; \
+ \
+    if (prev2->owner == run_param - RE_run_stack_base) { /* likely */ \
+	/* no need to preserve intervening nodes */ \
+	TRACE2(("[%s@%d] pos_pop #%ld -> #%ld \"%s\" owner %d\n", \
+	        __FILE__, __LINE__, \
+	        (pos_param - RE_pos_stack_base), \
+	        (prev2 - RE_pos_stack_base), \
+	        NonNull(prev2->pos), \
+	        prev2->owner)); \
+	pos_param = prev2; \
+    } else if (pos_param == prev2) { \
+	RE_panic("unbalanced M_SAVE_POS and M_2JC"); \
+    } else { \
+	TRACE2(("[%s@%d] pos_pop #%ld: \"%s\" offset %d -> %d\n", \
+	        __FILE__, __LINE__, \
+	        (pos_param - RE_pos_stack_base), \
+	        NonNull(pos_param->pos), \
+	        pos_param->prev_offset, \
+	        pos_param->prev_offset + prev2->prev_offset)); \
+	pos_param->prev_offset += prev2->prev_offset; \
+    } \
+    popped_position = prev2->pos; \
+} while (0)
+
+#if defined(LOCAL_REGEXP) && defined(REGEXP_INTERNALS)
 
 #ifdef NO_LEAKS
 extern void RE_copy_states(STATE *, const STATE *, size_t);

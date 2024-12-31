@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.26 2024/12/14 21:21:34 tom Exp $
+ * $MawkId: trace.c,v 1.27 2024/12/25 01:43:52 tom Exp $
  */
 
 #define Visible_CELL
@@ -110,7 +110,7 @@ void
 TraceInst(INST * p, INST * base)
 {
     INST *q = da_this(p, base, trace_fp);
-    TRACE(("	...%ld\n", (long) (q - p)));
+    TRACE(("\t...%ld\n", (long) (q - p)));
     if (p++ != q) {
 	switch ((MAWK_OPCODES) (base->op)) {
 	case AE_PUSHA:

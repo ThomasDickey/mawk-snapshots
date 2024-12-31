@@ -10,7 +10,7 @@ Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
  */
 
-/* $MawkId: regexp.c,v 1.16 2024/08/25 17:34:05 tom Exp $ */
+/* $MawkId: regexp.c,v 1.17 2024/12/31 15:13:35 tom Exp $ */
 
 #include <config.h>
 
@@ -24,8 +24,18 @@ the GNU General Public License, version 2, 1991.
 #define Visible_RT_STATE
 #define Visible_STATE
 #		include <mawk.h>
-#define RE_FILL() { goto refill; }
-#define RE_CASE() { goto reswitch; }
+
+#define RE_FILL() do { TRACE2((rt_form "refill...\n", rt_args)); goto refill; } while (0)
+#define RE_CASE() do { goto reswitch; } while (0)
+
+#define rt_form "[%s@%d] %d:%03d "
+#define rt_args __FILE__, __LINE__, \
+		(int)(run_entry - RE_run_stack_base), \
+		(int)(m - machine)
+
+#define TR_AT(what) \
+	TRACE2((rt_form "%s\n", rt_args, what))
+
 #		include <rexp.c>
 #		include <rexpdb.c>
 #		include <rexp0.c>

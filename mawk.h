@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.76 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: mawk.h,v 1.77 2024/12/24 16:51:37 tom Exp $
  */
 
 /*  mawk.h  */
@@ -152,6 +152,8 @@ extern void cast_to_REPL(CELL *);
 extern Int d_to_I(double);
 extern Long d_to_L(double);
 extern ULong d_to_UL(double d);
+
+#define NonNull(s)    ((s) == NULL ? "<null>" : (s))
 
 #define d_to_i(d)     ((int)d_to_I(d))
 #define d_to_l(d)     ((long)d_to_L(d))

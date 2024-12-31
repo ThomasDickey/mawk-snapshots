@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.30 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: rexpdb.c,v 1.31 2024/12/30 15:35:57 tom Exp $
  */
 
 #include <rexp.h>
@@ -33,6 +33,10 @@ static const char xlat[][12] =
     "M_2JB",
     "M_SAVE_POS",
     "M_2JC",
+#ifndef NO_INTERVAL_EXPR
+    "M_ENTER",
+    "M_LOOP",
+#endif
     "M_ACCEPT"
 };
 
@@ -78,20 +82,24 @@ REmprint(STATE * m, FILE *f)
 	    break;
 	case M_2JC:
 	    fprintf(f, "\t%03d", line + p->s_data.jump);
-#ifndef NO_INTERVAL_EXPR
-	    if (p->it_min != 1 || p->it_max != MAX__INT) {
-		fprintf(f, " %c", L_CURL);
-		if (p->it_min != 0)
-		    fprintf(f, INT_FMT, p->it_min);
-		if (p->it_max != p->it_min) {
-		    fprintf(f, ",");
-		    if (p->it_max != MAX__INT)
-			fprintf(f, INT_FMT, p->it_max);
-		}
-		fprintf(f, "%c", R_CURL);
-	    }
-#endif
 	    break;
+#ifndef NO_INTERVAL_EXPR
+	case M_ENTER:
+	    fprintf(f, "\t%03d", line + p->s_data.jump);
+	    break;
+	case M_LOOP:
+	    fprintf(f, "\t%03d", line + p->s_data.jump);
+	    fprintf(f, " %c", L_CURL);
+	    if (p->it_min != 0)
+		fprintf(f, INT_FMT, p->it_min);
+	    if (p->it_max != p->it_min) {
+		fprintf(f, ",");
+		if (p->it_max != MAX__INT)
+		    fprintf(f, INT_FMT, p->it_max);
+	    }
+	    fprintf(f, "%c", R_CURL);
+	    break;
+#endif
 	case M_CLASS:
 	    {
 		UChar *q = (UChar *) p->s_data.bvp;

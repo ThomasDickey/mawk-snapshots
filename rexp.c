@@ -11,13 +11,17 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.53 2024/12/14 12:55:59 tom Exp $
+ * $MawkId: rexp.c,v 1.56 2024/12/31 12:56:54 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
 
 #include <rexp.h>
 #include <regexp.h>
+
+#ifndef FIXME_INTERVAL_LIMITS
+#define FIXME_INTERVAL_LIMITS 0	/* =1 for pre-bugfix */
+#endif
 
 /*  DATA   */
 int REerrno;
@@ -118,6 +122,91 @@ typedef struct {
     int prec;
 } OPS;
 
+#ifndef NO_INTERVAL_EXPR
+/* duplicate a machine, oldmp into newmp */
+static void
+duplicate_m(MACHINE * newmp, MACHINE * oldmp)
+{
+    register STATE *p;
+    TRACE(("duplicate_m %p -> %p\n", (void *) oldmp, (void *) newmp));
+    TRACE(("...start %p\n", (void *) oldmp->start));
+    TRACE(("...stop  %p\n", (void *) oldmp->stop));
+    p = (STATE *) RE_malloc(2 * STATESZ);
+    RE_copy_states(p, oldmp->start, 2);
+    newmp->start = (STATE *) p;
+    newmp->stop = (STATE *) (p + 1);
+}
+
+static void
+RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
+{
+    STATE *p = mp->start;
+    STATE *q = NULL;
+
+    if (p->s_type == M_2JA)
+	++p;
+
+    if (p->s_type == M_SAVE_POS) {
+	int depth = 0;
+	STATE *r = p;
+	do {
+	    switch (r->s_type) {
+	    case M_SAVE_POS:
+		depth++;
+		break;
+	    case M_2JC:
+	    case M_LOOP:
+		if (--depth == 0) {
+		    q = r;
+		}
+		break;
+	    case M_ACCEPT:
+		depth = -1;
+		break;
+	    }
+	    ++r;
+	} while (depth > 0);
+    }
+    if (q != NULL) {
+	size_t len = (size_t) (mp->stop - mp->start + 2);
+	int offset = (int) (q - mp->start);
+
+	q->s_type = M_LOOP;
+	q->it_min = minlimit;
+	q->it_max = maxlimit;
+
+	/* reallocate the states, to insert an item at the beginning */
+	mp->start = (STATE *) RE_realloc(mp->start, len * STATESZ);
+	mp->stop = mp->start + len - 1;
+	q = mp->start;
+	while (--len != 0) {
+	    q[len] = q[len - 1];
+	}
+	q->s_type = M_ENTER;
+	q->s_data.jump = offset + 1;
+    }
+}
+
+/*  replace m with m*  limited to the max iterations
+        (variation of m*   closure)   */
+static void
+RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
+{
+    RE_close(mp);
+    RE_set_limit(mp, min_limit, max_limit);
+}
+
+/*  replace m with m+  limited to the max iterations
+     which is one or more, limited
+        (variation of m+   positive closure)   */
+static void
+RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit)
+{
+    RE_poscl(mp);
+    RE_set_limit(mp, min_limit, max_limit);
+}
+#endif /* ! NO_INTERVAL_EXPR */
+
 /* duplicate_m() relies upon copying machines whose size is 1, i.e., atoms */
 #define BigMachine(mp) (((mp)->stop - (mp)->start) > 1)
 
@@ -156,8 +245,15 @@ REcompile(char *re, size_t len)
     t = RE_lex(m_stack(0));
     memset(m_ptr, 0, sizeof(*m_ptr));
 
+    /* provide for making the trace a little easier to read by indenting */
+#if OPT_TRACE > 1
+#define M_FMT(format) "@%d: %*s " format, __LINE__, 4 * ((int) (m_ptr - m_array)), " "
+#else
+#define M_FMT(format) format
+#endif
+
     while (1) {
-	TRACE(("RE_lex token %s\n", token_name(t)));
+	TRACE((M_FMT("RE_lex token %s\n"), token_name(t)));
 	switch (t) {
 	case T_STR:
 	case T_ANY:
@@ -179,7 +275,7 @@ REcompile(char *re, size_t len)
 	     *   convert m{3,} to mmm* (with a limit of MAX_INT)
 	     *   convert m{3,10} to mmm* with a limit of 10
 	     */
-	    TRACE(("interval {%ld,%ld}\n", (long) intrvalmin, (long) intrvalmax));
+	    TRACE((M_FMT("interval {%ld,%ld}\n"), (long) intrvalmin, (long) intrvalmax));
 	    if ((m_ptr - m_array) < STACKSZ)
 		memset(m_ptr + 1, 0, sizeof(*m_ptr));
 	    if (intrvalmin == 0) {	/* zero or more */
@@ -227,49 +323,49 @@ REcompile(char *re, size_t len)
 			RE_free(m_ptr->start);
 			m_ptr--;
 		    }
-		    TRACE(("RE_lex token %s\n",
+		    TRACE((M_FMT("RE_lex token %s\n"),
 			   "of zero interval is ignored!"));
 		    break;
 		case 1:
 		    RE_01(m_ptr);	/* m{0,1} which is m? */
-		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
+		    TRACE((M_FMT("RE_lex token %s\n"), token_name(T_Q)));
 		    break;
 		default:
 		    RE_close_limit(m_ptr, intrvalmin, intrvalmax);
-		    TRACE(("RE_lex token %s\n", token_name(T_Q)));
+		    TRACE((M_FMT("RE_lex token %s\n"), token_name(T_Q)));
 		}
 	    } else if (BigMachine(m_ptr)) {
 		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
-#ifdef NO_RI_LOOP_UNROLL
-	    } else if (intrvalmin >= 1) {	/* one or more */
-		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
-		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
-#else
 	    } else if (intrvalmin == 1) {	/* one or more */
 		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
-		TRACE(("RE_lex token %s\n", token_name(T_PLUS)));
-#endif
 	    } else if (m_ptr->start != NULL) {	/* n or more */
-		register Int i;
-		/* copy 2 copies of m_ptr, use 2nd copy to replace
-		   the first copy that gets swallowed by concat */
-		MACHINE *result_mp = m_ptr;
-		MACHINE *concat_mp = (m_ptr + 1);
-		MACHINE *new_mp = (m_ptr + 2);
-		TRACE(("calling duplicate_m result_mp %ld -> concat_mp %ld\n",
-		       result_mp - m_array,
-		       concat_mp - m_array));
-		duplicate_m(concat_mp, result_mp);
-		TRACE(("calling duplicate_m result_mp %ld -> new_mp %ld\n",
-		       result_mp - m_array,
-		       new_mp - m_array));
-		duplicate_m(new_mp, result_mp);
-		for (i = 2; i <= intrvalmin; i++) {
-		    RE_cat(result_mp, concat_mp);
-		    duplicate_m(concat_mp, new_mp);
+		/* loop-unrolling only works if min==max, so that the loops in
+		 * test/match functions can process the whole loop in each
+		 * iteration */
+		if (FIXME_INTERVAL_LIMITS || intrvalmin == intrvalmax) {
+		    register Int i;
+		    /* copy 2 copies of m_ptr, use 2nd copy to replace
+		       the first copy that gets swallowed by concat */
+		    MACHINE *result_mp = m_ptr;
+		    MACHINE *concat_mp = (m_ptr + 1);
+		    MACHINE *new_mp = (m_ptr + 2);
+		    TRACE((M_FMT("calling duplicate_m result_mp %ld -> concat_mp %ld\n"),
+			   result_mp - m_array,
+			   concat_mp - m_array));
+		    duplicate_m(concat_mp, result_mp);
+		    TRACE((M_FMT("calling duplicate_m result_mp %ld -> new_mp %ld\n"),
+			   result_mp - m_array,
+			   new_mp - m_array));
+		    duplicate_m(new_mp, result_mp);
+		    for (i = 2; i <= intrvalmin; i++) {
+			RE_cat(result_mp, concat_mp);
+			duplicate_m(concat_mp, new_mp);
+		    }
+		    /* don't need 2nd copy in new_mp */
+		    RE_free(new_mp->start);
+		} else {
+		    RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
 		}
-		/* don't need 2nd copy in new_mp */
-		RE_free(new_mp->start);
 	    }
 	    break;
 #endif /* ! NO_INTERVAL_EXPR */
@@ -358,7 +454,7 @@ REcompile(char *re, size_t len)
 	    op_ptr->token = t;
 	}			/* end of switch */
 
-	if (m_ptr == m_stack(STACKSZ - 1)) {
+	if (m_ptr >= m_stack(STACKSZ - 1)) {
 	    /*overflow */
 	    RE_error_trap(-ERR_5);
 	}
@@ -431,19 +527,3 @@ REerror(void)
 {
     return REerrlist[REerrno];
 }
-
-#ifndef NO_INTERVAL_EXPR
-/* duplicate a machine, oldmp into newmp */
-void
-duplicate_m(MACHINE * newmp, MACHINE * oldmp)
-{
-    register STATE *p;
-    TRACE(("duplicate_m %p -> %p\n", (void *) oldmp, (void *) newmp));
-    TRACE(("...start %p\n", (void *) oldmp->start));
-    TRACE(("...stop  %p\n", (void *) oldmp->stop));
-    p = (STATE *) RE_malloc(2 * STATESZ);
-    RE_copy_states(p, oldmp->start, 2);
-    newmp->start = (STATE *) p;
-    newmp->stop = (STATE *) (p + 1);
-}
-#endif /* NO_INTERVAL_EXPR */

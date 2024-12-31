@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.49 2024/12/14 12:57:40 tom Exp $
+ * $MawkId: rexp2.c,v 1.50 2024/12/31 15:21:17 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -91,7 +91,6 @@ RE_new_run_stack(void)
     RE_run_stack_limit = RE_run_stack_base + newsize;
     RE_run_stack_empty = RE_run_stack_base - 1;
 
-    /* return the new stackp */
     return RE_run_stack_base + oldsize;
 }
 
@@ -111,49 +110,35 @@ RE_new_pos_stack(void)
 	fprintf(stderr, "out of memory for RE string position stack\n");
 	mawk_exit(100);
     }
+#if OPT_TRACE
+    memset(RE_pos_stack_base + oldsize, 0,
+	   (newsize - oldsize) * sizeof(RT_POS_ENTRY));
+#endif
 
     RE_pos_stack_limit = RE_pos_stack_base + newsize;
     RE_pos_stack_empty = RE_pos_stack_base;
 
-    /* return the new stackp */
     return RE_pos_stack_base + oldsize;
 }
 
-#ifdef	DEBUG
-static RT_STATE *
-slow_push(
-	     RT_STATE * sp,
-	     STATE * m,
-	     char *s,
-	     RT_POS_ENTRY * pos_top,
-	     int u)
-{
-    if (sp == RE_run_stack_limit)
-	sp = RE_new_run_stack();
-    sp->m = m;
-    sp->s = s;
-    sp->u = u;
-    sp->sp = pos_top - RE_pos_stack_base;
-    sp->tp = pos_top->prev_offset;
-    return sp;
-}
-#endif
+#define rt_push(mx,sx,px,ux) do { \
+	if (++run_entry == RE_run_stack_limit) \
+		run_entry = RE_new_run_stack(); \
+	run_entry->m = (mx); \
+	run_entry->s = (sx); \
+	run_entry->pos_index = (int) ((px) - RE_pos_stack_base); \
+	run_entry->top_index = (px)->prev_offset; \
+	run_entry->u = (ux); \
+	TRACE2((rt_form "rt_push %s pos@%d top@%d\n", rt_args, \
+		REs_type(mx), \
+		run_entry->pos_index, \
+		run_entry->top_index)); \
+} while(0)
 
-#ifdef	 DEBUG
-#define	 push(mx,sx,px,ux) do { \
-		stackp = slow_push(++stackp, mx, sx, px, ux); \
-	} while(0)
-#else
-#define	 push(mx,sx,px,ux) do { \
-		if (++stackp == RE_run_stack_limit) \
-			stackp = RE_new_run_stack(); \
-		stackp->m = (mx); \
-		stackp->s = (sx); \
-		stackp->u = (ux); \
-		stackp->sp = (int) ((px) - RE_pos_stack_base); \
-		stackp->tp = (px)->prev_offset; \
-	} while(0)
-#endif
+#define rt_pop() do { \
+	TRACE2((rt_form "rt_pop\n", rt_args)); \
+	run_entry--; \
+} while (0)
 
 #define	CASE_UANY(x) case (x)+U_OFF:  /* FALLTHRU */ case (x)+U_ON
 
@@ -190,10 +175,11 @@ REtest(char *str,		/* string to test */
 {
     register STATE *m = machine;
     char *s = str;
-    register RT_STATE *stackp;
+    const char *old_s;
+    register RT_STATE *run_entry;
     int u_flag;
     char *str_end = str + len;
-    RT_POS_ENTRY *sp;
+    RT_POS_ENTRY *pos_entry;
     int ti;			/*convenient temps */
     STATE *tm;
 
@@ -201,42 +187,101 @@ REtest(char *str,		/* string to test */
 
     /* handle the easy case quickly */
     if (m->s_type == M_STR && (m + 1)->s_type == M_ACCEPT) {
-	return str_str(s, len, m->s_data.str, (size_t) m->s_len) != (char *) 0;
+	TRACE(("returning str_str\n"));
+	return str_str(s, len, m->s_data.str, m->s_len) != (char *) 0;
     } else {
 	u_flag = U_ON;
-	stackp = RE_run_stack_empty;
-	sp = RE_pos_stack_empty;
-	RE_init_it_cnt(m);
+	run_entry = RE_run_stack_empty;
+	pos_entry = RE_pos_stack_empty;
+	if_TRACE(memset(pos_entry, 0, 2 * sizeof(*pos_entry)));
 	RE_CASE();
     }
 
   refill:
-    if (stackp == RE_run_stack_empty) {
+#ifndef NO_INTERVAL_EXPR
+    if (run_entry != RE_run_stack_empty) {
+	STATE *m2;
+	int found;
+#if OPT_TRACE > 1
+	RT_STATE *statep;
+	RT_POS_ENTRY *posp;
+
+	for (statep = RE_run_stack_base; statep <= run_entry; ++statep) {
+	    TRACE(("check - STATE %d: m %03d s \"%s\" pos@%d top@%d u %d\n",
+		   (int) (statep - RE_run_stack_base),
+		   (int) (statep->m - machine),
+		   NonNull(statep->s),
+		   statep->pos_index,
+		   statep->top_index,
+		   statep->u));
+	}
+	for (posp = RE_pos_stack_base; posp <= pos_entry; ++posp) {
+	    TRACE(("check - POS %d: pos \"%s\" owner@%d prev@%d\n",
+		   (int) (posp - RE_pos_stack_base),
+		   NonNull(posp->pos),
+		   posp->owner,
+		   posp->prev_offset));
+	}
+#endif
+	/*
+	 * We're here because we had a mismatch in a loop. Find the end of the
+	 * loop, and reset it if the mismatch was due to too-few matches.
+	 * FIXME - provide this info in compile-stage
+	 */
+	found = 0;
+	for (m2 = run_entry->m; m2->s_type < M_ACCEPT; ++m2) {
+	    TRACE(("CHECK %03d %s\n", (int) (m2 - machine), REs_type(m2)));
+	    switch (m2->s_type) {
+	    case M_SAVE_POS:
+	    case M_2JA:
+	    case M_2JB:
+	    case M_2JC:
+		found = 1;
+		break;
+	    case M_LOOP:
+		found = 1;
+		TRACE2(("Found M_LOOP: %03d\n", (int) (m2 - machine)));
+		TRACE2(("currently " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
+		       m2->it_cnt, m2->it_min, m2->it_max));
+		if (m2->it_cnt < m2->it_min) {
+		    TRACE2(("too few - invoke M_ENTER\n"));
+		    run_entry->m = m2 + m2->s_data.jump - 1;
+		}
+		break;
+	    }
+	    if (found)
+		break;
+	}
+    }
+#endif
+    if (run_entry == RE_run_stack_empty) {
+	TR_AT("accept failure");
 	return 0;
     }
-    m = stackp->m;
-    s = stackp->s;
-    sp = RE_pos_stack_base + stackp->sp;
-    sp->prev_offset = stackp->tp;
-    u_flag = (stackp--)->u;
+    m = run_entry->m;
+    s = run_entry->s;
+    pos_entry = RE_pos_stack_base + run_entry->pos_index;
+    pos_entry->prev_offset = run_entry->top_index;
+    u_flag = run_entry->u;
+    rt_pop();
 
   reswitch:
-    TRACE2(("[%s@%d] %d:%03d %-8s %-15s: %s\n", __FILE__, __LINE__,
-	    (int) (stackp - RE_run_stack_base),
-	    (int) (m - machine),
-	    REs_type(m),
-	    RE_u_end(u_flag),
-	    s));
+    TRACE((rt_form "%-8s %-15s: \"%s\"\n", rt_args,
+	   REs_type(m),
+	   RE_u_end(u_flag),
+	   s));
 
     switch (m->s_type + u_flag) {
     case M_STR + U_OFF + END_OFF:
 	if (s > str_end
 	    || (size_t) (str_end - s) < m->s_len
 	    || memcmp(s, m->s_data.str, m->s_len)) {
+	    TR_AT("no match");
 	    RE_FILL();
 	}
 	s += m->s_len;
 	m++;
+	TR_AT("match");
 	RE_CASE();
 
     case M_STR + U_OFF + END_ON:
@@ -249,10 +294,11 @@ REtest(char *str,		/* string to test */
 	RE_CASE();
 
     case M_STR + U_ON + END_OFF:
-	if (!(s = str_str(s, (size_t) (str_end - s), m->s_data.str, (size_t) m->s_len))) {
+	s = str_str(s, (size_t) (str_end - s), m->s_data.str, m->s_len);
+	if (s == NULL) {
 	    RE_FILL();
 	}
-	push(m, s + 1, sp, U_ON);
+	rt_push(m, s + 1, pos_entry, U_ON);
 	s += m->s_len;
 	m++;
 	u_flag = U_OFF;
@@ -297,7 +343,7 @@ REtest(char *str,		/* string to test */
 	    s++;
 	}
 	s++;
-	push(m, s, sp, U_ON);
+	rt_push(m, s, pos_entry, U_ON);
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
@@ -336,7 +382,7 @@ REtest(char *str,		/* string to test */
 	    RE_FILL();
 	}
 	s++;
-	push(m, s, sp, U_ON);
+	rt_push(m, s, pos_entry, U_ON);
 	m++;
 	u_flag = U_OFF;
 	RE_CASE();
@@ -392,63 +438,88 @@ REtest(char *str,		/* string to test */
 	RE_CASE();
 
       CASE_UANY(M_SAVE_POS):	/* save position for a later M_2JC */
-	sp = RE_pos_push(sp, stackp, s);
+	pos_push(pos_entry, run_entry, s);
 	m++;
 	RE_CASE();
 
       CASE_UANY(M_2JA):	/* take the non jump branch */
 	/* don't stack an ACCEPT */
 	if ((tm = m + m->s_data.jump)->s_type == M_ACCEPT) {
+	    TR_AT("accept success");
 	    return 1;
 	}
-	push(tm, s, sp, u_flag);
+	rt_push(tm, s, pos_entry, u_flag);
 	m++;
 	RE_CASE();
 
-      CASE_UANY(M_2JC):	/* take the jump branch if position changed */
 #ifndef NO_INTERVAL_EXPR
-	if (m->it_max < MAX__INT && ++(m->it_cnt) >= m->it_max) {
-	    RE_pos_pop(&sp, stackp);
+      CASE_UANY(M_ENTER):	/* take the jump branch if position changed */
+	TRACE(("reset loop " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
+	       m->it_cnt, m->it_min, m->it_max));
+	(m + m->s_data.jump)->it_cnt = 0;
+	m++;
+	RE_CASE();
+
+      CASE_UANY(M_LOOP):	/* take the jump branch if position changed */
+	m->it_cnt++;
+	TRACE(("checking loop " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
+	       m->it_cnt, m->it_min, m->it_max));
+	if (m->it_max < MAX__INT && m->it_cnt >= m->it_max) {
 	    m++;
+	    TR_AT("past maximum for M_LOOP");
 	    RE_CASE();		/* test the next thing */
-	} else
+	} else if (m->it_cnt < m->it_min) {
+	    m += m->s_data.jump;
+	    TR_AT("under minimum for M_LOOP");
+	    RE_CASE();
+	}
+	goto fall_through;	/* workaround for gcc bug */
+      fall_through:
+	/* FALLTHRU */
 #endif /* ! NO_INTERVAL_EXPR */
-	if (RE_pos_pop(&sp, stackp) == s) {
+
+      CASE_UANY(M_2JC):	/* take the jump branch if position changed */
+	pos_pop(pos_entry, run_entry, old_s);
+	if (old_s == s) {
 	    /* did not advance: do not jump back */
 	    m++;
 	    RE_CASE();
 	}
 	/* don't stack an ACCEPT */
 	if ((tm = m + 1)->s_type == M_ACCEPT) {
+	    TR_AT("accept success");
 	    return 1;
 	}
-	push(tm, s, sp, u_flag);
+	rt_push(tm, s, pos_entry, u_flag);
 	m += m->s_data.jump;
 	RE_CASE();
 
       CASE_UANY(M_2JB):
 	/* don't stack an ACCEPT */
 	if ((tm = m + 1)->s_type == M_ACCEPT) {
+	    TR_AT("accept success");
 	    return 1;
 	}
-	push(tm, s, sp, u_flag);
+	rt_push(tm, s, pos_entry, u_flag);
 	m += m->s_data.jump;
 	RE_CASE();
 
       CASE_UANY(M_ACCEPT):
+	TR_AT("accept success");
 	return 1;
 
     default:
 	RE_bad_state("REtest", m, u_flag);
     }
+    return 0;
 }
 
-#undef push
+#undef rt_push
 
 #include <field.h>
 
 char *
-is_string_split(PTR q, size_t * lenp)
+is_string_split(PTR q, size_t *lenp)
 {
     STATE *p = cast_to_re(q);
 

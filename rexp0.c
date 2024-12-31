@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.50 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: rexp0.c,v 1.52 2024/12/30 19:17:41 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -276,6 +276,9 @@ RE_lex(MACHINE * mp)
 
     case T_LP:
 	switch (prev) {
+#ifndef NO_INTERVAL_EXPR
+	case T_RB:
+#endif
 	case T_CHAR:
 	case T_STR:
 	case T_ANY:
@@ -287,13 +290,6 @@ RE_lex(MACHINE * mp)
 	case T_Q:
 	case T_U:
 	    return prev = T_CAT;
-
-#ifndef NO_INTERVAL_EXPR
-	case T_RB:
-	    if (!repetitions_flag) {
-		return prev = T_CAT;
-	    }
-#endif
 
 	    /* FALLTHRU */
 	default:
@@ -626,6 +622,9 @@ lookup_cclass(char **start)
 	int first = -2;
 	int last = -2;
 
+	if (data == NULL)
+	    RE_error_trap(-ERR_3);
+
 	for (ch = 0; ch < 256; ++ch) {
 	    switch (code) {
 	    case CCLASS_NONE:
@@ -678,6 +677,8 @@ lookup_cclass(char **start)
 		if (used + 2 >= have) {
 		    have *= 2;
 		    data = realloc(data, sizeof(CCLASS) * have);
+		    if (data == NULL)
+			RE_error_trap(-ERR_3);
 		}
 		data[used].first = first;
 		data[used].last = last;
@@ -689,6 +690,8 @@ lookup_cclass(char **start)
 	    if (used + 2 >= have) {
 		have *= 2;
 		data = realloc(data, sizeof(CCLASS) * have);
+		if (data == NULL)
+		    RE_error_trap(-ERR_3);
 	    }
 	    data[used].first = first;
 	    data[used].last = last;
