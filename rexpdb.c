@@ -1,6 +1,6 @@
 /********************************************
 rexpdb.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2025, Thomas E. Dickey
 copyright 1991,1993, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexpdb.c,v 1.31 2024/12/30 15:35:57 tom Exp $
+ * $MawkId: rexpdb.c,v 1.33 2025/01/20 20:16:06 tom Exp $
  */
 
 #include <rexp.h>
@@ -78,14 +78,14 @@ REmprint(STATE * m, FILE *f)
 	case M_1J:
 	case M_2JA:
 	case M_2JB:
-	    fprintf(f, "\t%03d", line + p->s_data.jump);
-	    break;
 	case M_2JC:
 	    fprintf(f, "\t%03d", line + p->s_data.jump);
 	    break;
 #ifndef NO_INTERVAL_EXPR
 	case M_ENTER:
-	    fprintf(f, "\t%03d", line + p->s_data.jump);
+	    fprintf(f, "\t%03d\t# level %d",
+		    line + p->s_data.jump,
+		    (int) p->it_cnt);
 	    break;
 	case M_LOOP:
 	    fprintf(f, "\t%03d", line + p->s_data.jump);
@@ -98,6 +98,7 @@ REmprint(STATE * m, FILE *f)
 		    fprintf(f, INT_FMT, p->it_max);
 	    }
 	    fprintf(f, "%c", R_CURL);
+	    fprintf(f, "\t# level %d", (int) (p + p->s_enter)->it_cnt);
 	    break;
 #endif
 	case M_CLASS:

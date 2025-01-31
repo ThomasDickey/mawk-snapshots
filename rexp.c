@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2025, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.56 2024/12/31 12:56:54 tom Exp $
+ * $MawkId: rexp.c,v 1.61 2025/01/31 22:33:22 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
@@ -71,7 +71,7 @@ static  short  table[10][10]  =  {
 
 static const char *REs_type(STATE * p);
 
-static jmp_buf err_buf;		/*  used to trap on error */
+static jmp_buf err_buf;		/* used to trap on error */
 
 #if OPT_TRACE > 0
 static const char *
@@ -123,6 +123,9 @@ typedef struct {
 } OPS;
 
 #ifndef NO_INTERVAL_EXPR
+#define MAX_LOOP_LEVEL 10	/* this would be very complex... */
+static int used_loop_level;	/* used to flag post-processing step */
+
 /* duplicate a machine, oldmp into newmp */
 static void
 duplicate_m(MACHINE * newmp, MACHINE * oldmp)
@@ -137,53 +140,208 @@ duplicate_m(MACHINE * newmp, MACHINE * oldmp)
     newmp->stop = (STATE *) (p + 1);
 }
 
+extern FILE *trace_fp;
+/*
+ * Find the end of the last-created loop, i.e., with M_2JC, and replace that
+ * with an M_LOOP with the given limits.  Also:
+ *
+ * (a) resize the machine and insert a M_ENTER before the M_SAVE_POS which
+ *     is at the beginning of the M_2JC loop.
+ * (b) replace any nested loops within this updated loop, so that the whole
+ *     stack will use M_LOOP consistently.
+ *
+ * Because this is applied to the last-created loop, it is not necessary to
+ * adjust jump-offsets to following loops which could span this loop.  But it
+ * is necessary to adjust jumps which precede (i.e., jump over) this loop.
+ */
 static void
 RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
 {
     STATE *p = mp->start;
-    STATE *q = NULL;
+    STATE *last_1st = NULL;
+    STATE *last_end = NULL;
+    STATE *temp = NULL;
+    int nests = 0;
+
+    TRACE(("RE_set_limit " INT_FMT ".." INT_FMT "\n", minlimit, maxlimit));
 
     if (p->s_type == M_2JA)
 	++p;
 
     if (p->s_type == M_SAVE_POS) {
 	int depth = 0;
-	STATE *r = p;
+	temp = p;
 	do {
-	    switch (r->s_type) {
+	    switch (temp->s_type) {
 	    case M_SAVE_POS:
-		depth++;
+		if (depth++ == 0)
+		    last_1st = temp;
 		break;
 	    case M_2JC:
+		if (depth > 1)
+		    ++nests;
+		/* FALLTHRU */
 	    case M_LOOP:
 		if (--depth == 0) {
-		    q = r;
+		    last_end = temp;
 		}
 		break;
 	    case M_ACCEPT:
 		depth = -1;
 		break;
 	    }
-	    ++r;
+	    ++temp;
 	} while (depth > 0);
     }
-    if (q != NULL) {
+    /*
+     * If we found the end of a top-level loop, we can modify it.
+     */
+    if (last_end != NULL) {
 	size_t len = (size_t) (mp->stop - mp->start + 2);
-	int offset = (int) (q - mp->start);
+	size_t base = (size_t) (last_1st - mp->start);
+	size_t newlen = (size_t) (1 + len + (size_t) nests);
+	int offset = (int) (last_end - mp->start);
 
-	q->s_type = M_LOOP;
-	q->it_min = minlimit;
-	q->it_max = maxlimit;
+	last_end->s_type = M_LOOP;
+	last_end->it_min = minlimit;
+	last_end->it_max = maxlimit;
+	last_end->s_enter = -(offset + 1);
+	last_end->s_enter += (int) base;
 
-	/* reallocate the states, to insert an item at the beginning */
-	mp->start = (STATE *) RE_realloc(mp->start, len * STATESZ);
+	/*
+	 * Reallocate the states, to insert an item at the beginning.
+	 *
+	 * The new size accounts for any nested loops which we found, but the
+	 * stop-pointer is set for the current length of the top loop.
+	 */
+	mp->start = (STATE *) RE_realloc(mp->start, newlen * STATESZ);
 	mp->stop = mp->start + len - 1;
-	q = mp->start;
+	temp = mp->start + base;
+	len -= base;
 	while (--len != 0) {
-	    q[len] = q[len - 1];
+	    temp[len] = temp[len - 1];
 	}
-	q->s_type = M_ENTER;
-	q->s_data.jump = offset + 1;
+	temp->s_type = M_ENTER;
+	temp->s_data.jump = (int) ((size_t) (offset + 1) - base);
+	used_loop_level = 1;
+
+	/* if there were jumps over the adjusted loop, adjust them */
+	if (base) {
+	    int n;
+	    temp = mp->start;
+	    for (n = 0; n < (int) base; ++n) {
+		switch (temp[n].s_type) {
+		case M_1J:
+		case M_2JA:
+		case M_2JB:
+		    if ((size_t) (n + temp[n].s_data.jump) > base)
+			temp[n].s_data.jump++;
+		    break;
+		}
+	    }
+	}
+
+	/*
+	 * Transform nested loops ending with M_2JC (+), to M_LOOP {1,}
+	 * Exclude for now any which are preceded by M_2JA (*), which is
+	 * not yet handled for M_LOOP (2025-01-31).
+	 */
+	while (nests > 0) {
+	    int probe;
+	    int inner;
+	    int outer;
+	    int ender;
+	    int check;
+	    int oldlen = (int) (mp->stop - mp->start + 1);
+	    p = mp->start;
+	    /*
+	     * Look for a loop to expand.
+	     */
+	    for (probe = oldlen; probe != 0; --probe) {
+		if (p[probe - 1].s_type == M_2JC) {
+		    --probe;
+		    inner = probe + p[probe].s_data.jump;
+		    if (inner != 0
+			&& p[inner].s_type == M_SAVE_POS
+			&& p[inner - 1].s_type == M_2JA) {
+			nests--;
+			continue;
+		    }
+		    /*
+		     * Adjust jumps across the loop which will be expanded.
+		     */
+		    for (outer = 0; outer < oldlen && outer < probe; ++outer) {
+			switch (p[outer].s_type) {
+			case M_2JA:
+			    break;
+			case M_ENTER:
+			    ender = outer + p[outer].s_data.jump;
+			    check = ender + p[ender].s_enter;
+			    if (ender > probe
+				&& check == outer) {
+				p[outer].s_data.jump++;
+				p[ender].s_enter--;
+			    }
+			    break;
+			}
+		    }
+		    for (outer = probe + 1; outer < oldlen; ++outer) {
+			switch (p[outer].s_type) {
+			case M_LOOP:
+			    ender = outer + p[outer].s_data.jump;
+			    if (ender < probe)
+				p[outer].s_data.jump--;
+			    break;
+			}
+		    }
+		    /*
+		     * Now, expand the loop we found.
+		     */
+		    p[probe].s_type = M_LOOP;
+		    p[probe].it_min = 1;
+		    p[probe].it_max = MAX__INT;
+		    p[probe].s_enter = (int) (inner - probe - 1);
+		    for (outer = oldlen + 1; outer != inner; --outer) {
+			p[outer] = p[outer - 1];
+		    }
+		    p[inner].s_type = M_ENTER;
+		    p[inner].s_data.jump = probe - inner + 1;
+		    mp->stop++;
+		    /*
+		     * Find any remaining jumps spanning the adjusted loop,
+		     * and adjust those as well.
+		     */
+		    while (inner != 0) {
+			switch (p[inner].s_type) {
+			case M_1J:
+			case M_2JA:
+			case M_2JB:
+			case M_2JC:
+			    if (inner + p[inner].s_data.jump >= probe) {
+				p[inner].s_data.jump++;
+			    }
+			    break;
+			}
+			--inner;
+		    }
+		    /*
+		     * Done for now, look for remaining loops.
+		     */
+		    break;
+		}
+	    }
+	    --nests;
+	}
+	for (p = mp->start, nests = 0; p != mp->stop; ++p) {
+	    switch (p->s_type) {
+	    case M_ENTER:
+		p->it_cnt = ++nests;
+		break;
+	    case M_LOOP:
+		--nests;
+		break;
+	    }
+	}
     }
 }
 
@@ -205,6 +363,41 @@ RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit)
     RE_poscl(mp);
     RE_set_limit(mp, min_limit, max_limit);
 }
+
+/* If we used M_ENTER/M_LOOP, set the level-number for M_ENTER */
+static STATE *
+markup_loop_levels(MACHINE * mp)
+{
+    STATE *p = mp->start;
+    if (used_loop_level && p != NULL) {
+	STATE *q = p;
+	STATE *r;
+	int level = 0;
+	int done = 0;
+	while (!done && q != mp->stop) {
+	    switch (q->s_type) {
+	    case M_ACCEPT:
+		done = 1;
+		break;
+	    case M_ENTER:
+		q->it_cnt = ++level;
+		if (level > MAX_LOOP_LEVEL)
+		    compile_error("brace expression exceeds %d levels\n",
+				  MAX_LOOP_LEVEL);
+		break;
+	    case M_LOOP:
+		r = (q + q->s_enter);
+		if (level-- != (int) r->it_cnt)
+		    compile_error("mismatched levels for brace-expression");
+		break;
+	    }
+	    ++q;
+	}
+    }
+    return p;
+}
+#else
+#define markup_loop_levels(mp) (mp)->start
 #endif /* ! NO_INTERVAL_EXPR */
 
 /* duplicate_m() relies upon copying machines whose size is 1, i.e., atoms */
@@ -244,6 +437,10 @@ REcompile(char *re, size_t len)
 
     t = RE_lex(m_stack(0));
     memset(m_ptr, 0, sizeof(*m_ptr));
+
+#ifndef NO_INTERVAL_EXPR
+    used_loop_level = 0;
+#endif
 
     /* provide for making the trace a little easier to read by indenting */
 #if OPT_TRACE > 1
@@ -374,7 +571,7 @@ REcompile(char *re, size_t len)
 	    if (op_ptr->token == 0) {
 		/*  done   */
 		if (m_ptr == m_stack(0)) {
-		    return m_ptr->start;
+		    return markup_loop_levels(m_ptr);
 		} else {
 		    /* machines still on the stack  */
 		    RE_panic("values still on machine stack for %s", re);

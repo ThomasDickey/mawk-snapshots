@@ -1,6 +1,6 @@
 /********************************************
 da.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2025, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: da.c,v 1.54 2024/12/14 12:53:14 tom Exp $
+ * $MawkId: da.c,v 1.57 2025/01/20 15:49:04 tom Exp $
  */
 
 /* disassemble code */
@@ -123,10 +123,6 @@ static const OP_NAME simple_code[] =
     { _HALT,      "" }
 } ;
 /* *INDENT-ON* */
-
-static const char *jfmt = "%s%s%03d\n";
-   /* format to print jumps */
-static const char *tab2 = "\t\t";
 
 #if OPT_TRACE
 static FBLOCK *
@@ -378,24 +374,24 @@ da_this(INST * p, const INST * start, FILE *fp)
 	++p;
 	break;
 
+#define LABEL(p) ((long) (p - start) + p->op)
+
     case _JMP:
     case _JNZ:
     case _JZ:
     case _LJZ:
     case _LJNZ:
-	fprintf(fp, jfmt, op_name,
-		(strlen(op_name) < 8) ? tab2 : (tab2 + 1),
-		(p - start) + p->op);
+	fprintf(fp, "%s\t%03ld\n", op_name, LABEL(p));
 	p++;
 	break;
 
     case SET_ALOOP:
-	fprintf(fp, "%s\t%03ld\n", op_name, (long) (p + p->op - start));
+	fprintf(fp, "%s\t%03ld\n", op_name, LABEL(p));
 	p++;
 	break;
 
     case ALOOP:
-	fprintf(fp, "%s\t%03ld\n", op_name, (long) (p - start + p->op));
+	fprintf(fp, "%s\t%03ld\n", op_name, LABEL(p));
 	p++;
 	break;
 

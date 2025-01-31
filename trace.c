@@ -1,6 +1,6 @@
 /********************************************
 trace.c
-copyright 2012-2023,2024 Thomas E. Dickey
+copyright 2012-2024,2025 Thomas E. Dickey
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.27 2024/12/25 01:43:52 tom Exp $
+ * $MawkId: trace.c,v 1.28 2025/01/30 09:03:06 tom Exp $
  */
 
 #define Visible_CELL
@@ -19,7 +19,7 @@ the GNU General Public License, version 2, 1991.
 #include <mawk.h>
 #include <code.h>
 
-static FILE *trace_fp;
+FILE *trace_fp;
 
 void
 Trace(const char *format, ...)

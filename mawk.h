@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2023,2024 Thomas E. Dickey
+copyright 2008-2024,2025 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.77 2024/12/24 16:51:37 tom Exp $
+ * $MawkId: mawk.h,v 1.78 2025/01/30 09:02:31 tom Exp $
  */
 
 /*  mawk.h  */
@@ -207,6 +207,7 @@ extern double strtod_with_ovf_bug(const char *, char **);
 #endif
 
 #if OPT_TRACE > 0
+extern FILE *trace_fp;
 extern void Trace(const char *, ...) GCC_PRINTFLIKE(1,2);
 extern void TraceVA(const char *, va_list);
 #define TRACE(params) Trace params

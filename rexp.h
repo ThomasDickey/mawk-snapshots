@@ -1,6 +1,6 @@
 /********************************************
 rexp.h
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2025, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.h,v 1.45 2024/12/31 11:42:44 tom Exp $
+ * $MawkId: rexp.h,v 1.48 2025/01/20 20:37:13 tom Exp $
  */
 
 #ifndef  REXP_H
@@ -68,6 +68,9 @@ typedef struct _state
 #ifdef Visible_STATE
 {
     SType s_type;
+#ifndef NO_INTERVAL_EXPR
+    int s_enter;		/* M_LOOP offset to M_ENTER, runtime check */
+#endif
     size_t s_len;		/* used for M_STR  */
     union {
 	char *str;		/* string */
@@ -77,7 +80,7 @@ typedef struct _state
 #ifndef NO_INTERVAL_EXPR
     Int it_min;			/* used for s_type == M_LOOP */
     Int it_max;			/* used for s_type == M_LOOP */
-    Int it_cnt;
+    Int it_cnt;			/* M_ENTER level, M_LOOP working counter */
 #endif
 }
 #endif
@@ -214,7 +217,7 @@ extern char *re_exp;
 #if OPT_TRACE
 #define if_TRACE(stmt) stmt
 #else
-#define if_TRACE(stmt) /*nothing*/
+#define if_TRACE(stmt)		/*nothing */
 #endif
 
 #define pos_push(pos_param, run_param, position) do { \

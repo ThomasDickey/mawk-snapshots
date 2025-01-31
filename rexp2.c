@@ -1,6 +1,6 @@
 /********************************************
 rexp2.c
-copyright 2009-2020,2024, Thomas E. Dickey
+copyright 2009-2024,2025, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1992,1993, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp2.c,v 1.50 2024/12/31 15:21:17 tom Exp $
+ * $MawkId: rexp2.c,v 1.53 2025/01/22 00:44:07 tom Exp $
  */
 
 /*  test a string against a machine   */
@@ -182,6 +182,10 @@ REtest(char *str,		/* string to test */
     RT_POS_ENTRY *pos_entry;
     int ti;			/*convenient temps */
     STATE *tm;
+#ifndef NO_INTERVAL_EXPR
+    STATE *loop_stack[MAX_LOOP_LEVEL + 1];
+    int loop_depth = 0;
+#endif
 
     TRACE(("REtest: \"%s\" ~ /pattern/\n", str));
 
@@ -200,8 +204,6 @@ REtest(char *str,		/* string to test */
   refill:
 #ifndef NO_INTERVAL_EXPR
     if (run_entry != RE_run_stack_empty) {
-	STATE *m2;
-	int found;
 #if OPT_TRACE > 1
 	RT_STATE *statep;
 	RT_POS_ENTRY *posp;
@@ -226,31 +228,28 @@ REtest(char *str,		/* string to test */
 	/*
 	 * We're here because we had a mismatch in a loop. Find the end of the
 	 * loop, and reset it if the mismatch was due to too-few matches.
-	 * FIXME - provide this info in compile-stage
 	 */
-	found = 0;
-	for (m2 = run_entry->m; m2->s_type < M_ACCEPT; ++m2) {
-	    TRACE(("CHECK %03d %s\n", (int) (m2 - machine), REs_type(m2)));
-	    switch (m2->s_type) {
-	    case M_SAVE_POS:
-	    case M_2JA:
-	    case M_2JB:
-	    case M_2JC:
-		found = 1;
-		break;
-	    case M_LOOP:
-		found = 1;
-		TRACE2(("Found M_LOOP: %03d\n", (int) (m2 - machine)));
-		TRACE2(("currently " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
-		       m2->it_cnt, m2->it_min, m2->it_max));
-		if (m2->it_cnt < m2->it_min) {
-		    TRACE2(("too few - invoke M_ENTER\n"));
-		    run_entry->m = m2 + m2->s_data.jump - 1;
-		}
-		break;
+	if (loop_depth > 0) {
+	    STATE *enter = loop_stack[loop_depth - 1];
+	    STATE *loop = enter + enter->s_data.jump;
+
+	    TRACE2(("Found M_LOOP: %03d at loop level %d\n",
+		    (int) (loop - machine), loop_depth));
+	    TRACE2(("currently " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
+		    loop->it_cnt, loop->it_min, loop->it_max));
+	    if ((loop->it_cnt < loop->it_min) && (enter < run_entry->m)) {
+		TRACE2(("too few - invoke M_ENTER\n"));
+		TRACE2(("switch from %03ld to %03ld\n",
+			run_entry->m - machine,
+			enter - machine));
+		run_entry->m = enter;
+	    } else if (run_entry->m > loop) {
+		loop_stack[--loop_depth] = NULL;
+		TRACE2(("fall out of loop %03ld %03ld, now level %d\n",
+			enter - machine,
+			loop - machine,
+			loop_depth));
 	    }
-	    if (found)
-		break;
 	}
     }
 #endif
@@ -457,6 +456,18 @@ REtest(char *str,		/* string to test */
 	TRACE(("reset loop " INT_FMT " [" INT_FMT ".." INT_FMT "]\n",
 	       m->it_cnt, m->it_min, m->it_max));
 	(m + m->s_data.jump)->it_cnt = 0;
+	/*
+	 * This begins an iteration by resetting the counter.  Save a pointer
+	 * to the corresponding M_LOOP to help with recovery on mismatches.
+	 */
+	TRACE2(("checking loop_depth " INT_FMT " vs %d\n",
+		m->it_cnt, loop_depth));
+	if (m->it_cnt != loop_depth) {
+	    loop_depth = (int) (m->it_cnt - 1);
+	    if (loop_depth >= MAX_LOOP_LEVEL)
+		bozo("excessive loop-level");
+	    loop_stack[loop_depth++] = m;
+	}
 	m++;
 	RE_CASE();
 
@@ -468,10 +479,6 @@ REtest(char *str,		/* string to test */
 	    m++;
 	    TR_AT("past maximum for M_LOOP");
 	    RE_CASE();		/* test the next thing */
-	} else if (m->it_cnt < m->it_min) {
-	    m += m->s_data.jump;
-	    TR_AT("under minimum for M_LOOP");
-	    RE_CASE();
 	}
 	goto fall_through;	/* workaround for gcc bug */
       fall_through:
