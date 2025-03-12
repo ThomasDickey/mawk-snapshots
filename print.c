@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.52 2024/08/25 17:03:28 tom Exp $
+ * $MawkId: print.c,v 1.55 2024/12/10 01:13:31 tom Exp $
  */
 
 #define Visible_BI_REC
@@ -49,11 +49,16 @@ the GNU General Public License, version 2, 1991.
 #define MY_FMT	p		/* p -> format */
 #endif
 
-static void write_error(void);
-
 /* this can be moved and enlarged  by -W sprintf=num  */
 char *sprintf_buff = string_buff;
 char *sprintf_limit = string_buff + sizeof(string_buff);
+
+static GCC_NORETURN void
+write_error(void)
+{
+    errmsg(errno, "write failure");
+    mawk_exit(2);
+}
 
 /* Once execute() starts the sprintf code is (belatedly) the only
    code allowed to use string_buff  */
@@ -82,19 +87,31 @@ print_cell(CELL *p, FILE *fp)
 	break;
 
     case C_DOUBLE:
-	if (p->dval >= (double) Max_Long) {
+#if (defined(HAVE_ISINF) && defined(HAVE_ISNAN))
+	if ((isinf(p->dval) || isnan(p->dval))) {
+	    char xbuff[256];
+	    char *s = xbuff;
+	    (void) sprintf(s, "%g", p->dval);
+	    (void) strcpy(s, (*s != '-' && *s != '+') ? "+%g" : "%g");
+	    fprintf(fp, xbuff, p->dval);
+	} else
+#endif
+	if (IsMaxBound(fabs(p->dval))) {
+	    fprintf(fp, UNSIGNED_FORMAT, p->dval);
+	} else if (p->dval >= (double) Max_Long) {
 	    ULong ival = d_to_UL(p->dval);
 
 	    /* integers can print as "%[l]u", for additional range */
-	    if ((double) ival == p->dval)
+	    if ((double) ival == p->dval && (p->dval != (double) Max_ULong)) {
 		fprintf(fp, ULONG_FMT, ival);
-	    else
+	    } else {
 		fprintf(fp, string(OFMT)->str, p->dval);
+	    }
 	} else {
 	    Long ival = d_to_L(p->dval);
 
 	    /* integers print as "%[l]d" */
-	    if ((double) ival == p->dval)
+	    if ((double) ival == p->dval && (p->dval != (double) Max_Long))
 		fprintf(fp, LONG_FMT, ival);
 	    else
 		fprintf(fp, string(OFMT)->str, p->dval);
@@ -176,7 +193,7 @@ typedef enum {
 
 /*-------------------------------------------------------*/
 
-static void
+static GCC_NORETURN void
 bad_conversion(int cnt, const char *who, const char *format)
 {
     rt_error("improper conversion(number %d) in %s(\"%s\")",
@@ -412,6 +429,76 @@ buffer_puts_sfmt(char *target,
     return target;
 }
 
+int OFMT_type;			/* PF_xxx type, for out-of-range print */
+
+static int
+type_of_OFMT(void)
+{
+    int result = OFMT_type;
+    if (result <= 0) {
+	char *p = string(OFMT)->str;
+	int marker = 0;
+	int ch;
+
+	while ((ch = *p++) != '\0') {
+	    int checks = -1;
+	    switch (ch) {
+	    case '%':
+		if (*p != '%')
+		    marker = 1;
+		break;
+	    case 'e':
+	    case 'g':
+	    case 'f':
+	    case 'E':
+	    case 'G':
+		checks = PF_F;
+		break;
+	    case 'd':
+	    case 'i':
+		checks = PF_D;
+		break;
+	    case 'u':
+	    case 'o':
+	    case 'x':
+	    case 'X':
+		checks = PF_U;
+		break;
+	    case 'c':
+		checks = PF_C;
+		break;
+	    case 's':
+		checks = PF_S;
+		break;
+	    }
+	    if (checks >= 0 && marker) {
+		result = checks;
+		break;
+	    }
+	}
+	OFMT_type = result;
+	TRACE(("type_of_OFMT %s = %d\n", string(OFMT)->str, result));
+    }
+    return result;
+}
+
+/*
+ * isinf() gives a clue about the +/- sign, isnan() does not.
+ */
+#if (defined(HAVE_ISINF) && defined(HAVE_ISNAN))
+#define validate_number(cp) \
+    if ((cp->type == C_DOUBLE) && (isinf(cp->dval) || isnan(cp->dval))) { \
+	pf_type = PF_F; \
+	splice = 0; \
+	p = xbuff; \
+	(void) sprintf(p, "%g", cp->dval); \
+	(void) strcpy(p, (*p != '-' && *p != '+') ? "+%g" : "%g"); \
+	break; \
+    }
+#else
+#define validate_number(cp)	/* nothing */
+#endif
+
 /*
  * Note: caller must do CELL cleanup.
  * The format parameter is modified, but restored.
@@ -438,6 +525,8 @@ do_printf(FILE *fp,
     int pf_type = 0;		/* conversion type */
     STRING onechr;
     char xbuff[256];		/* splice in l qualifier here */
+
+    TRACE(("do_printf fmt=%s, argc=%d\n", format, argcnt));
 
     while (1) {
 	while (*q != '%') {
@@ -517,6 +606,7 @@ do_printf(FILE *fp,
 
 	switch (*q++) {
 	case 's':
+	    validate_number(cp);
 	    if (l_flag + h_flag)
 		bad_conversion(num_conversion, who, format);
 	    if (cp->type < C_STRING)
@@ -525,6 +615,7 @@ do_printf(FILE *fp,
 	    break;
 
 	case 'c':
+	    validate_number(cp);
 	    if (l_flag + h_flag)
 		bad_conversion(num_conversion, who, format);
 
@@ -559,29 +650,47 @@ do_printf(FILE *fp,
 	    break;
 
 	case 'd':
-	    if (cp->type != C_DOUBLE)
-		cast1_to_d(cp);
-	    if (cp->dval >= (double) Max_Long) {
-		Uval = d_to_UL(cp->dval);
-		pf_type = PF_U;
-	    } else {
-		Ival = d_to_L(cp->dval);
-		pf_type = PF_D;
-	    }
-	    SpliceFormat(!l_flag || h_flag);
-	    break;
 	case 'i':
+	    validate_number(cp);
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
-	    Ival = d_to_L(cp->dval);
-	    pf_type = PF_D;
-	    SpliceFormat(!l_flag || h_flag);
+	    if (!h_flag && IsMaxBound(fabs(cp->dval))) {
+		pf_type = PF_F;
+		splice = 0;
+		p = strcpy(xbuff, UNSIGNED_FORMAT);
+	    } else if (!h_flag && PastBound(fabs(cp->dval))) {
+		pf_type = type_of_OFMT();
+		splice = 0;
+		p = strcpy(xbuff, string(OFMT)->str);
+		if (cp->type == C_DOUBLE) {
+		    switch (pf_type) {
+		    case PF_C:
+		    case PF_D:
+		    case PF_U:
+			strcpy(xbuff, "%.6g");
+			pf_type = PF_F;
+			break;
+		    case PF_S:
+			cast1_to_s(cp);
+			break;
+		    }
+		}
+	    } else {
+		if (cp->dval >= (double) Max_Long) {
+		    Uval = d_to_UL(cp->dval);
+		    pf_type = PF_U;
+		} else {
+		    Ival = d_to_L(cp->dval);
+		    pf_type = PF_D;
+		}
+		SpliceFormat(!l_flag || h_flag);
+	    }
 	    break;
 
 	case 'o':
 	case 'x':
 	case 'X':
-	case 'u':
+	    validate_number(cp);
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
 	    Uval = d_to_UL(cp->dval);
@@ -589,11 +698,27 @@ do_printf(FILE *fp,
 	    SpliceFormat(!l_flag);
 	    break;
 
+	case 'u':
+	    validate_number(cp);
+	    if (cp->type != C_DOUBLE)
+		cast1_to_d(cp);
+	    if (!h_flag && IsMaxBound(cp->dval)) {
+		pf_type = PF_F;
+		splice = 0;
+		p = strcpy(xbuff, UNSIGNED_FORMAT);
+	    } else {
+		Uval = d_to_UL(cp->dval);
+		pf_type = PF_U;
+		SpliceFormat(!l_flag);
+	    }
+	    break;
+
 	case 'e':
 	case 'g':
 	case 'f':
 	case 'E':
 	case 'G':
+	    validate_number(cp);
 	    if (h_flag + l_flag)
 		bad_conversion(num_conversion, who, format);
 	    if (cp->type != C_DOUBLE)
@@ -776,6 +901,7 @@ do_sprintf(
     STRING onechr;
     char xbuff[256];		/* splice in l qualifier here */
 
+    TRACE(("do_sprintf fmt=%s, argc=%d\n", format, argcnt));
     while (1) {
 	while (*q != '%') {
 	    if (*q == 0) {
@@ -859,6 +985,7 @@ do_sprintf(
 
 	switch (*q++) {
 	case 's':
+	    validate_number(cp);
 	    if (l_flag + h_flag)
 		bad_conversion(num_conversion, who, format);
 	    if (cp->type < C_STRING)
@@ -867,6 +994,7 @@ do_sprintf(
 	    break;
 
 	case 'c':
+	    validate_number(cp);
 	    if (l_flag + h_flag)
 		bad_conversion(num_conversion, who, format);
 
@@ -906,29 +1034,47 @@ do_sprintf(
 	    break;
 
 	case 'd':
-	    if (cp->type != C_DOUBLE)
-		cast1_to_d(cp);
-	    if (cp->dval >= (double) Max_Long) {
-		Uval = d_to_UL(cp->dval);
-		pf_type = PF_U;
-	    } else {
-		Ival = d_to_L(cp->dval);
-		pf_type = PF_D;
-	    }
-	    SpliceFormat(!l_flag || h_flag);
-	    break;
 	case 'i':
+	    validate_number(cp);
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
-	    Ival = d_to_L(cp->dval);
-	    pf_type = PF_D;
-	    SpliceFormat(!l_flag || h_flag);
+	    if (!h_flag && IsMaxBound(fabs(cp->dval))) {
+		pf_type = PF_F;
+		splice = 0;
+		p = strcpy(xbuff, UNSIGNED_FORMAT);
+	    } else if (!h_flag && PastBound(fabs(cp->dval))) {
+		pf_type = type_of_OFMT();
+		splice = 0;
+		p = strcpy(xbuff, string(OFMT)->str);
+		if (cp->type == C_DOUBLE) {
+		    switch (pf_type) {
+		    case PF_C:
+		    case PF_D:
+		    case PF_U:
+			strcpy(xbuff, "%.6g");
+			pf_type = PF_F;
+			break;
+		    case PF_S:
+			cast1_to_s(cp);
+			break;
+		    }
+		}
+	    } else {
+		if (cp->dval >= (double) Max_Long) {
+		    Uval = d_to_UL(cp->dval);
+		    pf_type = PF_U;
+		} else {
+		    Ival = d_to_L(cp->dval);
+		    pf_type = PF_D;
+		}
+		SpliceFormat(!l_flag || h_flag);
+	    }
 	    break;
 
 	case 'o':
 	case 'x':
 	case 'X':
-	case 'u':
+	    validate_number(cp);
 	    if (cp->type != C_DOUBLE)
 		cast1_to_d(cp);
 	    Uval = d_to_UL(cp->dval);
@@ -936,11 +1082,27 @@ do_sprintf(
 	    SpliceFormat(!l_flag);
 	    break;
 
+	case 'u':
+	    validate_number(cp);
+	    if (cp->type != C_DOUBLE)
+		cast1_to_d(cp);
+	    if (!h_flag && IsMaxBound(cp->dval)) {
+		pf_type = PF_F;
+		splice = 0;
+		p = strcpy(xbuff, UNSIGNED_FORMAT);
+	    } else {
+		Uval = d_to_UL(cp->dval);
+		pf_type = PF_U;
+		SpliceFormat(!l_flag);
+	    }
+	    break;
+
 	case 'e':
 	case 'g':
 	case 'f':
 	case 'E':
 	case 'G':
+	    validate_number(cp);
 	    if (h_flag + l_flag)
 		bad_conversion(num_conversion, who, format);
 	    if (cp->type != C_DOUBLE)
@@ -1087,11 +1249,4 @@ bi_sprintf(CELL *sp)
 	cell_destroy(p);
 
     return sp;
-}
-
-static void
-write_error(void)
-{
-    errmsg(errno, "write failure");
-    mawk_exit(2);
 }

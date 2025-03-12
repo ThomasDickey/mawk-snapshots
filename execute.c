@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.62 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: execute.c,v 1.64 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -137,8 +137,8 @@ execute(INST * cdp,		/* code ptr, start execution here */
     ALOOP_STATE *aloop_state = (ALOOP_STATE *) 0;
 
     /* for moving the eval stack on deep recursion */
-    CELL *old_stack_base = 0;
-    CELL *old_sp = 0;
+    CELL *old_stack_base = NULL;
+    CELL *old_sp = NULL;
 
 #ifdef	DEBUG
     CELL *entry_sp;
@@ -350,7 +350,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field, replace expr
 	       with  array[expr]
 	     */
-	    if (fp != 0) {
+	    if (fp != NULL) {
 		cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
 		cell_destroy(sp);
 		cellcpy(sp, cp);
@@ -363,7 +363,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field, replace expr
 	       with  & array[expr]
 	     */
-	    if (fp != 0) {
+	    if (fp != NULL) {
 		cp = array_find((ARRAY) fp[(cdp++)->op].ptr, sp, CREATE);
 		cell_destroy(sp);
 		sp->ptr = (PTR) cp;
@@ -375,7 +375,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	       has an ARRAY in the ptr field. Push this ARRAY
 	       on the eval stack
 	     */
-	    if (fp != 0) {
+	    if (fp != NULL) {
 		inc_sp();
 		sp->ptr = fp[(cdp++)->op].ptr;
 	    }
@@ -464,7 +464,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case ALOOP:
 	    {
 		ALOOP_STATE *ap = aloop_state;
-		if (ap != 0 && (ap->ptr < ap->limit)) {
+		if (ap != NULL && (ap->ptr < ap->limit)) {
 		    cell_destroy(ap->var);
 		    ap->var->type = C_STRING;
 		    ap->var->ptr = (PTR) * ap->ptr++;
@@ -479,7 +479,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    {
 		/* finish up an array loop */
 		ALOOP_STATE *ap = aloop_state;
-		if (ap != 0) {
+		if (ap != NULL) {
 		    aloop_state = ap->link;
 		    while (ap->ptr < ap->limit) {
 			free_STRING(*ap->ptr);
@@ -1170,12 +1170,12 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	    if (begin_start) {
 		free_codes("BEGIN", begin_start, begin_size);
-		begin_start = 0;
+		begin_start = NULL;
 		begin_size = 0;
 	    }
 	    if (main_start) {
 		free_codes("MAIN", main_start, main_size);
-		main_start = 0;
+		main_start = NULL;
 		main_size = 0;
 	    }
 	    sp = stack_under;	/* might be in user function */
@@ -1184,7 +1184,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 	case _JMAIN:		/* go from BEGIN code to MAIN code */
 	    free_codes("BEGIN", begin_start, begin_size);
-	    begin_start = 0;
+	    begin_start = NULL;
 	    begin_size = 0;
 	    cdp = main_start;
 	    break;
@@ -1340,7 +1340,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		int a_args = (cdp++)->op;	/* actual number of args */
 		CELL *nfp = sp - a_args + 1;	/* new fp for callee */
 		CELL *local_p = sp + 1;		/* first local argument on stack */
-		SYM_TYPE *type_p = 0;	/* pts to type of an argument */
+		SYM_TYPE *type_p = NULL;	/* pts to type of an argument */
 
 		if (!fbp->code) {
 		    const BI_REC *bi_rec = fbp->bip;
@@ -1380,7 +1380,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 
 		/* cleanup the callee's arguments */
 		/* putting return value at top of eval stack */
-		if ((type_p != 0) && (sp >= nfp)) {
+		if ((type_p != NULL) && (sp >= nfp)) {
 		    cp = sp + 1;	/* cp -> the function return */
 
 		    do {
@@ -1507,7 +1507,6 @@ compare(CELL *cp)
 
     default:			/* there are no default cases */
 	bozo("bad cell type passed to compare");
-	break;
     }
     return result;
 }
@@ -1549,7 +1548,6 @@ cellcpy(CELL *target, CELL *source)
 
     default:
 	bozo("bad cell passed to cellcpy()");
-	break;
     }
     return target;
 }

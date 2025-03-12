@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.82 2024/09/04 22:21:58 tom Exp $
+ * $MawkId: init.c,v 1.85 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -108,7 +108,7 @@ static const struct {
 };
 /* *INDENT-ON* */
 
-static void
+static GCC_NORETURN void
 no_program(void)
 {
     mawk_exit(0);
@@ -193,7 +193,7 @@ haveValue(char *value)
     int result = 0;
 
     if (*value++ == '=') {
-	if (*value != '\0' && strchr("=,", *value) == 0)
+	if (*value != '\0' && strchr("=,", *value) == NULL)
 	    result = 1;
     }
     return result;
@@ -382,7 +382,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
 	    mawk_exit(2);
 	}
 	wantArg = 1;
-	if (optNext != 0) {
+	if (optNext != NULL) {
 	    pfile_name = optNext;
 	    wantArg = 2;
 	} else {
@@ -402,7 +402,7 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
 
     case W_RANDOM:
 	wantArg = 1;
-	if (optNext != 0) {
+	if (optNext != NULL) {
 	    long x = numeric_option(optNext);
 	    CELL c[2];
 
@@ -423,12 +423,12 @@ handle_w_opt(W_OPTIONS code, int glue, char *option, char **value)
 
     case W_SPRINTF:
 	wantArg = 1;
-	if (optNext != 0) {
+	if (optNext != NULL) {
 	    long x = numeric_option(optNext);
 
 	    if (x > (long) sizeof(string_buff)) {
 		if (sprintf_buff != string_buff &&
-		    sprintf_buff != 0) {
+		    sprintf_buff != NULL) {
 		    zfree(sprintf_buff,
 			  (size_t) (sprintf_limit - sprintf_buff));
 		}
@@ -486,7 +486,7 @@ allow_long_options(char *arg, W_OPTIONS seen)
     char *env = getenv("MAWK_LONG_OPTIONS");
     int result = 0;
 
-    if (env != 0) {
+    if (env != NULL) {
 	switch (*env) {
 	default:
 	case 'e':		/* error */
@@ -787,7 +787,7 @@ static ALL_ARRAYS *all_arrays;
 void
 array_leaks(void)
 {
-    while (all_arrays != 0) {
+    while (all_arrays != NULL) {
 	ALL_ARRAYS *next = all_arrays->next;
 	array_clear(all_arrays->a);
 	ZFREE(all_arrays->a);

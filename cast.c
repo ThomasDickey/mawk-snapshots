@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: cast.c,v 1.31 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: cast.c,v 1.35 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -26,50 +26,91 @@ the GNU General Public License, version 2, 1991.
 const int mpow2[NUM_CELL_TYPES] =
 {1, 2, 4, 8, 16, 32, 64, 128, 256, 512};
 
+#define isXDIGIT(c) \
+	(scan_code[(c)] == SC_DIGIT \
+	|| ((c) >= 'A' && (c) <= 'F') \
+	|| ((c) >= 'a' && (c) <= 'f'))
+
+static void
+string_to_double(CELL *cp)
+{
+    const char *q = string(cp)->str;
+    const char *r = string(cp)->len + q;
+
+    cp->dval = 0.0;
+
+    /* if non-posix, disallow hexadecimal, infinity and not-a-number */
+    if (!posix_space_flag) {
+	const char *s;
+
+	while ((q != r) && (scan_code[(UChar) q[0]] == SC_SPACE))
+	    q++;
+	if (q == r)
+	    goto done;
+	s = q;
+	if (scan_code[(UChar) q[0]] == SC_PLUS ||
+	    scan_code[(UChar) q[0]] == SC_MINUS)
+	    q++;
+	if (q[0] == '0') {
+	    if (q + 1 == r)	/* just "0" is legal */
+		goto done;
+	    if (q[1] == 'x' || q[1] == 'X') {
+		if (q + 2 == r)	/* "0x" by itself is zero */
+		    goto done;
+		if (isXDIGIT((UChar) q[2]))	/* ignore hexadecimal */
+		    goto done;
+	    }
+	} else if (scan_code[(UChar) q[0]] != SC_DIGIT && q[0] != '.') {
+	    goto done;		/* ignore non-number such as "inf" */
+	}
+	q = s;
+    }
+
+    errno = 0;
+#ifdef FPE_TRAPS_ON		/* look for overflow error */
+    cp->dval = strtod(q, (char **) 0);
+    if (errno && cp->dval != 0.0)	/* ignore underflow */
+	rt_error("overflow converting %s to double", q);
+#else
+    cp->dval = strtod(q, (char **) 0);
+#endif
+    free_STRING(string(cp));
+
+  done:
+    cp->type = C_DOUBLE;
+}
+
 void
 cast1_to_d(CELL *cp)
 {
     switch (cp->type) {
     case C_NOINIT:
 	cp->dval = 0.0;
+	cp->type = C_DOUBLE;
 	break;
 
     case C_DOUBLE:
-	return;
+	break;
 
     case C_MBSTRN:
     case C_STRING:
-	{
-	    register STRING *s = (STRING *) cp->ptr;
-
-	    errno = 0;
-#ifdef FPE_TRAPS_ON		/* look for overflow error */
-	    cp->dval = strtod(s->str, (char **) 0);
-	    if (errno && cp->dval != 0.0)	/* ignore underflow */
-		rt_error("overflow converting %s to double", s->str);
-#else
-	    cp->dval = strtod(s->str, (char **) 0);
-#endif
-	    free_STRING(s);
-	}
+	string_to_double(cp);
 	break;
 
     case C_STRNUM:
 	/* don't need to convert, but do need to free the STRING part */
 	free_STRING(string(cp));
+	cp->type = C_DOUBLE;
 	break;
 
     default:
 	bozo("cast on bad type");
     }
-    cp->type = C_DOUBLE;
 }
 
 void
 cast2_to_d(CELL *cp)
 {
-    register STRING *s;
-
     switch (cp->type) {
     case C_NOINIT:
 	cp->dval = 0.0;
@@ -83,17 +124,7 @@ cast2_to_d(CELL *cp)
 
     case C_MBSTRN:
     case C_STRING:
-	s = (STRING *) cp->ptr;
-
-	errno = 0;
-#ifdef FPE_TRAPS_ON		/* look for overflow error */
-	cp->dval = strtod(s->str, (char **) 0);
-	if (errno && cp->dval != 0.0)	/* ignore underflow */
-	    rt_error("overflow converting %s to double", s->str);
-#else
-	cp->dval = strtod(s->str, (char **) 0);
-#endif
-	free_STRING(s);
+	string_to_double(cp);
 	break;
 
     default:
@@ -117,17 +148,7 @@ cast2_to_d(CELL *cp)
 
     case C_MBSTRN:
     case C_STRING:
-	s = (STRING *) cp->ptr;
-
-	errno = 0;
-#ifdef FPE_TRAPS_ON		/* look for overflow error */
-	cp->dval = strtod(s->str, (char **) 0);
-	if (errno && cp->dval != 0.0)	/* ignore underflow */
-	    rt_error("overflow converting %s to double", s->str);
-#else
-	cp->dval = strtod(s->str, (char **) 0);
-#endif
-	free_STRING(s);
+	string_to_double(cp);
 	break;
 
     default:
@@ -137,7 +158,9 @@ cast2_to_d(CELL *cp)
 }
 
 #define DoubleToString(target,source) \
-	if (source->dval >= (double) Max_Long) { \
+	if (IsMaxBound(fabs(source->dval))) { \
+	    sprintf(target, UNSIGNED_FORMAT, source->dval); \
+	} else if (source->dval >= (double) Max_ULong) { \
 	    ULong lval = d_to_UL(source->dval); \
 	    if (lval == source->dval) { \
 		sprintf(target, ULONG_FMT, lval); \
@@ -319,6 +342,7 @@ check_strnum(CELL *cp)
 {
     char *temp;
     register unsigned char *s, *q;
+    char code;
 
     cp->type = C_STRING;	/* assume not C_STRNUM */
     s = (unsigned char *) string(cp)->str;
@@ -328,16 +352,27 @@ check_strnum(CELL *cp)
     if (s == q)
 	return;
 
-    while (scan_code[q[-1]] == SC_SPACE)
+    while ((code = scan_code[q[-1]]) == SC_SPACE)
 	q--;
-    if (scan_code[q[-1]] != SC_DIGIT &&
-	q[-1] != '.')
+    if (code != SC_DIGIT && code != SC_DOT)
 	return;
 
     switch (scan_code[*s]) {
-    case SC_DIGIT:
     case SC_PLUS:
     case SC_MINUS:
+	if (!posix_space_flag) {
+	    if ((code = scan_code[s[1]]) != SC_DIGIT && code != SC_DOT)
+		return;
+	}
+	/* FALLTHRU */
+    case SC_DIGIT:
+	if (!posix_space_flag) {
+	    if (*s == '0') {
+		if (s[1] == 'x' || s[1] == 'X')
+		    return;
+	    }
+	}
+	/* FALLTHRU */
     case SC_DOT:
 
 	errno = 0;
@@ -526,7 +561,7 @@ no_leaks_cell_ptr(CELL *cp)
 void
 cell_leaks(void)
 {
-    while (all_cells != 0) {
+    while (all_cells != NULL) {
 	ALL_CELLS *next = all_cells->next;
 	if (all_cells->ptr) {
 	    zfree(all_cells->cp, sizeof(CELL));

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.41 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.43 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -119,12 +119,12 @@ re_destroy(PTR m)
     RE_NODE *q;
     RE_NODE *r;
 
-    if (p != 0) {
-	for (q = re_list, r = 0; q != 0; r = q, q = q->link) {
+    if (p != NULL) {
+	for (q = re_list, r = NULL; q != NULL; r = q, q = q->link) {
 	    if (q == p) {
 		free_STRING(p->sval);
 		REdestroy(p->re.compiled);
-		if (r != 0)
+		if (r != NULL)
 		    r->link = q->link;
 		else
 		    re_list = q->link;
@@ -148,9 +148,9 @@ re_destroy(PTR m)
  * Here are the Posix rules which this code supports:
            \&   -->   &
 	   \\   -->   \
-	   \c   -->   \c    
-	   &    -->   matched text 
-	   
+	   \c   -->   \c
+	   &    -->   matched text
+
 */
 
 /* FIXME  -- this function doesn't handle embedded nulls
@@ -279,7 +279,7 @@ repl_destroy(CELL *cp)
 
     if (cp->type == C_REPL) {
 	free_STRING(string(cp));
-    } else if (cp->ptr != 0) {	/* an C_REPLV           */
+    } else if (cp->ptr != NULL) {	/* an C_REPLV           */
 	p = (STRING **) cp->ptr;
 	for (cnt = cp->vcnt; cnt; cnt--) {
 	    if (*p) {
@@ -475,14 +475,14 @@ no_leaks_re_ptr(PTR m)
 void
 re_leaks(void)
 {
-    while (all_ptrs != 0) {
+    while (all_ptrs != NULL) {
 	ALL_PTRS *next = all_ptrs->next;
 	re_destroy(all_ptrs->m);
 	free(all_ptrs);
 	all_ptrs = next;
     }
 
-    while (repl_list != 0) {
+    while (repl_list != NULL) {
 	REPL_NODE *p = repl_list->link;
 	free_STRING(repl_list->sval);
 	free_cell_data(repl_list->cp);

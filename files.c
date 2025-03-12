@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: files.c,v 1.36 2024/08/25 17:11:06 tom Exp $
+ * $MawkId: files.c,v 1.42 2024/12/14 19:34:27 tom Exp $
  */
 
 #define Visible_STRING
@@ -41,6 +41,11 @@ the GNU General Public License, version 2, 1991.
 #define	 CLOSE_ON_EXEC(fd) ioctl(fd, FIOCLEX, (PTR) 0)
 #endif
 
+#ifdef	  HAVE_FSTAT
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 /* We store dynamically created files on a linked linear
    list with move to the front (big surprise)  */
 
@@ -64,7 +69,7 @@ static FILE_NODE *file_list;
 
 static FILE *tfopen(const char *, const char *);
 static int efflush(FILE *);
-static void close_error(FILE_NODE * p);
+static GCC_NORETURN void close_error(FILE_NODE * p);
 
 static FILE_NODE *
 alloc_filenode(void)
@@ -74,10 +79,10 @@ alloc_filenode(void)
     result = ZMALLOC(FILE_NODE);
 
 #ifdef NO_LEAKS
-    result->name = 0;
+    result->name = NULL;
 #endif
 
-    result->ptr = 0;
+    result->ptr = NULL;
     return result;
 }
 
@@ -85,14 +90,14 @@ static void
 free_filenode(FILE_NODE * p)
 {
 #ifdef NO_LEAKS
-    if (p->name != 0) {
+    if (p->name != NULL) {
 	free_STRING(p->name);
     }
 #endif
     zfree(p, sizeof(FILE_NODE));
 }
 
-static void
+static GCC_NORETURN void
 output_failed(const char *name)
 {
     errmsg(errno, "cannot open \"%s\" for output", name);
@@ -190,7 +195,7 @@ file_find(STRING * sval, int type)
 
 	/* search is by name and type */
 	if (strcmp(name, p->name->str) == 0 &&
-	    (p->ptr != 0) &&
+	    (p->ptr != NULL) &&
 	    (p->type == type ||
 	/* no distinction between F_APPEND and F_TRUNC here */
 	     (p->type >= F_APPEND && type >= F_APPEND))) {
@@ -220,7 +225,7 @@ int
 file_close(STRING * sval)
 {
     FILE_NODE *p;
-    FILE_NODE *q = 0;		/* trails p */
+    FILE_NODE *q = NULL;	/* trails p */
     FILE_NODE *hold;
     char *name = sval->str;
     int retval = -1;
@@ -237,7 +242,7 @@ file_close(STRING * sval)
 	       Note that we don't have to consider the list corruption
 	       caused by a recursive call because it will never return. */
 
-	    if (q == 0)
+	    if (q == NULL)
 		file_list = p->link;
 	    else
 		q->link = p->link;
@@ -371,7 +376,7 @@ void
 close_out_pipes(void)
 {
     FILE_NODE *p = file_list;
-    FILE_NODE *q = 0;
+    FILE_NODE *q = NULL;
 
     while (p) {
 
@@ -380,7 +385,7 @@ close_out_pipes(void)
 		/* if another error occurs we do not want to be called
 		   for the same file again */
 
-		if (q != 0)
+		if (q != NULL)
 		    q->link = p->link;
 		else
 		    file_list = p->link;
@@ -635,6 +640,15 @@ tfopen(const char *name, const char *mode)
     FILE *retval = fopen(name, mode);
 
     if (retval) {
+#ifdef HAVE_FSTAT
+	struct stat sb;
+	int fd = fileno(retval);
+	if (fstat(fd, &sb) != -1 && (sb.st_mode & S_IFMT) == S_IFDIR) {
+	    fclose(retval);
+	    retval = NULL;
+	    errno = EISDIR;
+	} else
+#endif /* HAVE_FSTAT */
 	if (isatty(fileno(retval)))
 	    setbuf(retval, (char *) 0);
 	else {
@@ -691,7 +705,7 @@ void
 files_leaks(void)
 {
     TRACE(("files_leaks\n"));
-    while (file_list != 0) {
+    while (file_list != NULL) {
 	FILE_NODE *p = file_list;
 	file_list = p->link;
 	free_filenode(p);

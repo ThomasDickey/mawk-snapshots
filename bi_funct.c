@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.134 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: bi_funct.c,v 1.140 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -41,6 +41,12 @@ the GNU General Public License, version 2, 1991.
 
 #if defined(HAVE_BSD_STDLIB_H) && defined(USE_SYSTEM_SRAND)
 #include <bsd/stdlib.h>		/* prototype arc4random */
+#endif
+
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#else
+#undef HAVE_GETTIMEOFDAY
 #endif
 
 #if defined(WINVER) && (WINVER >= 0x501)
@@ -166,7 +172,7 @@ str_str(char *target, size_t target_len, const char *key, size_t key_len)
     register int k = key[0];
     int k1;
     const char *prior;
-    char *result = 0;
+    char *result = NULL;
 
     switch (key_len) {
     case 0:
@@ -472,7 +478,7 @@ bi_strftime(CELL *sp)
     struct tm *ptm;
     int n_args;
     int utc;
-    STRING *sval = 0;		/* strftime(sval->str, timestamp, utc) */
+    STRING *sval = NULL;		/* strftime(sval->str, timestamp, utc) */
     size_t result;
 
     TRACE_FUNC("bi_strftime", sp);
@@ -753,13 +759,13 @@ initial_seed(void)
 #if defined(HAVE_CLOCK_GETTIME)
     struct timespec data;
     if (clock_gettime(CLOCK_REALTIME, &data) == 0)
-	result = (data.tv_sec * 1000000000L) + data.tv_nsec;
+	result = (((double) data.tv_sec * 1e9) + (double) data.tv_nsec);
     else
 	result = 0.0;
 #elif defined(HAVE_GETTIMEOFDAY)
     struct timeval data;
     if (gettimeofday(&data, (struct timezone *) 0) == 0)
-	result = (data.tv_sec * 1000000) + data.tv_usec;
+	result = (((double) data.tv_sec * 1e6) + (double) data.tv_usec);
     else
 	result = 0.0;
 #elif defined(WINVER) && (WINVER >= 0x501)
@@ -784,7 +790,7 @@ bi_srand(CELL *sp)
 #ifdef USE_SYSTEM_SRAND
     static CELL cseed =
     {
-	C_DOUBLE, 0, 0, 1.0
+	C_DOUBLE, 0, NULL, 1.0
     };
     double seed32;
 #endif
@@ -912,7 +918,7 @@ bi_fflush(CELL *sp)
 }
 
 CELL *
-bi_system(CELL *sp GCC_UNUSED)
+bi_system(CELL *sp)
 {
     int ret_val;
 
@@ -952,8 +958,8 @@ CELL *
 bi_getline(CELL *sp)
 {
     CELL tc;
-    CELL *cp = 0;
-    char *p = 0;
+    CELL *cp = NULL;
+    char *p = NULL;
     size_t len = 0;
     FIN *fin_p;
 
@@ -1088,7 +1094,7 @@ bi_sub(CELL *sp)
 		     &middle_len,
 		     0);
 
-    if (middle != 0) {
+    if (middle != NULL) {
 	size_t front_len = (size_t) (middle - front);
 	char *back = middle + middle_len;
 	size_t back_len = string(&sc)->len - front_len - middle_len;
@@ -1176,7 +1182,7 @@ gsub3(PTR re, CELL *repl, CELL *target)
 	 * that can be an empty string, e.g., for "*" or "?".  The length
 	 * is in 'howmuch'.
 	 */
-	if (where != 0) {
+	if (where != NULL) {
 	    have = (size_t) (where - (input->str + j));
 	    if (have) {
 		skip0 = -1;
@@ -1192,11 +1198,11 @@ gsub3(PTR re, CELL *repl, CELL *target)
 	    TRACE(("\n"));
 
 	    if (repl->type == C_REPLV) {
-		if (xrepl.ptr == 0 ||
+		if (xrepl.ptr == NULL ||
 		    string(&xrepl)->len != howmuch ||
 		    (howmuch != 0 &&
 		     memcmp(string(&xrepl)->str, where, howmuch))) {
-		    if (xrepl.ptr != 0)
+		    if (xrepl.ptr != NULL)
 			repl_destroy(&xrepl);
 		    sval = new_STRING1(where, howmuch);
 		    cellcpy(&xrepl, repl);

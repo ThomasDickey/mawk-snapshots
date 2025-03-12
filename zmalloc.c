@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.35 2024/08/25 17:18:07 tom Exp $
+ * $MawkId: zmalloc.c,v 1.38 2024/12/14 21:21:20 tom Exp $
  */
 
 /*  zmalloc.c  */
@@ -139,8 +139,8 @@ record_ptr(PTR ptr, size_t size)
 
     TRACE(("record_ptr %p -> %p %lu\n", (void *) item, ptr, (unsigned long) size));
     result = tsearch(item, &ptr_data, compare_ptr_data);
-    assert(result != 0);
-    assert(*result != 0);
+    assert(result != NULL);
+    assert(*result != NULL);
 
     TRACE2(("->%p (%p %lu)\n",
 	    (*result), (*result)->ptr,
@@ -162,8 +162,8 @@ finish_ptr(PTR ptr, size_t size)
     TRACE2(("finish_ptr (%p) -> %p %lu\n", &dummy, ptr, (unsigned long) size));
     item = tfind(&dummy, &ptr_data, compare_ptr_data);
 
-    assert(item != 0);
-    assert(*item != 0);
+    assert(item != NULL);
+    assert(*item != NULL);
 
     TRACE(("finish_ptr %p -> %p %lu\n",
 	   (void *) (*item),
@@ -188,7 +188,7 @@ finish_ptr(PTR ptr, size_t size)
 
 /*****************************************************************************/
 
-static void
+static GCC_NORETURN void
 out_of_mem(void)
 {
     static char out[] = "out of memory";
@@ -231,7 +231,7 @@ zmalloc(size_t size)
 	RecordPtr(p, size);
     } else {
 
-	if ((p = pool[blocks - 1]) != 0) {
+	if ((p = pool[blocks - 1]) != NULL) {
 	    pool[blocks - 1] = p->link;
 	} else {
 
@@ -315,7 +315,7 @@ zmalloc_leaks(void)
 {
 #ifdef USE_TSEARCH
     TRACE(("zmalloc_leaks\n"));
-    while (ptr_data != 0) {
+    while (ptr_data != NULL) {
 	PTR_DATA *data = *(PTR_DATA **) ptr_data;
 	tdelete(data, &ptr_data, compare_ptr_data);
 	free_ptr_data(data);

@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.h,v 1.20 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: field.h,v 1.21 2024/11/15 01:59:53 tom Exp $
  */
 
 /* field.h */
@@ -66,6 +66,7 @@ extern CELL **fbankv;		/* fbankv[0] == field */
 
 #define  LAST_PFIELD	OFMT
 
+extern int OFMT_type;		/* PF_xxx type, for out-of-range print */
 extern int nf;			/* shadows NF */
 
 /* a shadow type for RS and FS */

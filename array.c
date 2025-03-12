@@ -1,6 +1,6 @@
 /* array.c */
 /*
-$MawkId: array.c,v 1.29 2024/08/25 18:28:02 tom Exp $
+$MawkId: array.c,v 1.30 2024/12/14 12:53:14 tom Exp $
 
 copyright 2009-2023,2024 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
@@ -13,8 +13,8 @@ the GNU General Public License, version 2, 1991.
 
 array.c and array.h were originally generated with the commands
 
-   notangle -R'"array.c"' array.w > array.c 
-   notangle -R'"array.h"' array.w > array.h 
+   notangle -R'"array.c"' array.w > array.c
+   notangle -R'"array.h"' array.w > array.h
 
 Notangle is part of Norman Ramsey's noweb literate programming package
 available from CTAN(ftp.shsu.edu).
@@ -136,7 +136,7 @@ array_delete(
 		    DUAL_LINK *table = (DUAL_LINK *) A->ptr;
 		    table[(unsigned) ap->ival & A->hmask].ilink = ap->ilink;
 		    if (ap->sval) {
-			ANODE *p, *q = 0;
+			ANODE *p, *q = NULL;
 			unsigned indx = (unsigned) ap->hval & A->hmask;
 			p = table[indx].slink;
 			while (p != ap) {
@@ -180,7 +180,7 @@ array_delete(
 	DUAL_LINK *table = (DUAL_LINK *) A->ptr;
 	table[ap->hval & A->hmask].slink = ap->slink;
 	if (ap->ival != NOT_AN_IVALUE) {
-	    ANODE *p, *q = 0;
+	    ANODE *p, *q = NULL;
 	    unsigned indx = (unsigned) ap->ival & A->hmask;
 	    p = table[indx].ilink;
 	    while (p != ap) {

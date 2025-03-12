@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.28 2024/08/29 00:19:40 tom Exp $
+ * $MawkId: error.c,v 1.31 2024/12/14 12:53:14 tom Exp $
  */
 
 #define Visible_CELL
@@ -118,7 +118,7 @@ missing(int c, const char *n, unsigned ln)
 void
 yyerror(const char *s GCC_UNUSED)
 {
-    const char *ss = 0;
+    const char *ss = NULL;
     const struct token_str *p;
     const int *ip;
 
@@ -156,6 +156,7 @@ yyerror(const char *s GCC_UNUSED)
 	    unexpected_char();
 	    break;
 
+#ifndef LCOV_UNUSED
 	case BAD_DECIMAL:
 	    compile_error(
 			     "syntax error in decimal constant %s",
@@ -167,6 +168,7 @@ yyerror(const char *s GCC_UNUSED)
 			     "syntax error at or near /%s/",
 			     string_buff);
 	    break;
+#endif
 
 	default:
 	    compile_error("syntax error");
@@ -188,7 +190,7 @@ errmsg(int errnum, const char *format, ...)
 
 #if OPT_TRACE > 0
     va_start(args, format);
-    Trace("\n?? errmsg \n");
+    Trace("\n?? errmsg: ");
     TraceVA(format, args);
     Trace("\n");
     va_end(args);
@@ -297,7 +299,7 @@ unexpected_char(void)
 const char *
 type_to_str(int type)
 {
-    const char *retval = 0;
+    const char *retval = NULL;
 
     switch (type) {
     case ST_NONE:
@@ -306,15 +308,18 @@ type_to_str(int type)
     case ST_VAR:
 	retval = "variable";
 	break;
+#ifndef LCOV_UNUSED
     case ST_KEYWORD:
 	retval = "keyword";
 	break;
     case ST_BUILTIN:
 	retval = "builtin";
 	break;
+#endif
     case ST_ARRAY:
 	retval = "array";
 	break;
+#ifndef LCOV_UNUSED
     case ST_FIELD:
 	retval = "field";
 	break;
@@ -327,6 +332,7 @@ type_to_str(int type)
     case ST_FUNCT:
 	retval = "function";
 	break;
+#endif
     case ST_LOCAL_VAR:
 	retval = "local variable";
 	break;

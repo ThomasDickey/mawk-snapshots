@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.48 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: rexp0.c,v 1.52 2024/12/30 19:17:41 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -114,14 +114,14 @@ ok_intervals(const char *p)
 /*
   Collect two numbers between T_LB and T_RB, saving
   the values in intrvalmin and intrvalmax.
-  
+
   There are three ways the interval expressions are formed:
   {n}   => previous regexp is repeated n times
   {n,m} => previous regexp is repeated n to m times
   {n,}  => previous regexp is repeated n or more times
   {,m}  => {0,m}
   Note: awk doesn't define  {,m}
-  
+
   returns: T_RB, or on error T_CHAR
 */
 
@@ -276,6 +276,9 @@ RE_lex(MACHINE * mp)
 
     case T_LP:
 	switch (prev) {
+#ifndef NO_INTERVAL_EXPR
+	case T_RB:
+#endif
 	case T_CHAR:
 	case T_STR:
 	case T_ANY:
@@ -287,13 +290,6 @@ RE_lex(MACHINE * mp)
 	case T_Q:
 	case T_U:
 	    return prev = T_CAT;
-
-#ifndef NO_INTERVAL_EXPR
-	case T_RB:
-	    if (!repetitions_flag) {
-		return prev = T_CAT;
-	    }
-#endif
 
 	    /* FALLTHRU */
 	default:
@@ -410,7 +406,7 @@ do_str(
 	  MACHINE * mp)		/* where to put the string machine */
 {
     register char *p;		/* runs thru the input */
-    char *pt = 0;		/* trails p by one */
+    char *pt = NULL;		/* trails p by one */
     char *str;			/* collect it here */
     register char *s;		/* runs thru the output */
     size_t len;			/* length collected */
@@ -537,7 +533,7 @@ lookup_cclass(char **start)
 	    CCLASS_DATA(upper),
 	    CCLASS_DATA(xdigit),
     };
-    CCLASS *result = 0;
+    CCLASS *result = NULL;
     CCLASS_ENUM code = CCLASS_NONE;
     const char *name;
     char *colon;
@@ -545,20 +541,20 @@ lookup_cclass(char **start)
     size_t item;
 
 #ifdef NO_LEAKS
-    if (start == 0) {
+    if (start == NULL) {
 	for (item = 0; item < (sizeof(cclass_data) /
 			       sizeof(cclass_data[0])); ++item) {
 	    if (cclass_data[item]) {
 		free(cclass_data[item]);
-		cclass_data[item] = 0;
+		cclass_data[item] = NULL;
 	    }
 	}
-	return 0;
+	return NULL;
     }
 #endif
     name = (*start += 2);	/* point past "[:" */
     colon = strchr(name, ':');
-    if (colon == 0 || colon[1] != ']') {
+    if (colon == NULL || colon[1] != ']') {
 	RE_error_trap(-ERR_3);
     }
 
@@ -617,7 +613,7 @@ lookup_cclass(char **start)
 	RE_error_trap(-ERR_3);
     }
 
-    if ((result = cclass_data[item]) == 0) {
+    if ((result = cclass_data[item]) == NULL) {
 	int ch = 0;
 	size_t have = 4;
 	size_t used = 0;
@@ -625,6 +621,9 @@ lookup_cclass(char **start)
 	int in_class = 0;
 	int first = -2;
 	int last = -2;
+
+	if (data == NULL)
+	    RE_error_trap(-ERR_3);
 
 	for (ch = 0; ch < 256; ++ch) {
 	    switch (code) {
@@ -678,6 +677,8 @@ lookup_cclass(char **start)
 		if (used + 2 >= have) {
 		    have *= 2;
 		    data = realloc(data, sizeof(CCLASS) * have);
+		    if (data == NULL)
+			RE_error_trap(-ERR_3);
 		}
 		data[used].first = first;
 		data[used].last = last;
@@ -689,6 +690,8 @@ lookup_cclass(char **start)
 	    if (used + 2 >= have) {
 		have *= 2;
 		data = realloc(data, sizeof(CCLASS) * have);
+		if (data == NULL)
+		    RE_error_trap(-ERR_3);
 	    }
 	    data[used].first = first;
 	    data[used].last = last;
@@ -704,12 +707,12 @@ lookup_cclass(char **start)
 static CCLASS *
 get_cclass(char *start, char **next)
 {
-    CCLASS *result = 0;
+    CCLASS *result = NULL;
 
     if (start[0] == '['
 	&& start[1] == ':') {
 	result = lookup_cclass(&start);
-	if (next != 0) {
+	if (next != NULL) {
 	    *next = start;
 	}
     }
@@ -727,7 +730,7 @@ literal_leftsq(char *start)
 {
     int result = 0;
     if (start[0] == '[') {
-	if (get_cclass(start, 0) == 0)
+	if (get_cclass(start, NULL) == NULL)
 	    result = 1;
     }
     return result;
@@ -805,7 +808,7 @@ do_class(char **start, MACHINE * mp)
 	    break;
 
 	case '[':
-	    if ((cclass = get_cclass(p, &p)) != 0) {
+	    if ((cclass = get_cclass(p, &p)) != NULL) {
 		while (cclass->first >= 0) {
 		    block_on(*bvp, cclass->first, cclass->last);
 		    ++cclass;

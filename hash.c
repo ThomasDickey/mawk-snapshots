@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: hash.c,v 1.22 2024/08/25 17:46:18 tom Exp $
+ * $MawkId: hash.c,v 1.24 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -219,8 +219,8 @@ restore_ids(void)
 const char *
 reverse_find(int type, PTR ptr)
 {
-    CELL *cp = 0;
-    ARRAY array = 0;
+    CELL *cp = NULL;
+    ARRAY array = NULL;
     static char uk[] = "unknown";
 
     int i;
@@ -296,7 +296,7 @@ free_hashnode(HASHNODE * p)
 	break;
     case ST_VAR:
 	cp = p->symtab.stval.cp;
-	if (cp != 0
+	if (cp != NULL
 	    && (cp < bi_vars || cp > bi_vars + NUM_BI_VAR)) {
 	    switch (cp->type) {
 	    case C_STRING:
@@ -323,7 +323,7 @@ hash_leaks(void)
 
     TRACE(("hash_leaks\n"));
     for (i = 0; i < HASH_PRIME; i++) {
-	while ((p = hash_table[i]) != 0) {
+	while ((p = hash_table[i]) != NULL) {
 	    free_hashnode(p);
 	}
     }

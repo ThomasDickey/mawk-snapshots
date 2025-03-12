@@ -1,4 +1,4 @@
-dnl $MawkId: configure.in,v 1.74 2024/07/16 20:38:31 tom Exp $
+dnl $MawkId: configure.in,v 1.77 2024/12/14 00:43:08 tom Exp $
 dnl configure.in for mawk
 dnl ###########################################################################
 dnl copyright 2008-2023,2024, Thomas E. Dickey
@@ -117,10 +117,12 @@ then
 fi
 AC_SUBST(EXTRAOBJS)
 
-AC_CHECK_HEADERS(errno.h fcntl.h sys/wait.h)
+AC_CHECK_HEADERS(errno.h fcntl.h sys/time.h sys/wait.h)
 
 AC_CHECK_TYPES([int64_t, uint64_t, long long])
 
+AC_CHECK_SIZEOF(float)
+AC_CHECK_SIZEOF(double)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(int64_t)
 AC_CHECK_SIZEOF(long long)
@@ -130,7 +132,7 @@ CF_MAWK_FIND_SIZE_T
 CF_LOCALE
 CF_CHECK_ENVIRON(environ)
 
-AC_CHECK_FUNCS(fork matherr mktime pipe strftime tsearch wait)
+AC_CHECK_FUNCS(fork fstat matherr mktime pipe strftime tsearch wait)
 CF_FUNC_GETTIME
 
 ###	Checks for libraries.

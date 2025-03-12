@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: split.c,v 1.36 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: split.c,v 1.37 2024/12/14 12:53:38 tom Exp $
  */
 
 #define Visible_BI_REC
@@ -54,7 +54,7 @@ static void
 spb_list_shrink(void)
 {
     Split_Block_Node *p = split_block_list->link;
-    split_block_list->link = 0;
+    split_block_list->link = NULL;
     while (p) {
 	Split_Block_Node *hold = p;
 	p = p->link;
@@ -72,13 +72,13 @@ grow_sp_list(Split_Block_Node * tail)
 {
     tail->link = (Split_Block_Node *) zmalloc(sizeof(Split_Block_Node));
     tail = tail->link;
-    tail->link = 0;
+    tail->link = NULL;
     return tail;
 }
 
 /*
  * Split string s of length slen on SPACE without changing s.
- * Load the pieces into STRINGS 
+ * Load the pieces into STRINGS
  * return the number of pieces
  */
 size_t
@@ -180,11 +180,11 @@ re_pos_match(char *str, size_t str_len, RE_NODE * re, size_t *lenp, int no_bol)
 	} else {
 	    /* no match */
 	    *lenp = 0;
-	    return 0;
+	    return NULL;
 	}
     }
     *lenp = 0;
-    return 0;
+    return NULL;
 }
 
 /*

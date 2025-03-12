@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2023,2024 Thomas E. Dickey
+copyright 2008-2024,2025 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.73 2024/09/05 17:21:05 tom Exp $
+ * $MawkId: mawk.h,v 1.78 2025/01/30 09:02:31 tom Exp $
  */
 
 /*  mawk.h  */
@@ -30,14 +30,15 @@ the GNU General Public License, version 2, 1991.
 
 #include <assert.h>
 
-#include <repl.h>
-#include <types.h>
-
 #ifdef HAVE_STDNORETURN_H
 #include <stdnoreturn.h>
 #undef GCC_NORETURN
 #define GCC_NORETURN STDC_NORETURN
 #endif
+
+#include <repl.h>
+#include <types.h>
+#include <makebits.h>
 
 #ifndef GCC_NORETURN
 #define GCC_NORETURN		/* nothing */
@@ -154,15 +155,20 @@ extern ULong d_to_UL(double d);
 extern double l_to_D(Long l);
 extern double ul_to_D(ULong l);
 
+#define NonNull(s)    ((s) == NULL ? "<null>" : (s))
+
 #define d_to_i(d)     ((int)d_to_I(d))
 #define d_to_l(d)     ((long)d_to_L(d))
+
+#define IsMaxBound(n) ((n) == UNSIGNED_LIMITS || (n) == INTEGERS_LIMITS)
+#define PastBound(n)  ((n) > UNSIGNED_LIMITS)
 
 extern int test(CELL *);	/* test for null non-null */
 extern CELL *cellcpy(CELL *, CELL *);
 extern CELL *repl_cpy(CELL *, CELL *);
 extern void DB_cell_destroy(CELL *);
-extern void overflow(const char *, unsigned);
-extern void rt_overflow(const char *, unsigned);
+extern GCC_NORETURN void overflow(const char *, unsigned);
+extern GCC_NORETURN void rt_overflow(const char *, unsigned);
 extern GCC_NORETURN void rt_error(const char *,...) GCC_PRINTFLIKE(1,2);
 extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);
@@ -203,6 +209,7 @@ extern double strtod_with_ovf_bug(const char *, char **);
 #endif
 
 #if OPT_TRACE > 0
+extern FILE *trace_fp;
 extern void Trace(const char *, ...) GCC_PRINTFLIKE(1,2);
 extern void TraceVA(const char *, va_list);
 #define TRACE(params) Trace params
@@ -287,7 +294,7 @@ extern void zmalloc_leaks(void);
  * Optimize-out the assignment to clear the pointer in the array.
  */
 #ifdef NO_LEAKS
-#define USED_SPLIT_BUFF(n) split_buff[n] = 0
+#define USED_SPLIT_BUFF(n) split_buff[n] = NULL
 #else
 #define USED_SPLIT_BUFF(n)	/* nothing */
 #endif

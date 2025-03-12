@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: fin.c,v 1.57 2024/09/05 17:38:30 tom Exp $
+ * $MawkId: fin.c,v 1.62 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -30,6 +30,11 @@ the GNU General Public License, version 2, 1991.
 
 #ifdef	  HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
+
+#ifdef	  HAVE_FSTAT
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 /* This file handles input files.  Opening, closing,
@@ -107,7 +112,7 @@ FINdopen(int fd, int main_flag)
 FIN *
 FINopen(char *filename, int main_flag)
 {
-    FIN *result = 0;
+    FIN *result = NULL;
     int fd;
     int oflag = O_RDONLY;
 
@@ -125,8 +130,17 @@ FINopen(char *filename, int main_flag)
 	    setmode(0, O_BINARY);
 #endif
 	result = FINdopen(0, main_flag);
-    } else if ((fd = open(filename, oflag, 0)) != -1) {
-	result = FINdopen(fd, main_flag);
+    } else {
+	if ((fd = open(filename, oflag, 0)) != -1) {
+#ifdef HAVE_FSTAT
+	    struct stat sb;
+	    if (fstat(fd, &sb) != -1 && (sb.st_mode & S_IFMT) == S_IFDIR) {
+		close(fd);
+		errno = EISDIR;
+	    } else
+#endif /* HAVE_FSTAT */
+		result = FINdopen(fd, main_flag);
+	}
     }
     return result;
 }
@@ -173,7 +187,7 @@ char *
 FINgets(FIN * fin, size_t *len_p)
 {
     char *p;
-    char *q = 0;
+    char *q = NULL;
     size_t match_len;
     size_t r;
 
@@ -341,7 +355,7 @@ FINgets(FIN * fin, size_t *len_p)
 	r = amount;
 	if (fin->buff_size < r) {
 	    fin->flags |= EOF_FLAG;
-	    return 0;
+	    return NULL;
 	}
 
 	p = (char *) memmove(fin->buff, p, r);
@@ -380,7 +394,7 @@ enlarge_fin_buffer(FIN * fin)
     fin->buffp =
 	fin->buff = (char *) zrealloc(fin->buff, oldsize, newsize);
 
-    if (fin->fp == 0) {
+    if (fin->fp == NULL) {
 	r = fillbuff(fin->fd, fin->buff + oldsize, extra);
 	if (r < extra)
 	    fin->flags |= EOF_FLAG;
@@ -479,7 +493,7 @@ next_main(int open_flag)	/* called by open_main() if on */
 
     if (main_fin) {
 	FINclose(main_fin);
-	main_fin = 0;
+	main_fin = NULL;
     }
     /* FILENAME and FNR don't change unless we really open
        a new file */
@@ -557,7 +571,7 @@ is_cmdline_assign(char *s)
 
     int c;
     SYMTAB *stp;
-    CELL *cp = 0;
+    CELL *cp = NULL;
     size_t len;
     CELL cell = empty_cell;	/* used if command line assign to pseudo field */
     CELL *fp = NULL;		/* ditto */
@@ -624,7 +638,7 @@ fin_leaks(void)
     TRACE(("fin_leaks\n"));
     if (main_fin) {
 	free_fin_data(main_fin);
-	main_fin = 0;
+	main_fin = NULL;
     }
 }
 #endif

@@ -1,6 +1,6 @@
 /********************************************
 trace.c
-copyright 2012-2023,2024 Thomas E. Dickey
+copyright 2012-2024,2025 Thomas E. Dickey
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -10,7 +10,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: trace.c,v 1.24 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: trace.c,v 1.28 2025/01/30 09:03:06 tom Exp $
  */
 
 #define Visible_CELL
@@ -19,17 +19,17 @@ the GNU General Public License, version 2, 1991.
 #include <mawk.h>
 #include <code.h>
 
-static FILE *trace_fp;
+FILE *trace_fp;
 
 void
 Trace(const char *format, ...)
 {
     va_list args;
 
-    if (trace_fp == 0)
+    if (trace_fp == NULL)
 	trace_fp = fopen("Trace.out", "w");
 
-    if (trace_fp == 0)
+    if (trace_fp == NULL)
 	rt_error("cannot open Trace.out");
 
     va_start(args, format);
@@ -49,7 +49,7 @@ void
 TraceCell(CELL *cp)
 {
     TRACE(("cell %p ", (void *) cp));
-    if (cp != 0) {
+    if (cp != NULL) {
 	switch ((MAWK_CELL_TYPES) cp->type) {
 	case C_NOINIT:
 	    TRACE(("is empty\n"));
@@ -110,7 +110,7 @@ void
 TraceInst(INST * p, INST * base)
 {
     INST *q = da_this(p, base, trace_fp);
-    TRACE(("	...%ld\n", (long) (q - p)));
+    TRACE(("\t...%ld\n", (long) (q - p)));
     if (p++ != q) {
 	switch ((MAWK_OPCODES) (base->op)) {
 	case AE_PUSHA:
@@ -284,9 +284,9 @@ TraceString(STRING * sp)
 void
 trace_leaks(void)
 {
-    if (trace_fp != 0) {
+    if (trace_fp != NULL) {
 	fclose(trace_fp);
-	trace_fp = 0;
+	trace_fp = NULL;
     }
 }
 #endif

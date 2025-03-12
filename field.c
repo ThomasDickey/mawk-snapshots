@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.46 2024/09/05 17:44:48 tom Exp $
+ * $MawkId: field.c,v 1.51 2024/12/14 21:21:20 tom Exp $
  */
 
 #define Visible_CELL
@@ -97,7 +97,7 @@ SEPARATOR rs_shadow =
 /* a splitting CELL version of FS */
 CELL fs_shadow =
 {
-    C_SPACE, 0, 0, 0.0
+    C_SPACE, 0, NULL, 0.0
 };
 int nf;
  /* nf holds the true value of NF.  If nf < 0 , then
@@ -286,7 +286,7 @@ split_field0(void)
     }
 }
 
-static void
+static GCC_NORETURN void
 invalid_format(CELL *fp)
 {
     const char *what = (fp == CONVFMT) ? "CONVFMT" : "OFMT";
@@ -310,7 +310,9 @@ valid_format(CELL *fp)
 	    int l_flag = 0;
 	    int h_flag = 0;
 
-	    if (++args > 1)
+	    if (*q == '%') {
+		continue;	/* allow an escaped '%' */
+	    } else if (++args > 1)
 		invalid_format(fp);
 
 	    while (*q == '-' || *q == '+' || *q == ' ' ||
@@ -433,6 +435,8 @@ field_assign(CELL *fp, CELL *cp)
 	break;
 
     case OFMT_field:
+	OFMT_type = -1;
+	/* FALLTHRU */
     case CONVFMT_field:
 	/* If the user does something stupid with OFMT or CONVFMT,
 	   we could crash.
@@ -621,7 +625,7 @@ slow_cell_assign(CELL *target, CELL *source)
 	    CELL *bank_start = fbankv[i];
 	    CELL *bank_end;
 
-	    if (bank_start == 0)
+	    if (bank_start == NULL)
 		break;
 
 	    bank_end = bank_start + FBANK_SZ;
@@ -667,7 +671,7 @@ slow_field_ptr(int i)
 
 	j = (max_field >> FB_SHIFT) + 1;
 
-	assert(j > 0 && fbankv[j - 1] != 0 && fbankv[j] == 0);
+	assert(j > 0 && fbankv[j - 1] != NULL && fbankv[j] == NULL);
 
 	do {
 	    fbankv[j] = (CELL *) zmalloc(sizeof(CELL) * FBANK_SZ);
@@ -738,12 +742,12 @@ fbankv_free(void)
 {
     unsigned i = 1;
     const size_t cnt = FBANKV_CHUNK_SIZE * fbankv_num_chunks;
-    while (i < cnt && fbankv[i] != 0) {
+    while (i < cnt && fbankv[i] != NULL) {
 	fbank_free(fbankv[i]);
 	i++;
     }
     for (; i < cnt; i++) {
-	if (fbankv[i] != 0) {
+	if (fbankv[i] != NULL) {
 	    bozo("unexpected pointer in fbankv[]");
 	}
     }

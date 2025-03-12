@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.41 2024/08/26 21:04:00 tom Exp $
+ * $MawkId: parse.y,v 1.42 2024/12/14 12:55:59 tom Exp $
  */
 
 %{
@@ -1206,11 +1206,11 @@ improve_arglist(const char *name)
     FCALL_REC *q;
 
     TRACE(("improve_arglist(%s)\n", name));
-    for (p = active_arglist; p != 0; p = p->link) {
+    for (p = active_arglist; p != NULL; p = p->link) {
 	if (p->type == ST_LOCAL_NONE) {
-	    for (q = resolve_list; q != 0; q = q->link) {
+	    for (q = resolve_list; q != NULL; q = q->link) {
 		if (!strcmp(q->callee->name, name)) {
-		    for (p2 = q->arg_list; p2 != 0; p2 = p2->link) {
+		    for (p2 = q->arg_list; p2 != NULL; p2 = p2->link) {
 			if (p2->arg_num == p->arg_num) {
 			    switch (p2->type) {
 			    case ST_NONE:
@@ -1251,21 +1251,21 @@ save_arglist(const char *s)
     SYMTAB *result = save_id(s);
     CA_REC *saveit = ZMALLOC(CA_REC);
 
-    if (saveit != 0) {
+    if (saveit != NULL) {
 	CA_REC *p, *q;
 	int arg_num = 0;
 
-	for (p = active_arglist, q = 0; p != 0; q = p, p = p->link) {
+	for (p = active_arglist, q = NULL; p != NULL; q = p, p = p->link) {
 	    ++arg_num;
 	}
 
-	saveit->link = 0;
+	saveit->link = NULL;
 	saveit->type = ST_LOCAL_NONE;
 	saveit->arg_num = (NUM_ARGS) arg_num;
 	saveit->call_lineno = token_lineno;
 	saveit->sym_p = result;
 
-	if (q != 0) {
+	if (q != NULL) {
 	    q->link = saveit;
 	} else {
 	    active_arglist = saveit;
@@ -1278,7 +1278,7 @@ save_arglist(const char *s)
 static void
 free_arglist(void)
 {
-    while (active_arglist != 0) {
+    while (active_arglist != NULL) {
 	CA_REC *next = active_arglist->link;
 	ZFREE(active_arglist);
 	active_arglist = next;
