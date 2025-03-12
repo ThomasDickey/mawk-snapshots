@@ -21,6 +21,8 @@ the GNU General Public License, version 2, 1991.
 /* *INDENT-OFF* */
 
 #include <config.h>
+#include <float.h>
+#include <limits.h>
 
 #ifndef SIZEOF_LONG
 #define SIZEOF_LONG 4
@@ -33,14 +35,16 @@ the GNU General Public License, version 2, 1991.
 #if defined(HAVE_STDINT_H) && defined(HAVE_INT64_T) && defined(HAVE_UINT64_T)
 
 #include <stdint.h>
-#include <limits.h>
 
 #if defined(INT64_MAX)
 #define  MAX__INT       INT64_MAX
+#define  MIN__INT       INT64_MIN
 #elif defined(LLONG_MAX)
 #define  MAX__INT       LLONG_MAX
+#define  MIN__INT       LLONG_MIN
 #elif defined(LONG_LONG_MAX)
 #define  MAX__INT       LONG_LONG_MAX
+#define  MIN__INT       LONG_LONG_MIN
 #endif
 
 #if defined(UINT64_MAX)
@@ -52,12 +56,15 @@ the GNU General Public License, version 2, 1991.
 #endif
 
 #define  MAX__LONG      MAX__INT
+#define  MIN__LONG      MIN__INT
 #define  MAX__ULONG     MAX__UINT
 
 typedef int64_t         Int;
 typedef int64_t         Long;
 #define  Max_Int        MAX__INT
+#define  Min_Int        MIN__INT
 #define  Max_Long       MAX__LONG
+#define  Min_Long       MIN__LONG
 
 typedef uint64_t        UInt;
 typedef uint64_t        ULong;
@@ -80,9 +87,10 @@ typedef uint64_t        ULong;
 #else /* !defined(HAVE_STDINT_H), etc */
 
 #ifndef MAX__INT
-#include <limits.h>
 #define  MAX__INT       INT_MAX
+#define  MIN__INT       INT_MIN
 #define  MAX__LONG      LONG_MAX
+#define  MIN__LONG      LONG_MIN
 #define  MAX__UINT      UINT_MAX
 #define  MAX__ULONG     ULONG_MAX
 #endif /* MAX__INT */
@@ -93,13 +101,17 @@ typedef uint64_t        ULong;
 typedef long            Int;
 typedef long            Long;
 #define  Max_Int        MAX__LONG
+#define  Min_Int        MIN__LONG
 #define  Max_Long       MAX__LONG
+#define  Min_Long       MIN__LONG
 #else
 #define  INT_FMT        "%d"
 typedef int             Int;
 typedef long            Long;
 #define  Max_Int        MAX__INT
+#define  Min_Int        MIN__INT
 #define  Max_Long       MAX__LONG
+#define  Min_Long       MIN__LONG
 #endif
 
 #if  MAX__UINT <= 0xffff
@@ -121,6 +133,24 @@ typedef unsigned long   ULong;
 #define  ULONG_FMT      "%lu"
 
 #endif /* HAVE_STDINT_H */
+
+#define TOTAL_BITS_IN_TYPE(x)                   (sizeof(x) * CHAR_BIT)
+#define TOTAL_BITS_IN_LONG                      TOTAL_BITS_IN_TYPE(Long)
+#define TOTAL_BITS_IN_ULONG                     TOTAL_BITS_IN_TYPE(ULong)
+#define TOTAL_MAGNITUDE_BITS_IN_LONG            (TOTAL_BITS_IN_LONG - 1) /* size minus the sign bit */
+#define TOTAL_SIGNIFICAND_BITS_IN_DOUBLE        DBL_MANT_DIG /* the non-sign, non-exponent bits in a double */
+#define Max_Double_Safe_Long                                         \
+    (TOTAL_SIGNIFICAND_BITS_IN_DOUBLE > TOTAL_MAGNITUDE_BITS_IN_LONG \
+        ? Max_Long                                                   \
+        : (((Long) 1 << TOTAL_SIGNIFICAND_BITS_IN_DOUBLE) - 1))
+#define Min_Double_Safe_Long                                         \
+    (TOTAL_SIGNIFICAND_BITS_IN_DOUBLE > TOTAL_MAGNITUDE_BITS_IN_LONG \
+        ? Min_Long                                                   \
+        : -(((Long) 1 << TOTAL_SIGNIFICAND_BITS_IN_DOUBLE) - 1))
+#define Max_Double_Safe_ULong                                        \
+    (TOTAL_SIGNIFICAND_BITS_IN_DOUBLE > TOTAL_BITS_IN_ULONG          \
+        ? Max_ULong                                                  \
+        : (((ULong) 1 << TOTAL_SIGNIFICAND_BITS_IN_DOUBLE) - 1))
 
 #define EVAL_STACK_SIZE 1024	/* initial size , can grow */
 

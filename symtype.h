@@ -32,6 +32,7 @@ typedef struct _bi_rec
     const char name[12];
     PF_CP fp;			/* ptr to function that does the builtin */
     NUM_ARGS min_args, max_args;
+    unsigned char overridable;
 /* info for parser to check correct number of arguments */
 }
 #endif
@@ -67,6 +68,7 @@ typedef struct _fblock
     size_t size;
     NUM_ARGS nargs;
     SYM_TYPE *typev;		/* array of size nargs holding types */
+    const BI_REC *bip;
 }
 #endif
 FBLOCK;				/* function block */

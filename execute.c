@@ -1330,6 +1330,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	case _CALLX:
 	case _CALL:
 
+
 	    /*  cdp[0] holds ptr to "function block"
 	       cdp[1] holds number of input arguments
 	     */
@@ -1340,6 +1341,23 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		CELL *nfp = sp - a_args + 1;	/* new fp for callee */
 		CELL *local_p = sp + 1;		/* first local argument on stack */
 		SYM_TYPE *type_p = NULL;	/* pts to type of an argument */
+
+		if (!fbp->code) {
+		    const BI_REC *bi_rec = fbp->bip;
+		    if (bi_rec) {
+			if (bi_rec->min_args != bi_rec->max_args) {
+			    /* variable args; push arg count on stack */
+			    inc_sp();
+			    sp->type = (short) a_args;
+			}
+			sp = (fbp->bip->fp)(sp);
+		    } else { /* should be impossible, but handled regardless */
+			    rt_error(
+			        "overridable built-in %s never defined and has no implementation",
+				bi_rec->name);
+		    }
+		    break;
+		}
 
 		if (fbp->nargs) {
 		    type_p = fbp->typev + a_args - 1;
