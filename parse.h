@@ -1,3 +1,4 @@
+/* source parse.y 1.42 */
 #ifndef _yy_defines_h_
 #define _yy_defines_h_
 

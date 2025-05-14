@@ -2,7 +2,7 @@
 # $FreeBSD: head/lang/mawk/Makefile 516890 2019-11-06 14:17:48Z wen $
 
 PORTNAME=	mawk
-DISTVERSION=	1.3.4.20250131
+DISTVERSION=	1.3.4.20250514
 CATEGORIES=	lang
 MASTER_SITES=	https://invisible-island.net/archives/${PORTNAME}/ \
 		https://invisible-mirror.net/archives/${PORTNAME}/

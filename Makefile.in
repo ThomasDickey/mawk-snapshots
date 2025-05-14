@@ -1,7 +1,7 @@
-# $MawkId: Makefile.in,v 1.66 2024/11/17 20:41:43 tom Exp $
+# $MawkId: Makefile.in,v 1.67 2025/05/14 23:49:42 tom Exp $
 # Makefile-template for MAWK
 ###############################################################################
-# copyright 2009-2023,2024 Thomas E. Dickey
+# copyright 2009-2024,2025 Thomas E. Dickey
 # copyright 2010, Guido Berhoerster
 # copyright 2009, Jonathan Nieder
 # copyright 2005, Aleksey Cheusov
@@ -112,14 +112,24 @@ mawk_errs :  $(PROGRAM)  # test that we have a safe mawk
 fpe_test :  $(PROGRAM) # test FPEs are handled OK
 	@sh -c '$(CHECK); ./fpe_test'
 
+parse.h \
 parse.c  : parse.y
 	@echo  expect 4 shift/reduce conflicts
 	$(YACC) -d parse.y
-	sed -e '/^#line/s%"y.tab.c"%"parse.c"%' -e '/typedef.*YYINT;/s,int,short,' y.tab.c >$@
-	rm -f y.tab.c
-	-if cmp -s y.tab.h parse.h ;\
-	   then rm y.tab.h ;\
-	   else mv y.tab.h parse.h ; fi
+	@-rm -f parse.tmp parse.[ch]
+	grep MawkId parse.y | \
+	sed \
+		-e 's%^[^:]*: %/* source %' \
+		-e 's%,v%%' \
+		-e 's% 2[0-9][0-9][0-9].*% */%' \
+		>parse.tmp
+	cat parse.tmp >parse.c
+	sed \
+		-e '/^#line/s%"y.tab.c"%"parse.c"%' \
+		-e '/typedef.*YYINT;/s,int,short,' y.tab.c >>parse.c
+	cat parse.tmp >parse.h
+	cat y.tab.h >> parse.h
+	@-rm -f parse.tmp y.tab.[ch]
 
 NOIDENT = sed -e 's/[$$]MawkId\([^$$]*\)[$$]/@MawkId\1@/'
 
@@ -147,14 +157,14 @@ uninstall ::
 
 clean :
 	-cd man && $(MAKE) $(MAKE_RECUR) $@
-	-rm -f y.tab.c y.tab.h makescan$x
+	-rm -f y.tab.[ch] makescan$x
 	-rm -f *$o *.i test/$(PROGRAM) *core* test/*core* $(PROGRAM)
 
 distclean :  clean
 	-cd man && $(MAKE) $(MAKE_RECUR) $@
 	-rm -f scancode.c
 	-rm -f makebits.h
-	-rm -f man2html.tmp
+	-rm -f *.tmp
 	-rm -f defines.out maxint.out fpe_check$x tags makedeps.awk
 	-rm -f config.h Makefile config.status config.log config.cache
 

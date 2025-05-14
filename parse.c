@@ -1,3 +1,4 @@
+/* source parse.y 1.42 */
 /* original parser id follows */
 /* yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93" */
 /* (use YYMAJOR/YYMINOR for ifdefs dependent on parser version) */
@@ -5,7 +6,7 @@
 #define YYBYACC 1
 #define YYMAJOR 2
 #define YYMINOR 0
-#define YYPATCH 20241214
+#define YYPATCH 20241231
 
 #define YYEMPTY        (-1)
 #define yyclearin      (yychar = YYEMPTY)
