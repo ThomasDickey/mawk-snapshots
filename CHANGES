@@ -1,4 +1,9 @@
--- $MawkId: CHANGES,v 1.421 2025/12/27 18:03:23 tom Exp $
+-- $MawkId: CHANGES,v 1.425 2026/01/10 00:12:00 tom Exp $
+
+20260109
+	+ improve limit-checks for $n expressions, in case of sign extension
+	  (report by Dima Kogan).
+	+ improve portability of initialization of srand (Debian #1124627)
 
 20251227
 	+ updated configure macros

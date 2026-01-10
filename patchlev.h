@@ -1,6 +1,6 @@
 /*
 patchlev.h
-copyright 2009-2024,2025, Thomas E. Dickey
+copyright 2009-2025,2026, Thomas E. Dickey
 copyright 1991-1996,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,9 +11,9 @@ the GNU General Public License, version 2, 1991.
  */
 
 /*
- * $MawkId: patchlev.h,v 1.169 2025/05/14 22:31:52 tom Exp $
+ * $MawkId: patchlev.h,v 1.172 2026/01/10 00:12:00 tom Exp $
  */
 #define  PATCH_BASE	1
 #define  PATCH_LEVEL	3
 #define  PATCH_STRING	".4"
-#define  DATE_STRING    "20250514"
+#define  DATE_STRING    "20260109"

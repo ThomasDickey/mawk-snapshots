@@ -1,7 +1,7 @@
 /********************************************
 sizes.h
-copyright 2009-2020,2024  Thomas E. Dickey
-copyright 1991-1995,2014.  Michael D. Brennan
+copyright 2009-2024,2026  Thomas E. Dickey
+copyright 1991-1995,2014  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: sizes.h,v 1.25 2024/08/25 17:16:24 tom Exp $
+ * $MawkId: sizes.h,v 1.27 2026/01/09 23:56:06 tom Exp $
  */
 
 /*  sizes.h  */
@@ -157,6 +157,9 @@ typedef unsigned long   ULong;
 #define  A_HASH_PRIME 199
 
 #define  MAX_COMPILE_ERRORS  5	/* quit if more than 4 errors */
+
+#define  MAX_UNSIGNED (unsigned)(~0U)	/* two's complement... */
+#define  MAX_INTEGER  (int)(MAX_UNSIGNED >> 1)	/* two's complement... */
 
 /* *INDENT-ON* */
 

@@ -1,7 +1,7 @@
 /********************************************
 print.c
-copyright 2008-2023,2024.  Thomas E. Dickey
-copyright 1991-1996,2014.  Michael D. Brennan
+copyright 2008-2024,2026  Thomas E. Dickey
+copyright 1991-1996,2014  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
 the AWK programming language.
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: print.c,v 1.55 2024/12/10 01:13:31 tom Exp $
+ * $MawkId: print.c,v 1.56 2026/01/09 09:20:19 tom Exp $
  */
 
 #define Visible_BI_REC

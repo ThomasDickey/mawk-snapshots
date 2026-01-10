@@ -1,6 +1,6 @@
 /********************************************
 execute.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.64 2024/12/14 12:53:14 tom Exp $
+ * $MawkId: execute.c,v 1.67 2026/01/10 00:13:03 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -37,7 +37,7 @@ the GNU General Public License, version 2, 1991.
 #include <math.h>
 
 static int compare(CELL *);
-static UInt d_to_index(double);
+static int d_to_index(double);
 
 #ifdef	 NOINFO_SIGFPE
 static char dz_msg[] = "division by zero";
@@ -131,7 +131,6 @@ execute(INST * cdp,		/* code ptr, start execution here */
     /* some useful temporaries */
     CELL *cp;
     int t;
-    UInt tu;
 
     /* save state for array loops via a stack */
     ALOOP_STATE *aloop_state = (ALOOP_STATE *) 0;
@@ -292,11 +291,11 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    if (sp->type != C_DOUBLE)
 		cast1_to_d(sp);
 
-	    tu = d_to_index(sp->dval);
-	    if (tu && nf < 0)
+	    t = d_to_index(sp->dval);
+	    if (t >= 0 && nf < 0)
 		split_field0();
-	    sp->ptr = (PTR) field_ptr((int) tu);
-	    if ((int) tu > nf) {
+	    sp->ptr = (PTR) field_ptr(t);
+	    if (t > nf) {
 		/* make sure it is set to "" */
 		cp = (CELL *) sp->ptr;
 		cell_destroy(cp);
@@ -311,12 +310,12 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    if (sp->type != C_DOUBLE)
 		cast1_to_d(sp);
 
-	    tu = d_to_index(sp->dval);
+	    t = d_to_index(sp->dval);
 
 	    if (nf < 0)
 		split_field0();
-	    if ((int) tu <= nf) {
-		cellcpy(sp, field_ptr((int) tu));
+	    if (t <= nf && t >= 0) {
+		cellcpy(sp, field_ptr(t));
 	    } else {
 		sp->type = C_STRING;
 		sp->ptr = (PTR) & null_str;
@@ -487,7 +486,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		    }
 		    if (ap->base < ap->limit) {
 			zfree(ap->base,
-			      ((unsigned) (ap->limit - ap->base)
+			      ((size_t) (ap->limit - ap->base)
 			       * sizeof(STRING *)));
 		    }
 		    ZFREE(ap);
@@ -1565,13 +1564,13 @@ DB_cell_destroy(CELL *cp)
  * Note: this used to return (unsigned) d_to_I(d), but is done inline to
  * aid static analysis.
  */
-static UInt
+static int
 d_to_index(double d)
 {
-    if (d >= (double) Max_Int) {
-	return (UInt) Max_Int;
+    if (d >= (double) MAX_INTEGER) {
+	return MAX_INTEGER;
     } else if (d >= 0.0) {
-	return (UInt) (Int) (d);
+	return (int) (d);
     } else {
 	/* might include nan */
 	rt_error("negative field index $%.6g", d);

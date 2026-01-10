@@ -1,8 +1,8 @@
 /* array.h */
 /*
-$MawkId: array.h,v 1.24 2024/12/14 12:49:15 tom Exp $
+$MawkId: array.h,v 1.25 2026/01/09 09:19:23 tom Exp $
 
-copyright 2009-2020,2024 Thomas E. Dickey
+copyright 2009-2024,2026 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -10,7 +10,7 @@ the AWK programming language.
 
 Mawk is distributed without warranty under the terms of
 the GNU General Public License, version 2, 1991.
-
+-------------------------------------------------------------------------------
 array.c and array.h were originally generated with the commands
 
    notangle -R'"array.c"' array.w > array.c

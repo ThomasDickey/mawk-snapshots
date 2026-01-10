@@ -1,6 +1,6 @@
 /********************************************
 bi_funct.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1995,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: bi_funct.c,v 1.140 2024/12/14 12:53:14 tom Exp $
+ * $MawkId: bi_funct.c,v 1.144 2026/01/09 23:57:14 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -469,7 +469,7 @@ bi_strftime(CELL *sp)
     struct tm *ptm;
     int n_args;
     int utc;
-    STRING *sval = NULL;		/* strftime(sval->str, timestamp, utc) */
+    STRING *sval = NULL;	/* strftime(sval->str, timestamp, utc) */
     size_t result;
 
     TRACE_FUNC("bi_strftime", sp);
@@ -807,7 +807,8 @@ bi_srand(CELL *sp)
     }
 
 #ifdef USE_SYSTEM_SRAND
-    seed32 = fmod(cseed.dval, (double) Max_UInt);
+    /* the cast on an all-ones value trims it to size needed by srand */
+    seed32 = fmod(cseed.dval, (double) MAX_UNSIGNED);
     mawk_srand((unsigned) seed32);
 #else
     /* The old seed is now in *sp ; move the value in cseed to

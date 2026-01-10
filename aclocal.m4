@@ -1,11 +1,11 @@
-dnl $MawkId: aclocal.m4,v 1.120 2025/12/27 18:03:23 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.122 2026/01/09 00:30:51 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
 dnl renamed for consistency by Thomas E Dickey.
 dnl
 dnl ---------------------------------------------------------------------------
-dnl Copyright:  2008-2023,2024 by Thomas E. Dickey
+dnl Copyright:  2008-2024,2026 by Thomas E. Dickey
 dnl
 dnl Permission is hereby granted, free of charge, to any person obtaining a
 dnl copy of this software and associated documentation files (the
@@ -1546,7 +1546,7 @@ AC_DEFUN([CF_MAWK_CHECK_LIMITS_MSG],
 [AC_MSG_ERROR(C program to compute maxint and maxlong failed.
 Please send bug report to CF_MAWK_MAINTAINER.)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_CHECK_SIZE_T version: 3 updated: 2012/10/25 20:41:47
+dnl CF_MAWK_CHECK_SIZE_T version: 4 updated: 2026/01/08 19:26:20
 dnl --------------------
 dnl Check if size_t is found in the given header file, unless we have already
 dnl found it.
@@ -1560,7 +1560,7 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 	AC_CHECK_HEADER($1,cf_mawk_check_size=ok)
 	if test "x$cf_mawk_check_size" = xok ; then
 		AC_CACHE_CHECK(if size_t is declared in $1,cf_cv_size_t_$2,[
-			AC_TRY_COMPILE([#include <$1>],[size_t *n],
+			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <$1>],[size_t *n])],
 				[cf_cv_size_t_$2=yes],
 				[cf_cv_size_t_$2=no])])
 	fi
@@ -1633,7 +1633,7 @@ AC_DEFUN([CF_MAWK_FIND_SIZE_T],
 [CF_MAWK_CHECK_SIZE_T(stddef.h,SIZE_T_STDDEF_H)
 CF_MAWK_CHECK_SIZE_T(sys/types.h,SIZE_T_TYPES_H)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FPE_SIGINFO version: 8 updated: 2012/10/25 20:41:47
+dnl CF_MAWK_FPE_SIGINFO version: 9 updated: 2026/01/08 19:26:20
 dnl -------------------
 dnl SYSv and Solaris FPE checks
 AC_DEFUN([CF_MAWK_FPE_SIGINFO],
@@ -1641,7 +1641,7 @@ AC_DEFUN([CF_MAWK_FPE_SIGINFO],
 if test "x$cf_cv_use_sv_siginfo" = "xno"
 then
     AC_CHECK_FUNC(sigvec,cf_have_sigvec=1)
-    echo "FPE_CHECK 2:get_fpe_codes" >&AC_FD_CC
+    echo "FPE_CHECK 2:get_fpe_codes" >&AS_MESSAGE_LOG_FD
     if test "$cf_have_sigvec" = 1 && ./fpe_check$ac_exeext  phoney_arg >> defines.out ; then
 	:
     else
@@ -1714,7 +1714,7 @@ int main(void)
 	${cf_cv_main_return:-return}(0);
 }]])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_RUN_FPE_TESTS version: 17 updated: 2024/11/17 05:12:58
+dnl CF_MAWK_RUN_FPE_TESTS version: 18 updated: 2026/01/08 19:26:20
 dnl ---------------------
 dnl These are mawk's dreaded FPE tests.
 AC_DEFUN([CF_MAWK_RUN_FPE_TESTS],
@@ -1740,11 +1740,11 @@ AC_CACHE_CHECK(if we should use sigaction.sa_sigaction,cf_cv_use_sa_sigaction,
 cf_cv_use_sa_sigaction=no
 if test "$ac_cv_func_sigaction" = yes
 then
-    AC_TRY_COMPILE([#include <signal.h>],[
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <signal.h>],[
 	struct sigaction foo;
 	foo.sa_sigaction = 0;
 	(void) foo;
-],[cf_cv_use_sa_sigaction=yes])
+])],[cf_cv_use_sa_sigaction=yes])
 fi
 ])
 
@@ -1766,7 +1766,7 @@ CF_EOF
 rm -f conftest$ac_exeext
 
 if AC_TRY_EVAL(ac_link); then
-    echo "FPE_CHECK 1:check_fpe_traps" >&AC_FD_CC
+    echo "FPE_CHECK 1:check_fpe_traps" >&AS_MESSAGE_LOG_FD
     ./conftest 2>/dev/null
     cf_status=$?
 else
@@ -1774,7 +1774,7 @@ else
     cf_status=100
 fi
 
-echo "FPE_CHECK status=$cf_status" >&AC_FD_CC
+echo "FPE_CHECK status=$cf_status" >&AS_MESSAGE_LOG_FD
 case $cf_status in
    (0)  ;;  # good news do nothing
    (3)      # reasonably good news
@@ -1809,7 +1809,7 @@ case $cf_status in
 CF_EOF
 
 	if AC_TRY_EVAL(ac_link); then
-	    echo "FPE_CHECK 3:check_strtod_ovf" >&AC_FD_CC
+	    echo "FPE_CHECK 3:check_strtod_ovf" >&AS_MESSAGE_LOG_FD
 	    if ./conftest phoney_arg phoney_arg 2>/dev/null
 	    then
 	       AC_MSG_RESULT([no bug])
@@ -2325,16 +2325,16 @@ do
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SET_MATH_LIB_VERSION version: 1 updated: 2013/12/26 20:21:00
+dnl CF_SET_MATH_LIB_VERSION version: 2 updated: 2026/01/08 19:26:20
 dnl -----------------------
 dnl Check if math.h declares _LIB_VERSION, and if so, whether we can modify it
 dnl at runtime.  Cygwin is known to be broken in this regard (late 2013).
 AC_DEFUN([CF_SET_MATH_LIB_VERSION],[
 AC_CACHE_CHECK(if math.h declares _LIB_VERSION,cf_cv_get_math_lib_version,[
 
-AC_TRY_LINK([
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
 #include <math.h>],
-	[int foo = _LIB_VERSION],
+	[int foo = _LIB_VERSION])],
 	[cf_cv_get_math_lib_version=yes],
 	[cf_cv_get_math_lib_version=no])
 ])
@@ -2343,9 +2343,9 @@ if test "x$cf_cv_get_math_lib_version" = xyes
 then
 	AC_CACHE_CHECK(if we can update _LIB_VERSION,cf_cv_set_math_lib_version,[
 
-	AC_TRY_LINK([
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([
 #include <math.h>],
-		[_LIB_VERSION = _IEEE_],
+		[_LIB_VERSION = _IEEE_])],
 		[cf_cv_set_math_lib_version=yes],
 		[cf_cv_set_math_lib_version=no])
 	])
@@ -2358,7 +2358,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SRAND version: 23 updated: 2024/07/16 16:35:55
+dnl CF_SRAND version: 24 updated: 2026/01/08 19:26:20
 dnl --------
 dnl Check for functions similar to srand() and rand().  lrand48() and random()
 dnl return a 31-bit value, while rand() returns a value less than RAND_MAX
@@ -2390,12 +2390,12 @@ for cf_func in $cf_srand_arc4random srandom/random srand48/lrand48 srand/rand
 do
 	CF_SRAND_PARSE($cf_func,cf_srand_func,cf_rand_func)
 
-AC_TRY_LINK([
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
 $ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
-],[long seed = 1; $cf_srand_func(seed); seed = $cf_rand_func(); (void)seed],
+],[long seed = 1; $cf_srand_func(seed); seed = $cf_rand_func(); (void)seed])],
 [cf_cv_srand_func=$cf_func
  break])
 done
@@ -2416,34 +2416,34 @@ if test "$cf_cv_srand_func" != unknown ; then
 			cf_rand_max=31
 			;;
 		esac
-		AC_TRY_COMPILE([
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 $ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
-		],[long x = $cf_cv_rand_max; (void)x],,
+		],[long x = $cf_cv_rand_max; (void)x])],,
 		[cf_cv_rand_max="(1UL<<$cf_rand_max)-1"])
 	])
 
 	case "$cf_cv_srand_func" in
 	(*/arc4random)
 		AC_MSG_CHECKING(if <bsd/stdlib.h> should be included)
-		AC_TRY_COMPILE([
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 $ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
 #include <bsd/stdlib.h>],
 					   [void *arc4random(int);
-						void *x = arc4random(1); (void)x],
+						void *x = arc4random(1); (void)x])],
 					   [cf_bsd_stdlib_h=no],
-					   [AC_TRY_COMPILE([
+					   [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 $ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
 #include <bsd/stdlib.h>],
-									   [unsigned long x = arc4random(); (void)x],
+									   [unsigned long x = arc4random(); (void)x])],
 									   [cf_bsd_stdlib_h=yes],
 									   [cf_bsd_stdlib_h=no])])
 	    AC_MSG_RESULT($cf_bsd_stdlib_h)
@@ -2452,17 +2452,17 @@ $ac_includes_default
 			AC_DEFINE(HAVE_BSD_STDLIB_H,1,[Define to 1 if bsd/stdlib.h header should be used])
 		else
 			AC_MSG_CHECKING(if <bsd/random.h> should be included)
-			AC_TRY_COMPILE([
+			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 $ac_includes_default
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
 #include <bsd/random.h>],
 						   [void *arc4random(int);
-							void *x = arc4random(1); (void)x],
+							void *x = arc4random(1); (void)x])],
 						   [cf_bsd_random_h=no],
-						   [AC_TRY_COMPILE([#include <bsd/random.h>],
-										   [unsigned long x = arc4random(); (void)x],
+						   [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <bsd/random.h>],
+										   [unsigned long x = arc4random(); (void)x])],
 										   [cf_bsd_random_h=yes],
 										   [cf_bsd_random_h=no])])
 			AC_MSG_RESULT($cf_bsd_random_h)
