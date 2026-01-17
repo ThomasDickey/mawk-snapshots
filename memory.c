@@ -1,6 +1,6 @@
 /********************************************
 memory.c
-copyright 2009-2023,2024  Thomas E. Dickey
+copyright 2009-2024,2026  Thomas E. Dickey
 copyright 1991-1992,1993  Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: memory.c,v 1.10 2024/08/25 17:15:43 tom Exp $
+ * $MawkId: memory.c,v 1.11 2026/01/17 00:25:57 tom Exp $
  */
 
 #define Visible_STRING
@@ -25,7 +25,7 @@ STRING null_str =
 static STRING *
 xnew_STRING(size_t len)
 {
-    STRING *sval = (STRING *) zmalloc(len + STRING_OH);
+    STRING *sval = (STRING *) zmalloc(SizePlus(len, STRING_OH));
 
     sval->len = len;
     sval->ref_cnt = 1;

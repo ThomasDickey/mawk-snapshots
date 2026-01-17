@@ -1,6 +1,6 @@
 /* array.c */
 /*
-$MawkId: array.c,v 1.31 2026/01/09 09:16:53 tom Exp $
+$MawkId: array.c,v 1.32 2026/01/17 00:17:30 tom Exp $
 
 copyright 2009-2024,2026 Thomas E. Dickey
 copyright 1991-1996,2014 Michael D. Brennan
@@ -210,7 +210,7 @@ array_load(
     if (A->type != AY_SPLIT || A->limit < cnt) {
 	array_clear(A);
 	A->limit = (cnt & (size_t) ~3) + 4;
-	A->ptr = zmalloc(A->limit * sizeof(CELL));
+	A->ptr = zmalloc(SizeTimes(A->limit, sizeof(CELL)));
 	A->type = AY_SPLIT;
     } else {
 	/* reusing an existing AY_SPLIT array */
@@ -283,7 +283,7 @@ array_loop_vector(
 	STRING **ret;
 	if (!(A->type & AY_STR))
 	    add_string_associations(A);
-	ret = (STRING **) zmalloc(A->size * sizeof(STRING *));
+	ret = (STRING **) zmalloc(SizeTimes(A->size, sizeof(STRING *)));
 	{
 	    int r = 0;		/* indexes ret */
 	    DUAL_LINK *table = (DUAL_LINK *) A->ptr;
@@ -556,7 +556,8 @@ double_the_hash_table(ARRAY A)
     unsigned old_hmask = A->hmask;
     unsigned new_hmask = (old_hmask << 1) + 1;
     DUAL_LINK *table;
-    A->ptr = zrealloc(A->ptr, (old_hmask + 1) * sizeof(DUAL_LINK),
+    A->ptr = zrealloc(A->ptr,
+		      (old_hmask + 1) * sizeof(DUAL_LINK),
 		      (new_hmask + 1) * sizeof(DUAL_LINK));
     table = (DUAL_LINK *) A->ptr;
     /* zero out the new part which is the back half */

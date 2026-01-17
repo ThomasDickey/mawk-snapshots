@@ -1,6 +1,6 @@
 /********************************************
 zmalloc.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1993,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: zmalloc.c,v 1.38 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: zmalloc.c,v 1.40 2026/01/17 00:55:51 tom Exp $
  */
 
 /*  zmalloc.c  */
@@ -29,7 +29,7 @@ the GNU General Public License, version 2, 1991.
 #define ZSHIFT      3
 #define ZBLOCKSZ    BlocksToBytes(1)
 
-#define BytesToBlocks(size) ((((unsigned)size) + ZBLOCKSZ - 1) >> ZSHIFT)
+#define BytesToBlocks(size) ((((size_t)size) + ZBLOCKSZ - 1) >> ZSHIFT)
 #define BlocksToBytes(size) ((size) << ZSHIFT)
 
 /*
@@ -218,10 +218,10 @@ static ZBLOCK *pool[POOLSZ];
 PTR
 zmalloc(size_t size)
 {
-    unsigned blocks = BytesToBlocks(size);
-    size_t bytes = (size_t) BlocksToBytes(blocks);
+    size_t blocks = BytesToBlocks(size);
+    size_t bytes = BlocksToBytes(blocks);
     register ZBLOCK *p;
-    static unsigned amt_avail;
+    static size_t amt_avail;
     static ZBLOCK *avail;
 
     if (!IsPoolable(blocks)) {
@@ -268,7 +268,7 @@ zmalloc(size_t size)
 void
 zfree(PTR p, size_t size)
 {
-    unsigned blocks = BytesToBlocks(size);
+    size_t blocks = BytesToBlocks(size);
 
     if (!IsPoolable(blocks)) {
 	FinishPtr(p, size);

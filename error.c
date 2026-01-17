@@ -1,6 +1,6 @@
 /********************************************
 error.c
-copyright 2008-2023,2024 Thomas E. Dickey
+copyright 2008-2024,2026 Thomas E. Dickey
 copyright 1991-1994,1995 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: error.c,v 1.31 2024/12/14 12:53:14 tom Exp $
+ * $MawkId: error.c,v 1.33 2026/01/17 01:10:52 tom Exp $
  */
 
 #define Visible_CELL
@@ -274,11 +274,20 @@ rt_error(const char *format, ...)
 
 /* run time */
 void
-rt_overflow(const char *s, unsigned size)
+rt_overflow(const char *s, size_t size)
 {
-    errmsg(0, "program limit exceeded: %s size=%u", s, size);
+    errmsg(0, "program limit exceeded: %s size=%lu", s, (unsigned long) size);
     rt_where();
     mawk_exit(2);
+}
+
+size_t
+size_overflow(const char *s, size_t size)
+{
+    if (s != NULL) {
+	rt_overflow(s, size);
+    }
+    return 0;
 }
 
 void

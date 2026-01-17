@@ -1,6 +1,6 @@
 /********************************************
 scan.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1996,2014, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: scan.c,v 1.69 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: scan.c,v 1.71 2026/01/17 00:00:09 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -145,7 +145,7 @@ scan_init(const char *cmdline_program)
 	eof_flag = 1;
     } else {			/* program from file[s] */
 	scan_open();
-	buffp = buffer = (UChar *) zmalloc((size_t) (BUFFSZ + 1));
+	buffp = buffer = (UChar *) zmalloc((size_t) (SizePlus(BUFFSZ, 1)));
 	scan_fillbuff();
     }
 
@@ -818,7 +818,13 @@ yylex(void)
 
 	    case ST_FIELD:
 		yylval.cp = stp->stval.cp;
-		current_token = FIELD;
+		if (current_token == DOLLAR &&
+		    strncmp(stp->name, "NF", 2) == 0) {
+		    yylval.stp = stp;
+		    stp->type = ST_VAR;
+		    current_token = D_ID;
+		} else
+		    current_token = FIELD;
 		break;
 
 	    default:

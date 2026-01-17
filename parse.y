@@ -1,6 +1,6 @@
 /********************************************
 parse.y
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: parse.y,v 1.42 2024/12/14 12:55:59 tom Exp $
+ * $MawkId: parse.y,v 1.43 2026/01/16 09:03:43 jlp765 Exp $
  */
 
 %{
@@ -753,7 +753,12 @@ field   :  FIELD
              $$ = code_offset ;
              if ( is_local($2) )
              { code2op(L_PUSHI, $2->offset) ; }
-             else code2(_PUSHI, $2->stval.cp) ;
+             else {
+                if (strncmp($2->name, "NF",2) == 0) {
+                   code1(NF_PUSHI) ;
+                } else
+                   code2(_PUSHI, $2->stval.cp) ;
+             }
 
              CODE_FE_PUSHA() ;
            }

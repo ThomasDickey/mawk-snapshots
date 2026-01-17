@@ -1,6 +1,6 @@
 /********************************************
 mawk.h
-copyright 2008-2024,2025 Thomas E. Dickey
+copyright 2008-2025,2026 Thomas E. Dickey
 copyright 1991-1995,1996 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: mawk.h,v 1.78 2025/01/30 09:02:31 tom Exp $
+ * $MawkId: mawk.h,v 1.79 2026/01/17 00:01:23 tom Exp $
  */
 
 /*  mawk.h  */
@@ -166,7 +166,7 @@ extern CELL *cellcpy(CELL *, CELL *);
 extern CELL *repl_cpy(CELL *, CELL *);
 extern void DB_cell_destroy(CELL *);
 extern GCC_NORETURN void overflow(const char *, unsigned);
-extern GCC_NORETURN void rt_overflow(const char *, unsigned);
+extern GCC_NORETURN void rt_overflow(const char *, size_t);
 extern GCC_NORETURN void rt_error(const char *,...) GCC_PRINTFLIKE(1,2);
 extern GCC_NORETURN void mawk_exit(int);
 extern void da(INST *, FILE *);
@@ -286,6 +286,13 @@ extern void zmalloc_leaks(void);
 #define no_leaks_re_ptr(ptr)	/* nothing */
 
 #endif
+
+/*
+ * Do limit-checks as comparison against compile-time constant.
+ */
+extern size_t size_overflow(const char *, size_t);
+#define SizePlus(size,plus)	((size) < (SIZE_MAX - (plus)) ? (size) + (plus) : size_overflow(#size,size))
+#define SizeTimes(size,plus)	((size) < (SIZE_MAX / (plus)) ? (size) * (plus) : size_overflow(#size,size))
 
 /*
  * Sometimes split_buff[] pointers are moved rather than copied.

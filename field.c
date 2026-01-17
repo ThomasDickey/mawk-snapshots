@@ -1,6 +1,6 @@
 /********************************************
 field.c
-copyright 2008-2023,2024 Thomas E. Dickey
+copyright 2008-2024,2026 Thomas E. Dickey
 copyright 1991-1995,2014 Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: field.c,v 1.51 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: field.c,v 1.52 2026/01/17 00:29:49 tom Exp $
  */
 
 #define Visible_CELL
@@ -60,8 +60,9 @@ allocate_fbankv(int i)
 	if (chunks > fbankv_num_chunks) {
 	    size_t old_size = fbankv_num_chunks * FBANKV_CHUNK_SIZE;
 	    size_t new_size = chunks * FBANKV_CHUNK_SIZE;
-	    fbankv = zrealloc(fbankv, old_size * sizeof(CELL *),
-			      new_size * sizeof(CELL *));
+	    fbankv = zrealloc(fbankv,
+			      SizeTimes(old_size, sizeof(CELL *)),
+			      SizeTimes(new_size, sizeof(CELL *)));
 
 	    memset(&fbankv[old_size], 0, (new_size - old_size) * sizeof(CELL *));
 	    fbankv_num_chunks = chunks;

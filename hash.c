@@ -1,6 +1,6 @@
 /********************************************
 hash.c
-copyright 2008-2021,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1993,1994, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: hash.c,v 1.24 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: hash.c,v 1.25 2026/01/17 00:19:09 tom Exp $
  */
 
 #define Visible_CELL
@@ -105,9 +105,10 @@ find(const char *s)
     q = (HASHNODE *) 0;
     while (1) {
 	if (!p) {
+	    size_t length = strlen(s);
 	    p = ZMALLOC(HASHNODE);
 	    p->symtab.type = ST_NONE;
-	    p->symtab.name = strcpy(zmalloc(strlen(s) + 1), s);
+	    p->symtab.name = strcpy(zmalloc(SizePlus(length, 1)), s);
 #ifdef NO_LEAKS
 	    p->symtab.free_name = 1;
 #endif

@@ -1,6 +1,6 @@
 /********************************************
 re_cmpl.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1994,2014, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: re_cmpl.c,v 1.43 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: re_cmpl.c,v 1.44 2026/01/17 00:21:33 tom Exp $
  */
 
 #define Visible_CELL
@@ -175,14 +175,16 @@ REPL_compile(STRING * sval)
     size_t limit = sval->len + 1;
 
     if (limit > split_size) {
-	size_t new_size = limit + SPLIT_SIZE;
+	size_t new_size = SizePlus(limit, SPLIT_SIZE);
 	if (split_buff != NULL) {
 	    size_t old_size = split_size;
-	    split_buff = (STRING **) zrealloc(split_buff,
-					      old_size * sizeof(STRING *),
-					      new_size * sizeof(STRING *));
+	    split_buff =
+		(STRING **) zrealloc(split_buff,
+				     SizeTimes(old_size, sizeof(STRING *)),
+				     SizeTimes(new_size, sizeof(STRING *)));
 	} else {
-	    split_buff = (STRING **) zmalloc(new_size * sizeof(STRING *));
+	    split_buff =
+		(STRING **) zmalloc(SizeTimes(new_size, sizeof(STRING *)));
 	}
 	split_size = new_size;
     }
@@ -254,7 +256,7 @@ REPL_compile(STRING * sval)
 	USED_SPLIT_BUFF(0);
     } else {
 	STRING **sp = (STRING **)
-	(cp->ptr = zmalloc(sizeof(STRING *) * count));
+	(cp->ptr = zmalloc((size_t) (count * sizeof(STRING *))));
 	VCount j = 0;
 
 	while (j < count) {

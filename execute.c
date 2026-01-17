@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.67 2026/01/10 00:13:03 tom Exp $
+ * $MawkId: execute.c,v 1.69 2026/01/17 00:50:45 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -465,7 +465,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		ALOOP_STATE *ap = aloop_state;
 		if (ap != NULL && (ap->ptr < ap->limit)) {
 		    cell_destroy(ap->var);
-		    ap->var->type = C_STRING;
+		    ap->var->type = C_MBSTRN;
 		    ap->var->ptr = (PTR) * ap->ptr++;
 		    cdp += cdp->op;
 		} else {
@@ -891,7 +891,7 @@ execute(INST * cdp,		/* code ptr, start execution here */
 		str2 = string(sp + 1)->str;
 		len2 = string(sp + 1)->len;
 
-		b = new_STRING0(len1 + len2);
+		b = new_STRING0(SizePlus(len1, len2));
 		memcpy(b->str, str1, len1);
 		memcpy(b->str + len1, str2, len2);
 		free_STRING(string(sp));

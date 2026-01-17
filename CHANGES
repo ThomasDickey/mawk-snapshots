@@ -1,11 +1,14 @@
--- $MawkId: CHANGES,v 1.425 2026/01/10 00:12:00 tom Exp $
+-- $MawkId: CHANGES,v 1.430 2026/01/17 00:34:13 tom Exp $
 
-20260109
+20260116
+	+ improve checks for size parameters of zmalloc and zrealloc
+	  (Original-Mawk #91).
+	+ improve precedence of operators (Original-Mawk #63, patch by jlp765).
+	+ fix a for-in loop comparison (Original-Mawk #86, patch by jlp765).
 	+ improve limit-checks for $n expressions, in case of sign extension
 	  (report by Dima Kogan).
-	+ improve portability of initialization of srand (Debian #1124627)
-
-20251227
+	+ improve portability of initialization of srand (Debian #1124627,
+	  Original-Mawk #85).
 	+ updated configure macros
 	+ update install-sh,l config.guess, and config.sub
 

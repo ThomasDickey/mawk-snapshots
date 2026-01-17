@@ -1,6 +1,6 @@
 /********************************************
 init.h
-copyright 2009-2020,2024, Thomas E. Dickey
+copyright 2009-2024,2026, Thomas E. Dickey
 copyright 1991, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.h,v 1.9 2024/08/25 17:21:52 tom Exp $
+ * $MawkId: init.h,v 1.10 2026/01/16 23:53:35 tom Exp $
  */
 
 /* init.h  */
@@ -19,6 +19,7 @@ the GNU General Public License, version 2, 1991.
 #ifndef  INIT_H
 #define  INIT_H
 
+#include <stdio.h>
 #include <symtype.h>
 
 /* nodes to link file names for multiple
