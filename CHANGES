@@ -1,4 +1,8 @@
--- $MawkId: CHANGES,v 1.430 2026/01/17 00:34:13 tom Exp $
+-- $MawkId: CHANGES,v 1.432 2026/01/27 13:34:12 tom Exp $
+
+20260127
+	+ improve loop unrolling in regex, needed for lower-limit check with
+	  brace expressions (Original-Mawk #93).
 
 20260116
 	+ improve checks for size parameters of zmalloc and zrealloc

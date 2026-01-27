@@ -1,4 +1,4 @@
-dnl $MawkId: aclocal.m4,v 1.122 2026/01/09 00:30:51 tom Exp $
+dnl $MawkId: aclocal.m4,v 1.124 2026/01/18 16:37:24 tom Exp $
 dnl custom mawk macros for autoconf
 dnl
 dnl The symbols beginning "CF_MAWK_" were originally written by Mike Brennan,
@@ -250,7 +250,7 @@ ifelse([$3],,[    :]dnl
 ])dnl
 ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 14 updated: 2024/12/14 11:58:01
+dnl CF_BUILD_CC version: 15 updated: 2026/01/18 11:36:44
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -325,12 +325,12 @@ if test "$cross_compiling" = yes ; then
 	test "$cf_build_cppflags" = "#" && cf_build_cppflags=
 	ac_link='$BUILD_CC -o "conftest$ac_exeext" $BUILD_CFLAGS $cf_build_cppflags $BUILD_LDFLAGS "conftest.$ac_ext" $BUILD_LIBS >&AS_MESSAGE_LOG_FD'
 
-	AC_TRY_RUN([#include <stdio.h>
-		int main(int argc, char *argv[])
+	AC_RUN_IFELSE([AC_LANG_SOURCE([#include <stdio.h>
+		int main(int argc, char *argv[[]])
 		{
-			${cf_cv_main_return:-return}(argc < 0 || argv == (void*)0 || argv[0] == (void*)0);
+			${cf_cv_main_return:-return}(argc < 0 || argv == (void*)0 || argv[[0]] == (void*)0);
 		}
-	],
+	])],
 		cf_ok_build_cc=yes,
 		cf_ok_build_cc=no,
 		cf_ok_build_cc=unknown)
@@ -1572,7 +1572,7 @@ AC_CACHE_VAL(cf_cv_size_t_$2,[
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAWK_FIND_MAX_INT version: 8 updated: 2023/01/05 17:52:18
+dnl CF_MAWK_FIND_MAX_INT version: 9 updated: 2026/01/18 11:36:44
 dnl --------------------
 dnl Try to find a definition of MAX__INT from limits.h else compute.
 AC_DEFUN([CF_MAWK_FIND_MAX_INT],
@@ -1581,7 +1581,7 @@ if test "x$cf_limits_h" = xyes ; then :
 else
 AC_CHECK_HEADER(values.h,cf_values_h=yes)
 	if test "x$cf_values_h" = xyes ; then
-	AC_TRY_RUN(
+	AC_RUN_IFELSE([AC_LANG_SOURCE(
 [$ac_includes_default
 
 #include <values.h>
@@ -1611,11 +1611,11 @@ int main(void)
 	fprintf(out, "MAX__ULONG 0x%lx\n", max_ulong) ;
 	${cf_cv_main_return:-return}(0);
 }
-], cf_maxint_set=yes,[CF_MAWK_CHECK_LIMITS_MSG])
+])], cf_maxint_set=yes,[CF_MAWK_CHECK_LIMITS_MSG])
 	fi
 if test "x$cf_maxint_set" != xyes ; then
 # compute it  --  assumes two's complement
-AC_TRY_RUN(CF_MAWK_MAX__INT_PROGRAM,:,[CF_MAWK_CHECK_LIMITS_MSG])
+AC_RUN_IFELSE([AC_LANG_SOURCE(CF_MAWK_MAX__INT_PROGRAM)],:,[CF_MAWK_CHECK_LIMITS_MSG])
 fi
 cat conftest.out | while true
 do

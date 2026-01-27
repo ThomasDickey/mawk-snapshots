@@ -1,6 +1,6 @@
 /********************************************
 rexp.c
-copyright 2008-2024,2025, Thomas E. Dickey
+copyright 2008-2025,2026, Thomas E. Dickey
 copyright 1991-1993,1996, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,17 +11,13 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp.c,v 1.61 2025/01/31 22:33:22 tom Exp $
+ * $MawkId: rexp.c,v 1.63 2026/01/27 13:47:19 tom Exp $
  */
 
 /*  op precedence  parser for regular expressions  */
 
 #include <rexp.h>
 #include <regexp.h>
-
-#ifndef FIXME_INTERVAL_LIMITS
-#define FIXME_INTERVAL_LIMITS 0	/* =1 for pre-bugfix */
-#endif
 
 /*  DATA   */
 int REerrno;
@@ -153,9 +149,16 @@ extern FILE *trace_fp;
  * Because this is applied to the last-created loop, it is not necessary to
  * adjust jump-offsets to following loops which could span this loop.  But it
  * is necessary to adjust jumps which precede (i.e., jump over) this loop.
+ *
+ * If this is called with nonzero `unrolled', then there is an additional
+ * adjustment to make:
+ * (a) the cells between the M_SAVE_POS M_2JC are the unrolled part which
+ * (b) has to be moved before the loop's M_ENTER and M_SAVE_POS, and
+ * (c) an M_2JA to branch around the whole thing in case of mismatch,
+ *     since the unrolled+loop cells must be treated as a whole.
  */
 static void
-RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
+RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit, Int unrolled)
 {
     STATE *p = mp->start;
     STATE *last_1st = NULL;
@@ -164,6 +167,7 @@ RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
     int nests = 0;
 
     TRACE(("RE_set_limit " INT_FMT ".." INT_FMT "\n", minlimit, maxlimit));
+    TRACE(("... unrolled %ld (%ld)\n", unrolled, 1 + mp->stop - mp->start));
 
     if (p->s_type == M_2JA)
 	++p;
@@ -194,13 +198,21 @@ RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
 	} while (depth > 0);
     }
     /*
-     * If we found the end of a top-level loop, we can modify it.
+     * If we found the end of a top-level loop (i.e., the M_SAVE_POS),
+     * we can modify it.
      */
     if (last_end != NULL) {
-	size_t len = (size_t) (mp->stop - mp->start + 2);
-	size_t base = (size_t) (last_1st - mp->start);
-	size_t newlen = (size_t) (1 + len + (size_t) nests);
-	int offset = (int) (last_end - mp->start);
+	/* *INDENT-EQLS* */
+	size_t bypass = (unrolled != 0) ? 1 : 0;
+	size_t len    = (size_t) (mp->stop - mp->start + 2);
+	size_t base   = (size_t) (last_1st - mp->start);
+	size_t newlen = (size_t) (1 + len + (size_t) nests + bypass);
+	int offset    = (int) (last_end - mp->start);
+
+	TRACE(("len    %ld\n", len));
+	TRACE(("base   %ld\n", base));
+	TRACE(("newlen %ld\n", newlen));
+	TRACE(("offset %d\n", offset));
 
 	last_end->s_type = M_LOOP;
 	last_end->it_min = minlimit;
@@ -215,7 +227,7 @@ RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
 	 * stop-pointer is set for the current length of the top loop.
 	 */
 	mp->start = (STATE *) RE_realloc(mp->start, newlen * STATESZ);
-	mp->stop = mp->start + len - 1;
+	mp->stop = mp->start + len - 1 + (unrolled ? 1 : 0);
 	temp = mp->start + base;
 	len -= base;
 	while (--len != 0) {
@@ -224,6 +236,39 @@ RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
 	temp->s_type = M_ENTER;
 	temp->s_data.jump = (int) ((size_t) (offset + 1) - base);
 	used_loop_level = 1;
+
+	/*
+	 * If unrolled, there is an extra cell to use in the loop.  Shift the
+	 * the extra cell up, and reinsert the entry and saved cells.
+	 */
+	if (unrolled) {
+	    int adjusts = (int) unrolled;
+	    STATE entry = temp[0];
+	    STATE saved = temp[1];
+	    STATE jumps;
+	    int n;
+
+	    entry.s_data.jump -= adjusts;
+
+	    for (n = 0; n < adjusts; ++n) {
+		temp[0] = temp[2];
+		++temp;
+	    }
+
+	    /* conditional relative jump past the M_LOOP */
+	    jumps.s_type = M_2JA;
+	    jumps.s_data.jump = (int) ((size_t) 5);
+	    *temp++ = jumps;
+
+	    temp[2].s_data.jump += adjusts;	/* M_LOOP */
+	    temp[2].s_enter += adjusts;
+
+	    for (n = 4; n > 1; --n) {
+		temp[n] = temp[n - 1];
+	    }
+	    temp[1] = saved;
+	    temp[0] = entry;
+	}
 
 	/* if there were jumps over the adjusted loop, adjust them */
 	if (base) {
@@ -343,6 +388,9 @@ RE_set_limit(MACHINE * mp, Int minlimit, Int maxlimit)
 	    }
 	}
     }
+#if OPT_TRACE
+    REmprint(mp->start, trace_fp);
+#endif
 }
 
 /*  replace m with m*  limited to the max iterations
@@ -351,17 +399,17 @@ static void
 RE_close_limit(MACHINE * mp, Int min_limit, Int max_limit)
 {
     RE_close(mp);
-    RE_set_limit(mp, min_limit, max_limit);
+    RE_set_limit(mp, min_limit, max_limit, 0);
 }
 
 /*  replace m with m+  limited to the max iterations
      which is one or more, limited
         (variation of m+   positive closure)   */
 static void
-RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit)
+RE_poscl_limit(MACHINE * mp, Int min_limit, Int max_limit, Int unrolled)
 {
     RE_poscl(mp);
-    RE_set_limit(mp, min_limit, max_limit);
+    RE_set_limit(mp, min_limit, max_limit, unrolled);
 }
 
 /* If we used M_ENTER/M_LOOP, set the level-number for M_ENTER */
@@ -532,15 +580,16 @@ REcompile(char *re, size_t len)
 		    TRACE((M_FMT("RE_lex token %s\n"), token_name(T_Q)));
 		}
 	    } else if (BigMachine(m_ptr)) {
-		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
+		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax, 0);
 	    } else if (intrvalmin == 1) {	/* one or more */
-		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
+		RE_poscl_limit(m_ptr, intrvalmin, intrvalmax, 0);
 	    } else if (m_ptr->start != NULL) {	/* n or more */
-		/* loop-unrolling only works if min==max, so that the loops in
+		/* loop-unrolling works best if min==max, so that the loops in
 		 * test/match functions can process the whole loop in each
 		 * iteration */
-		if (FIXME_INTERVAL_LIMITS || intrvalmin == intrvalmax) {
+		if ((intrvalmin <= intrvalmax) && (intrvalmin > 1)) {
 		    register Int i;
+		    Int splice = (intrvalmin == intrvalmax) ? 2 : 1;
 		    /* copy 2 copies of m_ptr, use 2nd copy to replace
 		       the first copy that gets swallowed by concat */
 		    MACHINE *result_mp = m_ptr;
@@ -554,14 +603,29 @@ REcompile(char *re, size_t len)
 			   result_mp - m_array,
 			   new_mp - m_array));
 		    duplicate_m(new_mp, result_mp);
-		    for (i = 2; i <= intrvalmin; i++) {
+		    for (i = splice; i <= intrvalmin; i++) {
 			RE_cat(result_mp, concat_mp);
 			duplicate_m(concat_mp, new_mp);
 		    }
 		    /* don't need 2nd copy in new_mp */
 		    RE_free(new_mp->start);
+
+		    /*
+		     * After unrolling the loop, replace any remainder with a
+		     * loop.
+		     */
+		    if (intrvalmin < intrvalmax) {
+			Int unrolled = intrvalmin;
+			if (intrvalmax < MAX__INT)
+			    intrvalmax -= intrvalmin;
+			intrvalmin = 0;
+			RE_poscl_limit(m_ptr, intrvalmin, intrvalmax, unrolled);
+		    }
 		} else {
-		    RE_poscl_limit(m_ptr, intrvalmin, intrvalmax);
+		    /*
+		     * Handle this as a loop, no unrolling.
+		     */
+		    RE_poscl_limit(m_ptr, intrvalmin, intrvalmax, 0);
 		}
 	    }
 	    break;
