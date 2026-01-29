@@ -1,6 +1,6 @@
 /********************************************
 init.c
-copyright 2008-2023,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 1991-1994,1995, Michael D. Brennan
 
 This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.85 2024/12/14 21:21:20 tom Exp $
+ * $MawkId: init.c,v 1.86 2026/01/28 11:35:36 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -68,8 +68,8 @@ short interactive_flag = 0;
 #endif
 
 int dump_code_flag = 0;		/* if on dump internal code */
-short posix_space_flag = 0;
-short traditional_flag = 0;
+short posix_space_flag = 0;	/* -Wposix or --posix */
+short traditional_flag = 0;	/* -Wtraditional or --traditional */
 
 #ifndef NO_INTERVAL_EXPR
 #define enable_repetitions(flag) repetitions_flag = flag

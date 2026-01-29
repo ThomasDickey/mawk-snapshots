@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: execute.c,v 1.69 2026/01/17 00:50:45 tom Exp $
+ * $MawkId: execute.c,v 1.71 2026/01/28 11:32:36 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -36,7 +36,14 @@ the GNU General Public License, version 2, 1991.
 
 #include <math.h>
 
+#if defined(HAVE_ISNAN)
+static int compare2(CELL *, int);
+#define CompareCells(p,n) compare2(p,n)
+#else
 static int compare(CELL *);
+#define CompareCells(p,n) compare(p)
+#endif
+
 static int d_to_index(double);
 
 #ifdef	 NOINFO_SIGFPE
@@ -1033,42 +1040,42 @@ execute(INST * cdp,		/* code ptr, start execution here */
 	    /*  compare() makes sure string ref counts are OK */
 	case _EQ:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, 1);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t == 0 ? 1.0 : 0.0;
 	    break;
 
 	case _NEQ:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, 1);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t ? 1.0 : 0.0;
 	    break;
 
 	case _LT:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, 0);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t < 0 ? 1.0 : 0.0;
 	    break;
 
 	case _LTE:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, 1);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t <= 0 ? 1.0 : 0.0;
 	    break;
 
 	case _GT:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, 0);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t > 0 ? 1.0 : 0.0;
 	    break;
 
 	case _GTE:
 	    dec_sp();
-	    t = compare(sp);
+	    t = CompareCells(sp, -1);
 	    sp->type = C_DOUBLE;
 	    sp->dval = t >= 0 ? 1.0 : 0.0;
 	    break;
@@ -1425,7 +1432,7 @@ test(CELL *cp)
    frees STRINGs at those cells
 */
 static int
-compare(CELL *cp)
+CompareCells(CELL *cp, int eq)
 {
     int result;
     size_t len;
@@ -1439,6 +1446,12 @@ compare(CELL *cp)
 
     case TWO_DOUBLES:
       two_d:
+#if defined(HAVE_ISNAN)
+	if (posix_space_flag && (isnan(cp->dval) || isnan((cp + 1)->dval))) {
+	    result = eq;
+	    break;
+	}
+#endif
 	result = ((cp->dval > (cp + 1)->dval)
 		  ? 1
 		  : ((cp->dval < (cp + 1)->dval)

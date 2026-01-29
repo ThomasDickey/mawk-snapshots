@@ -1,4 +1,4 @@
-MANIFEST for mawk, version t20260127
+MANIFEST for mawk, version t20260128
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 ACKNOWLEDGMENT                  acknowledgements
@@ -158,6 +158,9 @@ test/mawknull.dat               test-file for embedded nulls
 test/mawktest                   scripts to test mawk compiled OK
 test/mawktest.bat               scripts to test mawk compiled OK
 test/mawktest.dat               input data for the test
+test/nan-legacy.out             output for nan.awk (legacy)
+test/nan-posix.out              output for nan.awk (posix)
+test/nan.awk                    test-script for inf/nan
 test/nextfile.awk               script for testing nextfile
 test/nextfile.out               reference data for nextfile test
 test/noloop.awk                 test-script from gawk

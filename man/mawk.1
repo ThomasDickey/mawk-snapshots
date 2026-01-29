@@ -1,6 +1,6 @@
-.\" $MawkId: mawk.1,v 1.67 2024/09/05 22:23:55 tom Exp $
+.\" $MawkId: mawk.1,v 1.70 2026/01/29 00:11:27 tom Exp $
 .\" ###########################################################################
-.\" # copyright 2008-2023,2024, Thomas E. Dickey
+.\" # copyright 2008-2024,2026, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
 .\" #
 .\" # This is a source file for mawk, an implementation of
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 2024-09-05 "Version 1.3.4" "User commands"
+.TH MAWK 1 2026-01-28 "Version 1.3.4" "User commands"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -161,9 +161,14 @@ modifies \fB\*n\fP's behavior to be more POSIX-compliant:
 forces
 \fB\*n\fP
 not to consider '\en' to be space.
-.RE
 .IP
 The original \*(``posix_space\*('' is recognized, but deprecated.
+.bP
+Allow hexadecimal, \*(``inf\*('' (infinity) and \*(``nan\*('' (not-a-number).
+.IP
+The Open Group Base Specifications Issue 8
+allows but does not require these features.
+.RE
 .TP
 \-\fBW \fRrandom=\fInum\fR
 calls \fBsrand\fP with the given parameter
@@ -1867,16 +1872,14 @@ is based on changes proposed by James Parkinson in April 2016.
 for script compatibility:
 .RS 5
 .sp
-.hy 0
 .na
-\fB\-\-help\fP,
-\fB\-\-posix\fP,
-\fB\-r\fP,
-\fB\-\-re\-interval\fP,
-\fB\-\-traditional\fP,
-\fB\-\-version\fP
+\fB\%\-\-help\fP,
+\fB\%\-\-posix\fP,
+\fB\%\-r\fP,
+\fB\%\-\-re\-interval\fP,
+\fB\%\-\-traditional\fP,
+\fB\%\-\-version\fP
 .ad
-.hy
 .RE
 .
 .SS "Subtle Differences not in POSIX or the AWK Book"

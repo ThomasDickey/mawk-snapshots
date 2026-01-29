@@ -1,0 +1,448 @@
+testing "0.000000"
+-NaN
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+0
+1
+1
+1
+0
+0
+..compare from zero
+0
+1
+0
+0
+1
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
++NaN
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+0
+1
+1
+1
+0
+0
+..compare from zero
+0
+1
+0
+0
+1
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+-Inf
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+0
+1
+1
+1
+0
+0
+..compare from zero
+0
+1
+0
+0
+1
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "-nan"
+-nan
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+testing "-nan"
+-nan
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+testing "0.000000"
++Inf
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+0
+1
+1
+1
+0
+0
+..compare from zero
+0
+1
+0
+0
+1
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "0.000000"
+0
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+0
+0
+1
+1
+0
+-inf
+0
+0
+testing "-nan"
+-nan
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+testing "-nan"
+-nan
+..compare to self
+1
+0
+0
+1
+0
+1
+..compare to zero
+1
+0
+0
+1
+0
+1
+..compare from zero
+1
+0
+0
+1
+0
+1
+..functions
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan
+-nan

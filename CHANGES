@@ -1,10 +1,9 @@
--- $MawkId: CHANGES,v 1.432 2026/01/27 13:34:12 tom Exp $
+-- $MawkId: CHANGES,v 1.433 2026/01/28 10:47:52 tom Exp $
 
-20260127
+20260128
+	+ modify relational operators to check for inf/nan (NetBSD # 59332).
 	+ improve loop unrolling in regex, needed for lower-limit check with
 	  brace expressions (Original-Mawk #93).
-
-20260116
 	+ improve checks for size parameters of zmalloc and zrealloc
 	  (Original-Mawk #91).
 	+ improve precedence of operators (Original-Mawk #63, patch by jlp765).

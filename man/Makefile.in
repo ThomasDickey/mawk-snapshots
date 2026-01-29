@@ -1,6 +1,6 @@
-# $MawkId: Makefile.in,v 1.7 2024/01/24 01:08:43 tom Exp $
+# $MawkId: Makefile.in,v 1.9 2026/01/29 00:06:46 tom Exp $
 ###############################################################################
-# copyright 2010-2023,2024 Thomas E. Dickey
+# copyright 2010-2024,2026 Thomas E. Dickey
 #
 # This is a source file for mawk, an implementation of
 # the AWK programming language.
@@ -36,6 +36,9 @@ TARGET_ROOT	= $(PROGRAM)$(TOPIC)
 SOURCE_FILE	= $(SOURCE_ROOT).$(SECTION)
 TARGET_FILE	= $(TARGET_ROOT).$(SECTION)
 
+# workaround for bug in GNU Make 4.4.1
+.PRECIOUS: mawk.1
+
 .SUFFIXES : .html .$(SECTION) .man .ps .pdf .doc .txt
 
 .$(SECTION).html :
@@ -45,10 +48,10 @@ TARGET_FILE	= $(TARGET_ROOT).$(SECTION)
 	$(SHELL) -c "tbl $*.$(SECTION) | groff -man" >$@
 
 .$(SECTION).doc :
-	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -Tascii -man" >$@
+	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -rHY=0 -Tascii -man" >$@
 
 .$(SECTION).txt :
-	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -Tascii -man | col -bx" >$@
+	GROFF_NO_SGR=stupid $(SHELL) -c "tbl $*.$(SECTION) | nroff -rHY=0 -Tascii -man | col -bx" >$@
 
 .ps.pdf :
 	ps2pdf $*.ps
