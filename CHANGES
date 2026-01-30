@@ -1,7 +1,10 @@
--- $MawkId: CHANGES,v 1.433 2026/01/28 10:47:52 tom Exp $
+-- $MawkId: CHANGES,v 1.437 2026/01/30 00:41:04 tom Exp $
 
-20260128
-	+ modify relational operators to check for inf/nan (NetBSD # 59332).
+20260129
+	+ make -W interactive the default if stdout is a terminal/tty
+	  (Original-Mawk #41).
+	+ fix a regression in test case (Original-Mawk #78).
+	+ modify relational operators to check for inf/nan (NetBSD #59332).
 	+ improve loop unrolling in regex, needed for lower-limit check with
 	  brace expressions (Original-Mawk #93).
 	+ improve checks for size parameters of zmalloc and zrealloc

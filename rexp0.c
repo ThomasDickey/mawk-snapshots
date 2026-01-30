@@ -1,6 +1,6 @@
 /********************************************
 rexp0.c
-copyright 2008-2020,2024, Thomas E. Dickey
+copyright 2008-2024,2026, Thomas E. Dickey
 copyright 2010, Jonathan Nieder
 copyright 1991-1994,1996, Michael D. Brennan
 
@@ -12,7 +12,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: rexp0.c,v 1.52 2024/12/30 19:17:41 tom Exp $
+ * $MawkId: rexp0.c,v 1.53 2026/01/29 10:59:59 tom Exp $
  */
 
 /*  lexical scanner  */
@@ -536,7 +536,7 @@ lookup_cclass(char **start)
     CCLASS *result = NULL;
     CCLASS_ENUM code = CCLASS_NONE;
     const char *name;
-    char *colon;
+    const char *colon;
     size_t size;
     size_t item;
 
@@ -563,7 +563,7 @@ lookup_cclass(char **start)
 	RE_error_trap(-ERR_3);
     }
 
-    *start = colon + 2;
+    *start += size + 2;
 
     switch (name[0]) {
     case 'a':
