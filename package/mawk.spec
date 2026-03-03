@@ -1,9 +1,9 @@
 Summary: mawk - pattern scanning and text processing language
 %global AppProgram mawk
 %global AppVersion 1.3.4
-%global AppPatched 20260129
+%global AppPatched 20260302
 %global MySite https://invisible-island.net
-# $MawkId: mawk.spec,v 1.149 2026/01/29 11:08:35 tom Exp $
+# $MawkId: mawk.spec,v 1.151 2026/03/03 01:18:36 tom Exp $
 Name: %{AppProgram}
 Version: %{AppVersion}
 Release: %{AppPatched}
@@ -56,8 +56,8 @@ strip $RPM_BUILD_ROOT%{_bindir}/%{AppProgram}
 %changelog
 # each patch should add its ChangeLog entries here
 
-* Thu Jan 29 2026 Thomas E. Dickey
-- testing mawk 1.3.4-20260129
+* Mon Mar 02 2026 Thomas E. Dickey
+- testing mawk 1.3.4-20260302
 
 * Thu Jan 29 2026 Thomas E. Dickey
 - adapt rules from Fedora package script

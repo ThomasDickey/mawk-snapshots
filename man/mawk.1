@@ -1,4 +1,4 @@
-.\" $MawkId: mawk.1,v 1.70 2026/01/29 00:11:27 tom Exp $
+.\" $MawkId: mawk.1,v 1.72 2026/03/03 01:07:25 tom Exp $
 .\" ###########################################################################
 .\" # copyright 2008-2024,2026, Thomas E. Dickey
 .\" # copyright 1996, Michael D. Brennan
@@ -11,7 +11,7 @@
 .\" ###########################################################################
 .ds N Mawk
 .ds n mawk
-.TH MAWK 1 2026-01-28 "Version 1.3.4" "User commands"
+.TH MAWK 1 2026-03-02 "Version 1.3.4" "User commands"
 .\" strings
 .ds ex \fIexpr\fR
 .\" Bulleted paragraph
@@ -130,7 +130,7 @@ provides these:
 .TP
 \-\fBW \fRdump
 writes an assembler like listing of the internal
-representation of the program to stdout and exits 0
+representation of the program to \fIstdout\fP and exits 0
 (on successful compilation).
 .TP
 \-\fBW \fRexec \fIfile\fR
@@ -147,12 +147,46 @@ Because \fB\*n\fP can combine multiple \-\fBW\fP options separated by
 commas, you can use this option when an additional \-\fBW\fP option is needed.
 .TP
 \-\fBW \fRhelp
-prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRusage\*('').
+prints a usage message to \fIstderr\fP and exits (same as \*(``\-\fBW\ \fRusage\*('').
 .TP
 \-\fBW \fRinteractive
-sets unbuffered writes to stdout and line buffered reads from stdin.
-Records from stdin are lines regardless of the value of
-.BR RS .
+changes the buffering of \fIstdout\fP and \fIstdin\fP to make it more
+responsive in interactive use.
+.IP
+Normally \fB\*n\fP does not change the standard streams buffering,
+which uses line-buffering \fIstdin\fP and \fIstdout\fP if they
+are connected to a terminal, and block-buffering otherwise
+(e.g., if \fB\*n\fP is run in a pipe).
+.IP
+When opening a pipe,
+a special file (such as \*(``\-\*(''),
+or one of the stdio devices,
+\fB\*n\fP first opens a file descriptor.
+\fB\*N\fP then decides whether to use buffered I/O
+by checking if the file descriptor is for a terminal, and if
+\fBRS\fP is currently set to the single character \*(``\\n\*('' (newline).
+As a special case, file descriptor zero (0) is assigned to \fIstdin\fP,
+while \fBfdopen\fP handles other file descriptors.
+.IP
+The \fBinteractive\fP option
+bypasses both checks in deciding to use buffered I/O
+(is a terminal, and \fBRS\fP is \*(``\\n\*('').
+The \fBinteractive\fP option
+also changes \fIstdout\fP to unbuffered (like \fIstderr\fP).
+.IP
+\fB\*N\fP changes streams to unbuffered I/O in a few other cases:
+.RS
+.bP
+if a file is created or appended to, i.e.,
+using \*(``>\*('' or \*(``>>\*(''
+\fB\*n\fP treats this differently from opening pipes,
+first opening it as a stream (block buffered) and then
+changing it to unbuffered if it happens to be a terminal.
+.bP
+if the standard output is connected to a terminal and the
+the \fBinteractive\fP option was not given,
+\fB\*n\fP changes it to unbuffered.
+.RE
 .TP
 \-\fBW \fRposix
 modifies \fB\*n\fP's behavior to be more POSIX-compliant:
@@ -189,13 +223,13 @@ Omit features such as interval expressions which were not supported by
 traditional \fIawk\fP.
 .TP
 \-\fBW \fRusage
-prints a usage message to stderr and exits (same as \*(``\-\fBW\ \fRhelp\*('').
+prints a usage message to \fIstderr\fP and exits (same as \*(``\-\fBW\ \fRhelp\*('').
 .TP
 \-\fBW \fRversion
 \fB\*n\fP
 writes its version and copyright
-to stdout and compiled limits to
-stderr and exits 0.
+to \fIstdout\fP and compiled limits to
+\fIstderr\fP and exits 0.
 .PP
 \fB\*n\fP accepts abbreviations for any of these options, e.g.,
 \*(``\-\fBW\ \fRv\*('' and \*(``\-\fBW\fRv\*(''
@@ -1097,15 +1131,15 @@ By convention,
 associates the filename
 .RS 3
 .bP
-"/dev/stderr" with stderr,
+"/dev/stderr" with \fIstderr\fP,
 .bP
-"/dev/stdout" with stdout,
+"/dev/stdout" with \fIstdout\fP,
 .bP
-"\-" and "/dev/stdin" with stdin.
+"\-" and "/dev/stdin" with \fIstdin\fP.
 .RE
 .PP
-The association with stderr is especially useful because it allows
-print and printf to be redirected to stderr.
+The association with \fIstderr\fP is especially useful because it allows
+print and printf to be redirected to \fIstderr\fP.
 These names can also be passed to functions.
 .PP
 The input function
@@ -1180,7 +1214,7 @@ associated with
 Fflush returns 0 if
 .I expr
 is an open output stream else \-1.
-Fflush without an argument flushes stdout.
+Fflush without an argument flushes \fIstdout\fP.
 Fflush with an empty argument ("") flushes all open output.
 .PP
 The function
@@ -1485,7 +1519,7 @@ an input stream is opened and execution continues.
 If
 .B ARGC
 equals 1,
-the input stream is set to stdin,
+the input stream is set to \fIstdin\fP,
 else  the command line arguments
 .BR ARGV[1]  " ..."
 .B ARGV[ARGC\-1]
@@ -1509,11 +1543,11 @@ else
 is opened for input.
 If it fails to open, execution terminates with exit code 2.
 If no command line argument is a file argument, then input
-comes from stdin.
+comes from \fIstdin\fP.
 Getline in a
 .B BEGIN
 action opens input.
-\*(``\-\*('' as a file argument denotes stdin.
+\*(``\-\*('' as a file argument denotes \fIstdin\fP.
 .PP
 Once an input stream is open, each input record is tested
 against each

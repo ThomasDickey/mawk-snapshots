@@ -1,4 +1,4 @@
-# $MawkId: Makefile.in,v 1.9 2026/01/29 00:06:46 tom Exp $
+# $MawkId: Makefile.in,v 1.10 2026/03/02 21:48:57 tom Exp $
 ###############################################################################
 # copyright 2010-2024,2026 Thomas E. Dickey
 #
@@ -37,7 +37,7 @@ SOURCE_FILE	= $(SOURCE_ROOT).$(SECTION)
 TARGET_FILE	= $(TARGET_ROOT).$(SECTION)
 
 # workaround for bug in GNU Make 4.4.1
-.PRECIOUS: mawk.1
+.PRECIOUS: mawk.1 mawk-arrays.7 mawk-code.7
 
 .SUFFIXES : .html .$(SECTION) .man .ps .pdf .doc .txt
 

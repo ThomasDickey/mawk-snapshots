@@ -11,7 +11,7 @@ the GNU General Public License, version 2, 1991.
 ********************************************/
 
 /*
- * $MawkId: init.c,v 1.87 2026/01/30 00:38:58 tom Exp $
+ * $MawkId: init.c,v 1.88 2026/03/02 21:11:23 tom Exp $
  */
 
 #define Visible_ARRAY
@@ -682,7 +682,6 @@ process_cmdline(int argc, char **argv)
   no_more_opts:
 
     if (!interactive_flag && isatty(fileno(stdout))) {
-	interactive_flag = 1;
 	setbuf(stdout, (char *) 0);
     }
 
